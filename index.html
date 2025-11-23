@@ -725,6 +725,38 @@
     border-top:1px dashed rgba(148,163,184,0.35);
     padding-top:0.5rem;
   }
+
+  /* Strong Password Generator (native panel style) */
+  .spg-output-row{
+    display:flex;
+    gap:0.45rem;
+    align-items:center;
+  }
+  #spg-password-output{
+    flex:1;
+    font-family:"Courier New",Courier,monospace;
+    font-weight:600;
+  }
+  #spg-copy-msg{
+    font-size:0.7rem;
+    color:var(--accent);
+    margin-top:0.25rem;
+    opacity:0;
+    transition:opacity 0.2s ease-out;
+  }
+  .spg-options-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.35rem;
+    margin-top:0.3rem;
+  }
+  #spg-error-msg{
+    font-size:0.72rem;
+    color:#fecaca;
+    margin-top:0.4rem;
+    min-height:1em;
+  }
+
 </style>
 
 </head>
@@ -881,6 +913,16 @@
           <span class="tool-tag">ID / Passport</span>
         </div>
         <button class="btn" onclick="openTool('id-photo')">Open Tool</button>
+      </div>
+     
+      <div class="tool-card">
+        <h3>Strong Password Generator</h3>
+        <p>Create ultra-strong passwords with strength meter & copy button.</p>
+        <div class="tool-tags">
+          <span class="tool-tag">Password</span>
+          <span class="tool-tag">Security</span>
+        </div>
+        <button class="btn" onclick="openTool('password')">Open Tool</button>
       </div>
 
     </div> <!-- .tool-grid end -->
@@ -1407,7 +1449,102 @@
       <a id="id-download" class="download-link" href="#" style="display:none;" download="id-photos.png">⬇ Download ID photos sheet</a>
     </div>
   </section>
- 
+
+    <!-- 13. Strong Password Generator (native style) -->
+  <section id="panel-password" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Strong Password Generator</h2>
+        <p>Generate ultra-strong passwords with instant strength meter.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+
+    <div class="section">
+      <!-- Generated password + copy -->
+      <div class="field">
+        <label>Generated password</label>
+        <div class="spg-output-row">
+          <input
+            type="text"
+            id="spg-password-output"
+            readonly
+            value="Generating..."
+          />
+          <button type="button" class="btn btn-outline" id="spg-copy-btn">
+            Copy <span style="font-size:0.8em;font-weight:400;">(কপি)</span>
+          </button>
+        </div>
+        <div id="spg-copy-msg">Copied!</div>
+      </div>
+
+      <!-- Length slider -->
+      <div class="field">
+        <label>Length (দৈর্ঘ্য)</label>
+        <div class="flex flex-between">
+          <small class="hint">8–32 characters</small>
+          <span id="spg-length-val" class="badge-soft">16</span>
+        </div>
+        <input
+          type="range"
+          id="spg-length-slider"
+          min="8"
+          max="32"
+          value="16"
+        />
+      </div>
+
+      <!-- Character types -->
+      <div class="field">
+        <label>Character types</label>
+        <div class="spg-options-row">
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-upper" checked style="margin-right:6px;">
+            <span>ABC (বড় হাতের লেখা)</span>
+          </label>
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-lower" checked style="margin-right:6px;">
+            <span>abc (ছোট হাতের লেখা)</span>
+          </label>
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-numbers" checked style="margin-right:6px;">
+            <span>123 (সংখ্যা)</span>
+          </label>
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-symbols" checked style="margin-right:6px;">
+            <span>!@# (প্রতীক)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <button type="button" class="btn mt-sm" id="spg-generate-btn">
+        Generate New Password<br />
+        <span style="font-size:0.85em;font-weight:400;">
+          (নতুন পাসওয়ার্ড তৈরি করুন)
+        </span>
+      </button>
+
+      <!-- Strength meter -->
+      <div class="field mt-sm">
+        <label>Password strength</label>
+        <div class="flex flex-between">
+          <div id="spg-strength-label" class="hint">Strength: —</div>
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-inner"
+            id="spg-strength-bar-fill"
+            style="width:0%;"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Error text -->
+      <div id="spg-error-msg"></div>
+    </div>
+  </section>
+
  <!-- Trust & E-E-A-T section -->
   <section class="trust-section" aria-label="Why Adhurjya Store is safe and trusted">
     <div class="trust-title">Why people can trust Adhurjya Store</div>
@@ -2817,6 +2954,176 @@
   document.getElementById('id-preset').addEventListener('change',()=>{
     if(idImg){initIdCrop();}
   });
+  // ---------- 13. STRONG PASSWORD GENERATOR ----------
+  (function () {
+    const outputEl = document.getElementById("spg-password-output");
+    if (!outputEl) return; // safety
+
+    const lengthSlider = document.getElementById("spg-length-slider");
+    const lengthValDisplay = document.getElementById("spg-length-val");
+    const btnGenerate = document.getElementById("spg-generate-btn");
+    const btnCopy = document.getElementById("spg-copy-btn");
+    const copyMsg = document.getElementById("spg-copy-msg");
+    const errorMsg = document.getElementById("spg-error-msg");
+    const strengthLabel = document.getElementById("spg-strength-label");
+    const strengthBarFill = document.getElementById("spg-strength-bar-fill");
+
+    const checkUpper = document.getElementById("spg-check-upper");
+    const checkLower = document.getElementById("spg-check-lower");
+    const checkNumber = document.getElementById("spg-check-numbers");
+    const checkSymbol = document.getElementById("spg-check-symbols");
+
+    // Character sets (no confusing chars)
+    const charsUpper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const charsLower = "abcdefghijkmnpqrstuvwxyz";
+    const charsNum = "23456789";
+    const charsSym = "!@#$%^&*()_+~`|}{[]:;?><,.-=";
+
+    function generatePassword() {
+      const length = parseInt(lengthSlider.value, 10);
+      let allowedChars = "";
+      let passwordArray = [];
+
+      // reset error
+      errorMsg.textContent = "";
+
+      if (checkUpper.checked) {
+        allowedChars += charsUpper;
+        passwordArray.push(getRandomChar(charsUpper));
+      }
+      if (checkLower.checked) {
+        allowedChars += charsLower;
+        passwordArray.push(getRandomChar(charsLower));
+      }
+      if (checkNumber.checked) {
+        allowedChars += charsNum;
+        passwordArray.push(getRandomChar(charsNum));
+      }
+      if (checkSymbol.checked) {
+        allowedChars += charsSym;
+        passwordArray.push(getRandomChar(charsSym));
+      }
+
+      // nothing selected
+      if (!allowedChars) {
+        outputEl.value = "";
+        updateStrengthMeter("");
+        errorMsg.textContent =
+          "Please select at least one option. (অনুগ্রহ করে একটি বিকল্প নির্বাচন করুন)";
+        return;
+      }
+
+      const remainingLength = length - passwordArray.length;
+      for (let i = 0; i < remainingLength; i++) {
+        passwordArray.push(getRandomChar(allowedChars));
+      }
+
+      const finalPassword = shuffleArray(passwordArray).join("");
+      outputEl.value = finalPassword;
+      updateStrengthMeter(finalPassword);
+    }
+
+    function getRandomChar(charString) {
+      const randomBuffer = new Uint32Array(1);
+      window.crypto.getRandomValues(randomBuffer);
+      const randomNumber = randomBuffer[0] / (0xffffffff + 1);
+      const randomIndex = Math.floor(randomNumber * charString.length);
+      return charString[randomIndex];
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const randomBuffer = new Uint32Array(1);
+        window.crypto.getRandomValues(randomBuffer);
+        const j = Math.floor(
+          (randomBuffer[0] / (0xffffffff + 1)) * (i + 1)
+        );
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function updateLengthDisplay() {
+      lengthValDisplay.textContent = lengthSlider.value;
+    }
+
+    function copyToClipboard() {
+      const password = outputEl.value;
+      if (!password) return;
+
+      navigator.clipboard
+        .writeText(password)
+        .then(() => {
+          copyMsg.style.opacity = "1";
+          setTimeout(() => {
+            copyMsg.style.opacity = "0";
+          }, 1500);
+        })
+        .catch((err) => {
+          console.error("Failed to copy: ", err);
+        });
+    }
+
+    function updateStrengthMeter(password) {
+      if (!password) {
+        strengthLabel.textContent = "Strength: —";
+        strengthBarFill.style.width = "0%";
+        return;
+      }
+
+      let score = 0;
+
+      // length points
+      if (password.length >= 8) score += 1;
+      if (password.length >= 12) score += 1;
+      if (password.length >= 16) score += 1;
+
+      // variety points
+      const hasUpper = /[A-Z]/.test(password);
+      const hasLower = /[a-z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSymbol = /[^A-Za-z0-9]/.test(password);
+
+      if (hasUpper) score += 1;
+      if (hasLower) score += 1;
+      if (hasNumber) score += 1;
+      if (hasSymbol) score += 1;
+
+      let strengthText = "Weak (দুর্বল)";
+      let width = "20%";
+
+      if (score >= 3 && score < 5) {
+        strengthText = "Okay (মাঝারি)";
+        width = "45%";
+      } else if (score >= 5 && score < 7) {
+        strengthText = "Strong (শক্তিশালী)";
+        width = "75%";
+      } else if (score === 7) {
+        strengthText = "Ultra Strong (অত্যন্ত শক্তিশালী)";
+        width = "100%";
+      }
+
+      strengthLabel.textContent = "Strength: " + strengthText;
+      strengthBarFill.style.width = width;
+    }
+
+    // events
+    btnGenerate.addEventListener("click", generatePassword);
+    btnCopy.addEventListener("click", copyToClipboard);
+
+    lengthSlider.addEventListener("input", () => {
+      updateLengthDisplay();
+      generatePassword();
+    });
+
+    [checkUpper, checkLower, checkNumber, checkSymbol].forEach((el) => {
+      el.addEventListener("change", generatePassword);
+    });
+
+    // init
+    updateLengthDisplay();
+    generatePassword();
+  })();
 </script>
 </body>
 </html>
