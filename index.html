@@ -757,6 +757,68 @@
     min-height:1em;
   }
 
+/* PDF Split & Edit (Pages) – scoped styles */
+#panel-pdf-pages #pdfPages-thumb-container {
+  margin-top: 0.4rem;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+#panel-pdf-pages .pdfPages-thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.4rem;
+}
+
+#panel-pdf-pages .pdfPages-pageCard {
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+}
+
+#panel-pdf-pages .pdfPages-thumb {
+  width: 100%;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  background: #020617;
+  display: block;
+}
+
+#panel-pdf-pages .pdfPages-pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+#panel-pdf-pages .pdfPages-pageTitle {
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+#panel-pdf-pages .pdfPages-rotateLabel {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+#panel-pdf-pages .pdfPages-actionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+#panel-pdf-pages .pdfPages-actionsRow .icon-btn {
+  flex: 0 0 auto;
+}
+
 </style>
 
 </head>
@@ -904,6 +966,17 @@
         </div>
         <button class="btn" onclick="openTool('password')">Open Tool</button>
       </div>
+
+      <!-- PDF Split & Edit (Pages) – NEW TOOL CARD -->
+     <div class="tool-card">
+     <h3>PDF Split &amp; Edit (Pages)</h3>
+     <p>Select, reorder, rotate &amp; export specific pages from a PDF.</p>
+     <div class="tool-tags">
+     <span class="tool-tag">Split</span>
+    <span class="tool-tag">Reorder &amp; Rotate</span>
+  </div>
+  <button class="btn" onclick="openTool('pdf-pages')">Open Tool</button>
+  </div>
 
     </div> <!-- .tool-grid end -->
   </section>
@@ -1431,6 +1504,71 @@
       <div id="spg-error-msg"></div>
     </div>
   </section>
+
+<!--  NEW: PDF Split & Edit (Pages) -->
+<section id="panel-pdf-pages" class="tool-panel">
+  <div class="tool-header">
+    <div>
+      <h2>PDF Split &amp; Edit (Pages)</h2>
+      <p>Select, reorder, rotate &amp; export pages from a single PDF.</p>
+    </div>
+    <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+  </div>
+
+  <!-- Upload -->
+  <div class="section">
+    <div class="field">
+      <label>Upload PDF file</label>
+      <input id="pdfPages-input" type="file" accept="application/pdf" />
+      <small>Big PDFs work too, but may be slow on low-RAM devices.</small>
+    </div>
+    <div id="pdfPages-status" class="status"></div>
+  </div>
+
+  <!-- Split by page ranges -->
+  <div class="section">
+    <div class="section-title">Split by page ranges</div>
+    <div class="field">
+      <label>Page ranges (based on current page order)</label>
+      <input
+        id="pdfPages-range"
+        type="text"
+        placeholder="e.g. 1-3,5,7-10"
+      />
+      <small>
+        Use commas to separate ranges. Examples:
+        <strong>1-5</strong>, <strong>2,4,6-8</strong>.
+      </small>
+    </div>
+    <button class="btn" id="pdfPages-split-btn">
+      Split &amp; Download Selected Pages
+    </button>
+    <div id="pdfPages-split-status" class="status mt-xs"></div>
+  </div>
+
+  <!-- Page editor -->
+  <div class="section">
+    <div class="section-title flex-between">
+      <span>Page editor</span>
+      <span id="pdfPages-page-count" class="badge-soft">No PDF loaded</span>
+    </div>
+    <div class="hint">
+      Reorder, rotate or delete pages below. Final export follows this order.
+    </div>
+
+    <div id="pdfPages-thumb-container">
+      <div id="pdfPages-thumb-grid" class="pdfPages-thumb-grid"></div>
+    </div>
+
+    <div id="pdfPages-editor-status" class="status mt-xs"></div>
+
+    <div class="mt-sm flex flex-wrap gap-sm">
+      <button class="btn" id="pdfPages-download-edited-btn">
+        Download Edited PDF
+      </button>
+    </div>
+  </div>
+</section>
 
  <!-- Trust & E-E-A-T section -->
   <section class="trust-section" aria-label="Why Adhurjya Store is safe and trusted">
@@ -3011,6 +3149,376 @@
     updateLengthDisplay();
     generatePassword();
   })();
+// ---------- PDF SPLIT & EDIT (PAGES) ----------
+let pdfPagesOriginalBytes = null;
+let pdfPagesState = []; // [{ id, originalIndex, rotation, thumb }]
+let pdfPagesTotalPages = 0;
+
+const pdfPagesInputEl = document.getElementById('pdfPages-input');
+if (pdfPagesInputEl) {
+  pdfPagesInputEl.addEventListener('change', handlePdfPagesFile);
+  document
+    .getElementById('pdfPages-split-btn')
+    .addEventListener('click', handlePdfPagesSplit);
+  document
+    .getElementById('pdfPages-download-edited-btn')
+    .addEventListener('click', handlePdfPagesDownloadEdited);
+}
+
+function resetPdfPagesUI() {
+  const grid = document.getElementById('pdfPages-thumb-grid');
+  if (grid) grid.innerHTML = '';
+  const splitStatus = document.getElementById('pdfPages-split-status');
+  if (splitStatus) splitStatus.textContent = '';
+  const editorStatus = document.getElementById('pdfPages-editor-status');
+  if (editorStatus) editorStatus.textContent = '';
+}
+
+async function handlePdfPagesFile(e) {
+  const file = e.target.files[0];
+  const status = document.getElementById('pdfPages-status');
+  const pageCountLabel = document.getElementById('pdfPages-page-count');
+  const editorStatus = document.getElementById('pdfPages-editor-status');
+
+  resetPdfPagesUI();
+  pdfPagesOriginalBytes = null;
+  pdfPagesState = [];
+  pdfPagesTotalPages = 0;
+
+  if (!file) {
+    if (status) {
+      status.textContent = 'Please select a PDF file.';
+      status.className = 'status error';
+    }
+    if (pageCountLabel) pageCountLabel.textContent = 'No PDF loaded';
+    return;
+  }
+
+  try {
+    if (status) {
+      status.textContent = 'Loading PDF...';
+      status.className = 'status';
+    }
+
+    pdfPagesOriginalBytes = new Uint8Array(await file.arrayBuffer());
+    const loadingTask = pdfjsLib.getDocument({ data: pdfPagesOriginalBytes });
+    const pdf = await loadingTask.promise;
+
+    pdfPagesTotalPages = pdf.numPages;
+    pdfPagesState = [];
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1 });
+      const maxThumbWidth = 120;
+      const scale = Math.min(1, maxThumbWidth / viewport.width);
+      const thumbViewport = page.getViewport({ scale });
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = thumbViewport.width;
+      canvas.height = thumbViewport.height;
+
+      await page.render({ canvasContext: ctx, viewport: thumbViewport }).promise;
+      const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+
+      pdfPagesState.push({
+        id: 'p' + pageNum,
+        originalIndex: pageNum - 1, // 0-based index in original PDF
+        rotation: 0,
+        thumb: dataURL
+      });
+    }
+
+    renderPdfPagesThumbs();
+
+    if (pageCountLabel) {
+      pageCountLabel.textContent = `${pdfPagesState.length} page(s) loaded`;
+    }
+    if (editorStatus) {
+      editorStatus.textContent = 'Pages ready. Use the controls on each page to edit.';
+      editorStatus.className = 'status';
+    }
+    if (status) {
+      status.textContent = `Loaded PDF with ${pdfPagesTotalPages} page(s).`;
+      status.className = 'status success';
+    }
+  } catch (err) {
+    console.error(err);
+    pdfPagesOriginalBytes = null;
+    pdfPagesState = [];
+    pdfPagesTotalPages = 0;
+
+    if (status) {
+      status.textContent = 'Could not read this PDF in the browser.';
+      status.className = 'status error';
+    }
+    if (pageCountLabel) pageCountLabel.textContent = 'No PDF loaded';
+  }
+}
+
+function renderPdfPagesThumbs() {
+  const grid = document.getElementById('pdfPages-thumb-grid');
+  const label = document.getElementById('pdfPages-page-count');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+
+  if (!pdfPagesState.length) {
+    grid.innerHTML = '<div class="hint">No pages to show. Upload a PDF above.</div>';
+    if (label) label.textContent = 'No PDF loaded';
+    return;
+  }
+
+  pdfPagesState.forEach((pageState, idx) => {
+    const card = document.createElement('div');
+    card.className = 'pdfPages-pageCard';
+
+    const header = document.createElement('div');
+    header.className = 'pdfPages-pageHeader';
+
+    const title = document.createElement('div');
+    title.className = 'pdfPages-pageTitle';
+    title.textContent = `Page ${idx + 1}`;
+
+    const rotateLabel = document.createElement('div');
+    rotateLabel.className = 'pdfPages-rotateLabel';
+    rotateLabel.textContent = pageState.rotation ? `${pageState.rotation}°` : '0°';
+
+    header.appendChild(title);
+    header.appendChild(rotateLabel);
+
+    const img = document.createElement('img');
+    img.className = 'pdfPages-thumb';
+    img.src = pageState.thumb;
+    if (pageState.rotation) {
+      img.style.transform = `rotate(${pageState.rotation}deg)`;
+    }
+
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'pdfPages-actionsRow';
+
+    const leftGroup = document.createElement('div');
+    leftGroup.className = 'flex gap-xs';
+
+    const upBtn = document.createElement('button');
+    upBtn.className = 'icon-btn';
+    upBtn.textContent = '↑';
+    upBtn.disabled = idx === 0;
+    upBtn.onclick = () => movePdfPage(idx, idx - 1);
+
+    const downBtn = document.createElement('button');
+    downBtn.className = 'icon-btn';
+    downBtn.textContent = '↓';
+    downBtn.disabled = idx === pdfPagesState.length - 1;
+    downBtn.onclick = () => movePdfPage(idx, idx + 1);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn';
+    delBtn.textContent = '✕';
+    delBtn.onclick = () => deletePdfPage(idx);
+
+    leftGroup.appendChild(upBtn);
+    leftGroup.appendChild(downBtn);
+    leftGroup.appendChild(delBtn);
+
+    const rightGroup = document.createElement('div');
+    rightGroup.className = 'flex gap-xs';
+
+    const rotateLeftBtn = document.createElement('button');
+    rotateLeftBtn.className = 'icon-btn';
+    rotateLeftBtn.textContent = '⟲';
+    rotateLeftBtn.title = 'Rotate -90°';
+    rotateLeftBtn.onclick = () => rotatePdfPage(idx, -90);
+
+    const rotateRightBtn = document.createElement('button');
+    rotateRightBtn.className = 'icon-btn';
+    rotateRightBtn.textContent = '⟳';
+    rotateRightBtn.title = 'Rotate +90°';
+    rotateRightBtn.onclick = () => rotatePdfPage(idx, 90);
+
+    rightGroup.appendChild(rotateLeftBtn);
+    rightGroup.appendChild(rotateRightBtn);
+
+    actionsRow.appendChild(leftGroup);
+    actionsRow.appendChild(rightGroup);
+
+    card.appendChild(header);
+    card.appendChild(img);
+    card.appendChild(actionsRow);
+
+    grid.appendChild(card);
+  });
+
+  if (label) {
+    label.textContent = `${pdfPagesState.length} page(s) in editor`;
+  }
+}
+
+function movePdfPage(fromIdx, toIdx) {
+  if (toIdx < 0 || toIdx >= pdfPagesState.length) return;
+  const item = pdfPagesState.splice(fromIdx, 1)[0];
+  pdfPagesState.splice(toIdx, 0, item);
+  renderPdfPagesThumbs();
+}
+
+function deletePdfPage(idx) {
+  pdfPagesState.splice(idx, 1);
+  renderPdfPagesThumbs();
+}
+
+function rotatePdfPage(idx, delta) {
+  const p = pdfPagesState[idx];
+  if (!p) return;
+  let newRotation = ((p.rotation || 0) + delta) % 360;
+  if (newRotation < 0) newRotation += 360;
+  p.rotation = newRotation;
+  renderPdfPagesThumbs();
+}
+
+function parsePdfPagesRanges(input, maxPage) {
+  const tokens = (input || '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const selected = [];
+  const used = new Set();
+
+  for (const token of tokens) {
+    let m;
+
+    if (/^\d+$/.test(token)) {
+      const n = parseInt(token, 10);
+      if (n >= 1 && n <= maxPage && !used.has(n)) {
+        used.add(n);
+        selected.push(n);
+      }
+    } else if ((m = token.match(/^(\d+)\s*-\s*(\d+)$/))) {
+      let start = parseInt(m[1], 10);
+      let end = parseInt(m[2], 10);
+      if (isNaN(start) || isNaN(end)) continue;
+      if (start > end) {
+        const tmp = start;
+        start = end;
+        end = tmp;
+      }
+      for (let n = start; n <= end; n++) {
+        if (n >= 1 && n <= maxPage && !used.has(n)) {
+          used.add(n);
+          selected.push(n);
+        }
+      }
+    }
+  }
+  return selected;
+}
+
+async function handlePdfPagesSplit() {
+  const status = document.getElementById('pdfPages-split-status');
+  if (!status) return;
+
+  status.textContent = '';
+  status.className = 'status';
+
+  if (!pdfPagesOriginalBytes || !pdfPagesState.length) {
+    status.textContent = 'Please upload a PDF first.';
+    status.className = 'status error';
+    return;
+  }
+
+  const rangeInput = document.getElementById('pdfPages-range').value.trim();
+  if (!rangeInput) {
+    status.textContent = 'Enter at least one page number or range.';
+    status.className = 'status error';
+    return;
+  }
+
+  const maxPage = pdfPagesState.length; // based on current edited order
+  const selectedPositions = parsePdfPagesRanges(rangeInput, maxPage);
+
+  if (!selectedPositions.length) {
+    status.textContent = 'No valid page numbers found in your input.';
+    status.className = 'status error';
+    return;
+  }
+
+  status.textContent = 'Building split PDF...';
+  try {
+    const originalDoc = await PDFDocument.load(pdfPagesOriginalBytes);
+    const splitDoc = await PDFDocument.create();
+
+    for (const pos of selectedPositions) {
+      const pageState = pdfPagesState[pos - 1]; // 1-based to 0-based
+      if (!pageState) continue;
+
+      const [copied] = await splitDoc.copyPages(originalDoc, [
+        pageState.originalIndex
+      ]);
+      const page = copied;
+
+      if (pageState.rotation) {
+        page.setRotation(PDFLib.degrees(pageState.rotation));
+      }
+
+      splitDoc.addPage(page);
+    }
+
+    const bytes = await splitDoc.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    downloadBlob(blob, 'split-pages.pdf');
+
+    status.textContent = `Done. Exported ${selectedPositions.length} page(s).`;
+    status.className = 'status success';
+  } catch (err) {
+    console.error(err);
+    status.textContent = 'Split failed. PDF may be too large or complex.';
+    status.className = 'status error';
+  }
+}
+
+async function handlePdfPagesDownloadEdited() {
+  const editorStatus = document.getElementById('pdfPages-editor-status');
+  if (!editorStatus) return;
+
+  editorStatus.textContent = '';
+  editorStatus.className = 'status';
+
+  if (!pdfPagesOriginalBytes || !pdfPagesState.length) {
+    editorStatus.textContent =
+      'Upload a PDF and keep at least one page in the editor.';
+    editorStatus.className = 'status error';
+    return;
+  }
+
+  editorStatus.textContent = 'Building edited PDF...';
+
+  try {
+    const originalDoc = await PDFDocument.load(pdfPagesOriginalBytes);
+    const outDoc = await PDFDocument.create();
+
+    for (const p of pdfPagesState) {
+      const [copied] = await outDoc.copyPages(originalDoc, [p.originalIndex]);
+      const page = copied;
+      if (p.rotation) {
+        page.setRotation(PDFLib.degrees(p.rotation));
+      }
+      outDoc.addPage(page);
+    }
+
+    const bytes = await outDoc.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    downloadBlob(blob, 'edited-document.pdf');
+
+    editorStatus.textContent = `Done. Exported ${pdfPagesState.length} page(s).`;
+    editorStatus.className = 'status success';
+  } catch (err) {
+    console.error(err);
+    editorStatus.textContent =
+      'Export failed. PDF may be too large or complex for this device.';
+    editorStatus.className = 'status error';
+  }
+}
 </script>
 </body>
 </html>
