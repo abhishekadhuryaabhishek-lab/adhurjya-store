@@ -842,26 +842,6 @@
       </div>
 
       <div class="tool-card">
-        <h3>Photo / PDF → Excel</h3>
-        <p>Table-style text extract করে CSV বানাও – marksheet, attendance, expense ইত্যাদি জন্য।</p>
-        <div class="tool-tags">
-          <span class="tool-tag">OCR</span>
-          <span class="tool-tag">Table → CSV</span>
-        </div>
-        <button class="btn" onclick="openTool('photo-excel')">Open Tool</button>
-      </div>
-
-      <div class="tool-card">
-        <h3>Image to Text (OCR)</h3>
-        <p>Extract text from images or PDFs using Tesseract.js — English + Hindi/Bengali.</p>
-        <div class="tool-tags">
-          <span class="tool-tag">OCR</span>
-          <span class="tool-tag">Image + PDF</span>
-        </div>
-        <button class="btn" onclick="openTool('ocr')">Open Tool</button>
-      </div>
-
-      <div class="tool-card">
         <h3>PDF Compressor</h3>
         <p>Re-render PDF pages as compressed images to reduce size.</p>
         <div class="tool-tags">
@@ -1064,42 +1044,6 @@
           <div class="pill-small">Resized</div>
           <img id="resize-new-preview" class="preview-img mt-xs" alt="" />
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. OCR -->
-  <section id="panel-ocr" class="tool-panel">
-    <div class="tool-header">
-      <div>
-        <h2>Image to Text (OCR)</h2>
-        <p>Use Tesseract.js to extract text from images or PDFs.</p>
-      </div>
-      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
-    </div>
-    <div class="section">
-      <div class="field">
-        <label>Select image or PDF with text</label>
-        <input id="ocr-input" type="file" accept="image/*,application/pdf" />
-      </div>
-      <div class="field">
-        <label>Language</label>
-        <select id="ocr-lang">
-          <option value="eng">English (eng)</option>
-          <option value="hin">Hindi (hin)</option>
-          <option value="ben">Bengali (ben)</option>
-        </select>
-        <small>Hindi/Bengali need online language data, so internet may be required for first run.</small>
-      </div>
-      <button class="btn mt-sm" onclick="runOcr()">Run OCR</button>
-      <div id="ocr-status" class="status"></div>
-      <div class="progress-bar" style="display:none;" id="ocr-progress-bar">
-        <div class="progress-inner" id="ocr-progress-inner"></div>
-      </div>
-      <div class="section mt-md">
-        <div class="section-title">Recognized text</div>
-        <textarea id="ocr-output" placeholder="Your extracted text will appear here... (multi-page PDFs will be combined with page breaks)"></textarea>
-        <button class="btn btn-outline mt-xs" onclick="copyOcrText()">Copy Text</button>
       </div>
     </div>
   </section>
@@ -1333,63 +1277,6 @@
           <div class="pill-small">Enhanced</div>
           <canvas id="enhance-canvas" class="preview-img mt-xs"></canvas>
           <div id="enhance-meta-new" class="hint mt-xs"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 12. Photo / PDF → Table → CSV (Photo to Excel lite) -->
-  <section id="panel-photo-excel" class="tool-panel">
-    <div class="tool-header">
-      <div>
-        <h2>Photo / PDF → Excel (Table OCR)</h2>
-        <p>Marksheet, attendance, expense table photo/PDF থেকে data নিয়ে CSV বানাও (Excel open করবে).</p>
-      </div>
-      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
-    </div>
-
-    <div class="section">
-      <div class="field">
-        <label>Select image or PDF (with table)</label>
-        <input id="photoExcel-input" type="file" accept="image/*,application/pdf" />
-        <small>Clear table photo/PDF ব্যবহার করলে best result পাবা.</small>
-      </div>
-
-      <div class="field">
-        <label>Language</label>
-        <select id="photoExcel-lang">
-          <option value="eng">English (eng)</option>
-          <option value="hin">Hindi (hin)</option>
-          <option value="ben">Bengali (ben)</option>
-        </select>
-        <small>Hindi/Bengali এর জন্য প্রথমবার internet লাগতে পারে (Tesseract language data).</small>
-      </div>
-
-      <div class="field">
-        <label>Column detection mode</label>
-        <select id="photoExcel-split-mode">
-          <option value="auto">Auto: 2+ space / tab / | দিয়ে column detect</option>
-        </select>
-        <small>Plain table হলেই কাজ করবে. এটা lite version – heavy complex table-এর জন্য perfect না.</small>
-      </div>
-
-      <button class="btn mt-sm" onclick="runPhotoExcel()">Run Table OCR & Build CSV</button>
-
-      <div id="photoExcel-status" class="status mt-xs"></div>
-
-      <div class="section mt-md">
-        <div class="section-title">Raw OCR text (debug)</div>
-        <textarea id="photoExcel-raw" placeholder="Here you can see raw OCR text, line by line."></textarea>
-      </div>
-
-      <div class="section mt-md">
-        <div class="section-title">Preview CSV (Excel format)</div>
-        <textarea id="photoExcel-csv" placeholder="Table → CSV preview here."></textarea>
-        <a id="photoExcel-download" ...> class="download-link" href="#" style="display:none;" download="table.csv">
-          ⬇ Download CSV (Open in Excel)
-        </a>
-        <div class="hint mt-xs">
-          CSV file directly Excel / Google Sheets এ খুলে যাবে.
         </div>
       </div>
     </div>
