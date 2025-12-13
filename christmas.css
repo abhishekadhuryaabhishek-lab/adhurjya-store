@@ -1,0 +1,110 @@
+/* =====================================================
+   🎄 CHRISTMAS SUPER THEME – GUARANTEED WORKING
+   ===================================================== */
+
+/* 🎨 FESTIVE ACCENT */
+:root{
+  --accent:#ef4444;
+  --accent-strong:#facc15;
+}
+
+/* 🌌 FESTIVE BACKGROUND */
+body{
+  background:
+    radial-gradient(circle at 20% 0%, rgba(239,68,68,0.28), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(34,197,94,0.30), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(250,204,21,0.22), transparent 50%),
+    linear-gradient(160deg,#020617,#020b25 40%,#041b2d 100%) !important;
+}
+
+/* ❄️ SNOW — FIXED & VISIBLE */
+@keyframes snowFall {
+  0%   { transform: translateY(-120vh); }
+  100% { transform: translateY(120vh); }
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:200vh;
+  pointer-events:none;
+  z-index:2147483647; /* MAX */
+  background-image:
+    radial-gradient(3px 3px at 10% 10%, #fff 70%, transparent 72%),
+    radial-gradient(2.5px 2.5px at 30% 30%, #fff 70%, transparent 72%),
+    radial-gradient(2px 2px at 50% 50%, #fff 70%, transparent 72%),
+    radial-gradient(2px 2px at 70% 20%, #fff 70%, transparent 72%),
+    radial-gradient(1.8px 1.8px at 90% 40%, #fff 70%, transparent 72%);
+  background-repeat:repeat;
+  background-size:300px 300px;
+  opacity:0.8;
+  animation:snowFall 12s linear infinite;
+}
+
+/* 📱 MOBILE SAFE */
+@media (max-width:768px){
+  body::after{
+    opacity:0.45;
+    animation-duration:22s;
+  }
+}
+
+/* 🎄 RIBBON */
+.christmas-ribbon{
+  position:sticky;
+  top:0;
+  z-index:2147483646;
+  width:100%;
+  text-align:center;
+  font-size:0.95rem;
+  font-weight:800;
+  padding:10px 0;
+  background:linear-gradient(90deg,#ef4444,#22c55e,#facc15);
+  color:#020617;
+  letter-spacing:0.14em;
+}
+
+/* 🎅 SANTA */
+.christmas-ribbon::after{
+  content:" 🎅";
+  display:inline-block;
+  animation:santaWave 1.4s ease-in-out infinite;
+}
+
+@keyframes santaWave{
+  0%{ transform:rotate(0deg); }
+  50%{ transform:rotate(20deg); }
+  100%{ transform:rotate(0deg); }
+}
+
+/* 🎁 TOOL CARD */
+.tool-card{
+  position:relative;
+  border:1px solid rgba(239,68,68,0.45);
+}
+
+.tool-card::after{
+  content:"🎁";
+  position:absolute;
+  top:14px;
+  right:16px;
+  font-size:1.35rem;
+  opacity:0;
+  transform:scale(0.3);
+  transition:0.25s;
+}
+
+.tool-card:hover::after{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* ⏱️ AUTO DISABLE */
+.disable-christmas body::after,
+.disable-christmas .christmas-ribbon,
+.disable-christmas .tool-card::after{
+  display:none !important;
+}
