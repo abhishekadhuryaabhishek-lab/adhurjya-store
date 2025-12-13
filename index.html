@@ -821,9 +821,16 @@
 
 </style>
 
+<link rel="stylesheet" href="christmas.css">
+
 </head>
 <body>
 <header>
+
+<div class="christmas-ribbon">🎄 Merry Christmas 🎄</div>
+<div class="snow-layer"></div>
+
+
   <div class="header-inner">
     <div class="logo">
       <div class="logo-icon">A</div>
@@ -3520,5 +3527,16 @@ async function handlePdfPagesDownloadEdited() {
   }
 }
 </script>
+
+<script>
+(function(){
+  const today = new Date();
+  const endDate = new Date(today.getFullYear(), 11, 31);
+  if(today > endDate){
+    document.documentElement.classList.add("disable-christmas");
+  }
+})();
+</script>
+
 </body>
 </html>
