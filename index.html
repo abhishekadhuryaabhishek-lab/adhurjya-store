@@ -3574,13 +3574,16 @@ async function handlePdfPagesDownloadEdited() {
 <script>
 (function(){
   const today = new Date();
-  const endDate = new Date(today.getFullYear(), 11, 31);
-  if(today > endDate){
+  const month = today.getMonth(); // 0-11
+
+  if(month !== 11){
     document.documentElement.classList.add("disable-christmas");
   }
 })();
+ 
 </script>
 <script src="site-protection.js"></script>
 
 </body>
 </html>
+
