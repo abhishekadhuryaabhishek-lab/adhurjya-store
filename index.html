@@ -9,7 +9,7 @@
   <meta name="google-site-verification" content="tVysuLpqwr0_z7-zV-BauxXp2F_kUjZfCIajrCmDJHw" />
 
   <!-- ADDED: AI-Optimized meta keywords -->
-  <meta name="keywords" content="Adhurjya Store, Adhurjya tools, photo to PDF converter, image compressor, PDF compressor, merge PDF online, PDF to image, image to text, OCR Bengali, OCR Hindi, OCR English, Bengali OCR online, Hindi OCR online, ID photo maker, passport size photo maker, document tools India, free PDF tools, browser tools, client-side tools, offline PDF tools, AI photo enhancer, image resizer, image format converter" />
+  <meta name="keywords" content="Adhurjya Store, Adhurjya tools, photo to PDF converter, image compressor, PDF compressor, merge PDF online, PDF to image, image to text, OCR Bengali, OCR Hindi, OCR English, Bengali OCR online, Hindi OCR online, ID photo maker, passport size photo maker, document tools India, free PDF tools, browser tools, client-side tools, offline PDF tools, image resizer, image format converter" />
 
   <!-- ✅ ADDED: Favicon + Manifest SEO boost (files later create korte hobe) -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -32,13 +32,13 @@
   <meta property="og:site_name" content="Adhurjya Store" />
   <meta property="og:url" content="https://adhurjyatools.in/" />
   <meta property="og:title" content="Adhurjya Store — All-in-one Browser Toolbox" />
-  <meta property="og:description" content="Convert, compress and enhance your photos & PDFs directly in your browser. No uploads, no login, just pure client-side magic." />
+  <meta property="og:description" content="Convert, compress and manage your photos & PDFs directly in your browser. No uploads, no login, just pure client-side magic." />
   <meta property="og:image" content="https://adhurjyatools.in/og-image.jpg" />
 
   <!-- ✅ ADDED: Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Adhurjya Store — All-in-one Browser Toolbox" />
-  <meta name="twitter:description" content="Convert, compress and enhance your photos & PDFs directly in your browser. No uploads, no login." />
+  <meta name="twitter:description" content="Convert, compress and manage your photos & PDFs directly in your browser. No uploads, no login." />
   <meta name="twitter:image" content="https://adhurjyatools.in/og-image.jpg" />
 
   <!-- ✅ ADDED: JSON-LD Schema (WebSite) -->
@@ -1068,7 +1068,7 @@
   <section id="home-section">
     <div class="hero">
       <div class="hero-eyebrow">Free Browser Tools</div>
-      <div class="hero-title">Convert, compress & enhance your files instantly</div>
+      <div class="hero-title">Convert, compress & manage your files instantly</div>
       <div class="hero-sub">
         All tools run 100% in your browser. No uploads, no signups, no waiting. 
         Perfect for photos, PDFs, documents and everyday tasks.
@@ -1204,20 +1204,6 @@
             <span class="tool-tag">Format</span>
           </div>
           <button class="btn" onclick="openTool('image-format')">Open Tool</button>
-        </div>
-      </div>
-
-      <div class="tool-card">
-        <div class="tool-card-icon icon-image">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
-        </div>
-        <div class="tool-card-content">
-          <h3>AI Photo Enhancer</h3>
-          <p>Brightness, contrast, saturation & sharpness with Auto Enhance.</p>
-          <div class="tool-tags">
-            <span class="tool-tag">Enhance</span>
-          </div>
-          <button class="btn" onclick="openTool('photo-enhance')">Open Tool</button>
         </div>
       </div>
 
@@ -1559,115 +1545,6 @@
       <div class="divider"></div>
       <div class="section-title">Preview</div>
       <img id="fmt-preview" class="preview-img mt-xs" alt="" />
-    </div>
-  </section>
-
-  <!-- 10. Photo Enhancer (AI-style) -->
-  <section id="panel-photo-enhance" class="tool-panel">
-    <div class="tool-header">
-      <div>
-        <h2>AI Photo Enhancer</h2>
-        <p>
-          Image quality improvement, noise reduction, color boost, upscaling,
-          face enhancement, batch processing & old photo restoration — all in your browser.
-        </p>
-      </div>
-      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
-    </div>
-
-    <div class="section">
-      <div class="field">
-        <label>Single image (for live preview)</label>
-        <input id="enhance-input" type="file" accept="image/*" />
-        <small>Select one image to preview all enhancements.</small>
-      </div>
-
-      <div class="field">
-        <label>Batch images (optional)</label>
-        <input id="enhance-batch-input" type="file" accept="image/*" multiple />
-        <small>Batch processing: apply the same settings to multiple photos and auto-download results.</small>
-      </div>
-
-      <div class="flex flex-wrap gap-sm mt-xs">
-        <div class="field" style="flex:1 1 150px;max-width:220px;">
-          <label>Quality boost (overall)</label>
-          <input id="enhance-quality" type="range" min="0" max="100" value="40" />
-          <small><span id="enhance-quality-label">40</span> — sharpness, contrast & clarity</small>
-        </div>
-
-        <div class="field" style="flex:1 1 150px;max-width:220px;">
-          <label>Noise reduction</label>
-          <input id="enhance-noise" type="range" min="0" max="100" value="30" />
-          <small><span id="enhance-noise-label">30</span> — clean low-light / grainy photos</small>
-        </div>
-
-        <div class="field" style="flex:1 1 150px;max-width:220px;">
-          <label>Color enhancement</label>
-          <input id="enhance-color" type="range" min="0" max="100" value="35" />
-          <small><span id="enhance-color-label">35</span> — richer colors without oversaturation</small>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-sm mt-xs">
-        <div class="field" style="flex:1 1 150px;max-width:200px;">
-          <label>Upscaling (resolution)</label>
-          <select id="enhance-upscale">
-            <option value="1">1× (no upscale)</option>
-            <option value="1.5">1.5×</option>
-            <option value="2">2×</option>
-          </select>
-          <small>Upscale small / low-res photos before enhancement.</small>
-        </div>
-
-        <div class="field" style="flex:1 1 150px;max-width:220px;">
-          <label>
-            <input id="enhance-face" type="checkbox" checked />
-            Face enhancement
-          </label>
-          <small>Extra clarity, contrast & color on the central face area.</small>
-        </div>
-
-        <div class="field" style="flex:1 1 150px;max-width:220px;">
-          <label>
-            <input id="enhance-restore" type="checkbox" />
-            Old photo restoration
-          </label>
-          <small>Fix faded photos: more contrast + cleaner whites.</small>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-sm mt-xs">
-        <button class="btn btn-outline" onclick="applyEnhanceSingle()">Apply to current image</button>
-        <button class="btn btn-outline" onclick="autoEnhanceSmart()">AI-style auto enhance</button>
-        <button class="btn" onclick="enhanceBatch()">Enhance batch images</button>
-      </div>
-
-      <div id="enhance-status" class="status mt-xs"></div>
-
-      <a id="enhance-download" class="download-link" href="#" style="display:none;" download="enhanced.png">
-        ⬇ Download enhanced image
-      </a>
-
-      <div class="hint mt-xs">
-        • Image quality improvement = combination of clarity, sharpness & contrast.  
-        • Noise reduction uses a smart blur + detail mix.  
-        • Restoration mode is tuned for scanned / old / faded photos.
-      </div>
-
-      <div class="divider"></div>
-      <div class="section-title">Preview</div>
-      <div class="preview-row">
-        <div style="flex:1;">
-          <div class="pill-small">Original</div>
-          <img id="enhance-original" class="preview-img mt-xs" alt="" />
-          <div id="enhance-meta-original" class="hint mt-xs"></div>
-        </div>
-        <div style="flex:1;">
-          <div class="pill-small">Enhanced</div>
-          <canvas id="enhance-canvas" class="preview-img mt-xs"></canvas>
-          <div id="enhance-meta-new" class="hint mt-xs"></div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -2604,333 +2481,8 @@
       status.textContent='Conversion failed (format may not be supported on this browser).';
       status.className='status error';
     }
-  }
-      // ---------- 10. PHOTO ENHANCER (ADVANCED AI-STYLE, MOBILE SAFE) ----------
-  let enhanceImg = null;
-  let enhanceOriginalURL = null;
-  const enhanceCanvas = document.getElementById('enhance-canvas');
-  const enhanceCtx = enhanceCanvas.getContext('2d');
-
-  const enhanceStatus = document.getElementById('enhance-status');
-  const enhanceDownloadLink = document.getElementById('enhance-download');
-  const enhanceOriginalImg = document.getElementById('enhance-original');
-  const metaOriginal = document.getElementById('enhance-meta-original');
-  const metaNew = document.getElementById('enhance-meta-new');
-
-  // Mobile detect → বড় image limit করে দেবো
-  const isMobile =
-    /Android|webOS|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent) ||
-    window.innerWidth < 768;
-  const MAX_ENHANCE_DIM = isMobile ? 1400 : 2200; // longer side cap (px)
-
-  // slider label updates
-  document.getElementById('enhance-quality').addEventListener('input',(e)=>{
-    document.getElementById('enhance-quality-label').textContent = e.target.value;
-  });
-  document.getElementById('enhance-noise').addEventListener('input',(e)=>{
-    document.getElementById('enhance-noise-label').textContent = e.target.value;
-  });
-  document.getElementById('enhance-color').addEventListener('input',(e)=>{
-    document.getElementById('enhance-color-label').textContent = e.target.value;
-  });
-
-  // single image load
-  document.getElementById('enhance-input').addEventListener('change', async (e)=>{
-    const file = e.target.files[0];
-    enhanceDownloadLink.style.display = 'none';
-    metaNew.textContent = '';
-    if(!file){
-      enhanceImg = null;
-      enhanceOriginalURL = null;
-      enhanceOriginalImg.src = '';
-      enhanceCanvas.width = enhanceCanvas.height = 0;
-      enhanceStatus.textContent = '';
-      return;
     }
-    const url = await readFileAsDataURL(file);
-    enhanceOriginalURL = url;
-    enhanceImg = await loadImageFromDataURL(url);
-    enhanceOriginalImg.src = url;
-
-    // শুধু initial preview, real processing will use capped size
-    enhanceCanvas.width = enhanceImg.width;
-    enhanceCanvas.height = enhanceImg.height;
-    enhanceCtx.drawImage(enhanceImg,0,0);
-
-    metaOriginal.textContent = `Original: ${enhanceImg.width}×${enhanceImg.height}px`;
-    enhanceStatus.textContent = 'Image loaded. Adjust sliders and click “Apply to current image”.';
-    enhanceStatus.className = 'status';
-  });
-
-  function getEnhanceOptions(){
-    return {
-      quality: parseInt(document.getElementById('enhance-quality').value) || 0,
-      noise: parseInt(document.getElementById('enhance-noise').value)   || 0,
-      color: parseInt(document.getElementById('enhance-color').value)   || 0,
-      upscale: parseFloat(document.getElementById('enhance-upscale').value) || 1,
-      faceEnhance: document.getElementById('enhance-face').checked,
-      restore: document.getElementById('enhance-restore').checked
-    };
-  }
-
-  // 3×3 blur helper for noise reduction
-  function blurImageData(src, w, h){
-    const out = new Uint8ClampedArray(src.length);
-    const idx = (x,y)=> (y*w+x)*4;
-    for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){
-        let r=0,g=0,b=0,a=0,count=0;
-        for(let ky=-1;ky<=1;ky++){
-          for(let kx=-1;kx<=1;kx++){
-            const nx=x+kx, ny=y+ky;
-            if(nx<0||ny<0||nx>=w||ny>=h) continue;
-            const i4 = idx(nx,ny);
-            r+=src[i4]; g+=src[i4+1]; b+=src[i4+2]; a+=src[i4+3];
-            count++;
-          }
-        }
-        const o4 = idx(x,y);
-        out[o4]   = r/count;
-        out[o4+1] = g/count;
-        out[o4+2] = b/count;
-        out[o4+3] = a/count;
-      }
-    }
-    return out;
-  }
-
-  // main enhancement pipeline on an HTMLImageElement (OPTIMIZED)
-  async function runEnhancementOnImage(img, opts){
-    const {quality, noise, color, upscale, faceEnhance, restore} = opts;
-
-    // ১) Upscale + size cap একসাথে
-    const userScale = Math.max(1, upscale || 1);
-    let w = img.width * userScale;
-    let h = img.height * userScale;
-
-    const longSide = Math.max(w, h);
-    if(longSide > MAX_ENHANCE_DIM){
-      const s = MAX_ENHANCE_DIM / longSide;
-      w = Math.round(w * s);
-      h = Math.round(h * s);
-    }
-
-    w = Math.max(1, Math.round(w));
-    h = Math.max(1, Math.round(h));
-
-    enhanceCanvas.width = w;
-    enhanceCanvas.height = h;
-    enhanceCtx.imageSmoothingEnabled = true;
-    enhanceCtx.imageSmoothingQuality = 'high';
-    enhanceCtx.drawImage(img, 0, 0, w, h);
-
-    let imgData = enhanceCtx.getImageData(0,0,w,h);
-    const data = imgData.data;
-    const original = new Uint8ClampedArray(data); // keep copy for noise/restore
-
-    const qFactor = (quality||0)/100;
-    const colorFactor = (color||0)/100;
-    const noiseStrength = Math.min(0.7, (noise||0)/100);
-
-    // noise slider কম থাকলে blur skip → fast
-    let blurred = null;
-    if(noiseStrength > 0.18){
-      blurred = blurImageData(original, w, h);
-    }
-
-    // face area ellipse (soft region)
-    const faceCX = w / 2;
-    const faceCY = h * 0.45;
-    const faceRX = w * 0.3;
-    const faceRY = h * 0.45;
-
-    for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){
-        const i = (y*w + x)*4;
-        let r = original[i];
-        let g = original[i+1];
-        let b = original[i+2];
-        const a = original[i+3];
-
-        // noise reduction: mix with blurred copy
-        if(blurred){
-          r = r*(1-noiseStrength) + blurred[i]*noiseStrength;
-          g = g*(1-noiseStrength) + blurred[i+1]*noiseStrength;
-          b = b*(1-noiseStrength) + blurred[i+2]*noiseStrength;
-        }
-
-        // base quality: brightness + contrast
-        const bright = 10*qFactor;
-        const contrast = 1 + 0.4*qFactor;
-        r = r*contrast + bright;
-        g = g*contrast + bright;
-        b = b*contrast + bright;
-
-        // color enhancement (saturation)
-        const grey = 0.299*r+0.587*g+0.114*b;
-        const satBoost = 1 + 0.8*colorFactor;
-        r = grey + (r-grey)*satBoost;
-        g = grey + (g-grey)*satBoost;
-        b = grey + (b-grey)*satBoost;
-
-        // old-photo restoration
-        if(restore){
-          const restoreC = 1.1;
-          r = (r-128)*restoreC + 128;
-          g = (g-128)*restoreC + 128;
-          b = (b-128)*restoreC + 128;
-
-          const avg = (r+g+b)/3;
-          const warm = (r+g)/2;
-          const cast = warm - avg;
-          r -= cast*0.3;
-          g -= cast*0.2;
-        }
-
-        // face enhancement (soft boost near center)
-        if(faceEnhance){
-          const dx = (x - faceCX)/faceRX;
-          const dy = (y - faceCY)/faceRY;
-          const dist = dx*dx + dy*dy;
-          if(dist < 1){
-            const t = 1 - dist;               // center = 1, edge = 0
-            const feC = 1 + 0.25*t*qFactor;   // extra contrast
-            const feB = 5*t*qFactor;         // extra brightness
-            r = (r-128)*feC + 128 + feB;
-            g = (g-128)*feC + 128 + feB;
-            b = (b-128)*feC + 128 + feB;
-          }
-        }
-
-        data[i]   = Math.max(0,Math.min(255,r));
-        data[i+1] = Math.max(0,Math.min(255,g));
-        data[i+2] = Math.max(0,Math.min(255,b));
-        data[i+3] = a;
-      }
-    }
-
-    // sharpening শুধু quality বেশি হলে
-    if(qFactor > 0.25){
-      const amount = qFactor*0.6;
-      const src = new Uint8ClampedArray(data);
-      const idx = (x,y)=>(y*w+x)*4;
-      const k = [0,-1,0,-1,5,-1,0,-1,0];
-
-      for(let y=1;y<h-1;y++){
-        for(let x=1;x<w-1;x++){
-          let rr=0,gg=0,bb=0,ki=0;
-          for(let ky=-1;ky<=1;ky++){
-            for(let kx=-1;kx<=1;kx++){
-              const i4 = idx(x+kx,y+ky);
-              const wght = k[ki++];
-              rr += src[i4]*wght;
-              gg += src[i4+1]*wght;
-              bb += src[i4+2]*wght;
-            }
-          }
-          const i4 = idx(x,y);
-          data[i4]   = data[i4]*(1-amount)   + rr*amount;
-          data[i4+1] = data[i4+1]*(1-amount) + gg*amount;
-          data[i4+2] = data[i4+2]*(1-amount) + bb*amount;
-        }
-      }
-      // clamp again
-      for(let i=0;i<data.length;i+=4){
-        data[i]   = Math.max(0,Math.min(255,data[i]));
-        data[i+1] = Math.max(0,Math.min(255,data[i+1]));
-        data[i+2] = Math.max(0,Math.min(255,data[i+2]));
-      }
-    }
-
-    imgData.data.set(data);
-    enhanceCtx.putImageData(imgData,0,0);
-
-    return new Promise((resolve)=>{
-      enhanceCanvas.toBlob(blob=>{
-        if(!blob){
-          resolve({blob:null,url:null,w,h});
-        }else{
-          const url = URL.createObjectURL(blob);
-          resolve({blob,url,w,h});
-        }
-      },'image/png');
-    });
-  }
-
-  async function applyEnhanceSingle(){
-    if(!enhanceImg){
-      alert('Please select a single image first.');
-      return;
-    }
-    enhanceStatus.textContent = 'Enhancing image (mobile-safe mode)...';
-    enhanceStatus.className = 'status';
-    enhanceDownloadLink.style.display = 'none';
-    metaNew.textContent = '';
-
-    try{
-      const opts = getEnhanceOptions();
-      const {blob,url,w,h} = await runEnhancementOnImage(enhanceImg, opts);
-      if(!blob){
-        enhanceStatus.textContent = 'Enhancement failed.';
-        enhanceStatus.className = 'status error';
-        return;
-      }
-      enhanceDownloadLink.href = url;
-      enhanceDownloadLink.style.display = 'inline-flex';
-      metaNew.textContent = `Enhanced: ${w}×${h}px (preview-optimized)`;
-      enhanceStatus.textContent = 'Done. Preview updated — you can download the enhanced image.';
-      enhanceStatus.className = 'status success';
-    }catch(err){
-      console.error(err);
-      enhanceStatus.textContent = 'Enhancement failed. Try a smaller image or different settings.';
-      enhanceStatus.className = 'status error';
-    }
-  }
-
-  // smart preset similar to “one click AI enhance”
-  function autoEnhanceSmart(){
-    document.getElementById('enhance-quality').value = 55;
-    document.getElementById('enhance-noise').value   = 40;
-    document.getElementById('enhance-color').value   = 45;
-    document.getElementById('enhance-upscale').value = '1.5';
-    document.getElementById('enhance-face').checked  = true;
-    document.getElementById('enhance-restore').checked = false;
-    document.getElementById('enhance-quality-label').textContent = '55';
-    document.getElementById('enhance-noise-label').textContent   = '40';
-    document.getElementById('enhance-color-label').textContent   = '45';
-    applyEnhanceSingle();
-  }
-
-  // batch processing: apply same settings to many images (also capped)
-  async function enhanceBatch(){
-    const input = document.getElementById('enhance-batch-input');
-    const files = Array.from(input.files || []);
-    const opts = getEnhanceOptions();
-    if(!files.length){
-      alert('Select one or more images in the “Batch images” field first.');
-      return;
-    }
-    enhanceStatus.textContent = `Enhancing ${files.length} image(s)... they will download one by one. (Mobile-safe size)`;
-    enhanceStatus.className = 'status';
-
-    for(let i=0;i<files.length;i++){
-      const file = files[i];
-      try{
-        enhanceStatus.textContent = `Enhancing image ${i+1} of ${files.length}...`;
-        const img = await loadImageFromFile(file);
-        const {blob} = await runEnhancementOnImage(img, opts);
-        if(blob){
-          const nameBase = file.name.replace(/\.[^.]+$/,'') || 'image';
-          downloadBlob(blob, `enhanced-${nameBase}.png`);
-        }
-      }catch(err){
-        console.error(err);
-      }
-    }
-    enhanceStatus.textContent = 'Batch processing finished. Check your downloads folder.';
-    enhanceStatus.className = 'status success';
-  }
-  // ---------- 12. PHOTO / PDF → TABLE → CSV (Photo to Excel lite) ----------
+    // ---------- 12. PHOTO / PDF → TABLE → CSV (Photo to Excel lite) ----------
   let photoExcelCsvUrl = null;
 
   function buildCsvFromPlainText(text){
