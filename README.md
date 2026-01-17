@@ -49,3 +49,4 @@ No installation required.
 
 ## 📝 License
 This project is open-source and free to use.
+<!-- synced from local machine -->
