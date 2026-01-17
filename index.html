@@ -938,14 +938,29 @@
     background:var(--bg-soft);
   }
 
-  /* Day Mode Tool Card with Icon Layout */
+  /* Day Mode Tool Card Layout (same structure as night mode) */
   body.day-mode .tool-card{
     flex-direction:row;
     align-items:flex-start;
     gap:0.875rem;
     padding:1rem 1.125rem;
   }
-  body.day-mode .tool-card-icon{
+  body.day-mode .tool-card-content{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:0.35rem;
+  }
+  /* ========== NIGHT MODE TOOL CARD ICONS ========== */
+  /* Show icons in night mode with premium dark styling */
+  .tool-card{
+    flex-direction:row;
+    align-items:flex-start;
+    gap:0.875rem;
+    padding:1rem 1.125rem;
+  }
+  .tool-card-icon{
     flex-shrink:0;
     width:44px;
     height:44px;
@@ -953,12 +968,50 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    background:#f0fdf4;
-    border:1px solid #d1fae5;
+    background:rgba(16,185,129,0.08);
+    border:1px solid rgba(16,185,129,0.15);
   }
-  body.day-mode .tool-card-icon svg{
+  .tool-card-icon svg{
     width:24px;
     height:24px;
+  }
+  .tool-card-icon.icon-image{
+    background:rgba(251,191,36,0.08);
+    border-color:rgba(251,191,36,0.18);
+  }
+  .tool-card-icon.icon-image svg{color:#fbbf24;}
+  .tool-card-icon.icon-pdf{
+    background:rgba(248,113,113,0.08);
+    border-color:rgba(248,113,113,0.18);
+  }
+  .tool-card-icon.icon-pdf svg{color:#f87171;}
+  .tool-card-icon.icon-security{
+    background:rgba(129,140,248,0.08);
+    border-color:rgba(129,140,248,0.18);
+  }
+  .tool-card-icon.icon-security svg{color:#818cf8;}
+  .tool-card-icon.icon-social{
+    background:rgba(244,114,182,0.08);
+    border-color:rgba(244,114,182,0.18);
+  }
+  .tool-card-icon.icon-social svg{color:#f472b6;}
+  .tool-card-icon.icon-text{
+    background:rgba(52,211,153,0.08);
+    border-color:rgba(52,211,153,0.18);
+  }
+  .tool-card-icon.icon-text svg{color:#34d399;}
+  .tool-card-content{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:0.35rem;
+  }
+
+  /* Day Mode overrides for icon colors */
+  body.day-mode .tool-card-icon{
+    background:#f0fdf4;
+    border:1px solid #d1fae5;
   }
   body.day-mode .tool-card-icon.icon-image{background:#fef3c7;border-color:#fde68a;}
   body.day-mode .tool-card-icon.icon-image svg{color:#d97706;}
@@ -970,16 +1023,6 @@
   body.day-mode .tool-card-icon.icon-social svg{color:#db2777;}
   body.day-mode .tool-card-icon.icon-text{background:#d1fae5;border-color:#a7f3d0;}
   body.day-mode .tool-card-icon.icon-text svg{color:#059669;}
-  body.day-mode .tool-card-content{
-    flex:1;
-    min-width:0;
-    display:flex;
-    flex-direction:column;
-    gap:0.35rem;
-  }
-  /* Hide icons in night mode */
-  .tool-card-icon{display:none;}
-  body.day-mode .tool-card-icon{display:flex;}
 
 </style>
 
