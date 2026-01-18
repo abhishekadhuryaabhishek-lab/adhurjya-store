@@ -1,2 +1,58 @@
-// Service worker removed to prevent evaluation errors in some environments.
-// The tool uses blob URLs to handle cross-origin worker issues.
+/*! coi-serviceworker.js - v0.1.7 - MIT License */
+if (typeof window === 'undefined') {
+    self.addEventListener("install", () => self.skipWaiting());
+    self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
+    self.addEventListener("fetch", (event) => {
+        if (event.request.cache === "only-if-cached" && event.request.mode !== "same-origin") {
+            return;
+        }
+
+        event.respondWith(
+            fetch(event.request)
+                .then((response) => {
+                    if (response.status === 0) {
+                        return response;
+                    }
+
+                    const newHeaders = new Headers(response.headers);
+                    newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
+                    newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
+
+                    return new Response(response.body, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: newHeaders,
+                    });
+                })
+                .catch((e) => console.error(e))
+        );
+    });
+} else {
+    (() => {
+        const script = document.currentScript;
+        const reloadedBySelf = window.sessionStorage.getItem("coiReloadedBySelf");
+        window.sessionStorage.removeItem("coiReloadedBySelf");
+
+        if (reloadedBySelf) {
+            console.warn("COI: Reloaded by self, but still not isolated. Check your headers.");
+        }
+
+        if (window.crossOriginIsolated) return;
+
+        if ("serviceWorker" in navigator) {
+            window.sessionStorage.setItem("coiReloadedBySelf", "true");
+            navigator.serviceWorker.register(script.src).then((registration) => {
+                console.log("COI: Service worker registered with scope: ", registration.scope);
+
+                registration.addEventListener("updatefound", () => {
+                    window.location.reload();
+                });
+
+                if (registration.active && !navigator.serviceWorker.controller) {
+                    window.location.reload();
+                }
+            });
+        }
+    })();
+}
