@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Video Compressor — Adhurjya Store</title>
+<script src="../coi-serviceworker.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Professional video compression tool. Compress MP4, WebM, MOV videos while preserving quality. 100% browser-side.">
 
@@ -334,7 +335,7 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
 
       ffmpeg = createFFmpeg({ 
         log: true,
-        corePath: '/ffmpeg/ffmpeg-core.js'
+        corePath: window.location.origin + '/ffmpeg/ffmpeg-core.js'
       });
       
       ffmpeg.setProgress(({ ratio }) => {
