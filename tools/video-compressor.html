@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video Compressor — Adhurjya Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Smart compress videos without losing visual quality. 100% browser-side using FFmpeg.wasm. No uploads, no server. Free video compressor by Adhurjya Store.">
+
+<style>
+:root{
+  --accent:#22c55e;
+  --bg:#020617;
+  --card:#0f172a;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --border:#1e293b;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:linear-gradient(160deg,#020617,#020b25,#041b2d);
+  color:var(--text);
+  min-height:100vh;
+}
+header{
+  position:sticky;top:0;z-index:50;
+  background:#020617;
+  border-bottom:1px solid var(--border);
+}
+.header-inner{
+  max-width:1100px;margin:auto;
+  padding:14px 24px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:10px;
+}
+.brand{font-weight:700}
+.brand-sub{font-size:12px;color:var(--muted)}
+.back{color:var(--accent);text-decoration:none;font-size:14px}
+.container{max-width:1100px;margin:auto;padding:24px}
+h1{text-align:center;margin-bottom:8px;font-size:1.75rem}
+.subtitle{text-align:center;color:var(--muted);margin-bottom:24px;font-size:0.9rem}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:20px;
+  border:1px solid var(--border);
+}
+.card-title{font-weight:600;margin-bottom:12px;font-size:1rem}
+label{font-weight:500;display:block;margin-bottom:6px;font-size:0.9rem}
+.field{margin-bottom:16px}
+input[type="file"]{
+  width:100%;padding:12px;border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg);color:var(--text);
+  font-size:14px;cursor:pointer;
+}
+select{
+  width:100%;padding:12px;border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg);color:var(--text);
+  font-size:14px;
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 24px;font-size:15px;font-weight:500;
+  border:none;border-radius:10px;
+  background:var(--accent);color:#000;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn:hover:not(:disabled){background:#16a34a;transform:translateY(-1px)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-outline{
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-outline:hover:not(:disabled){background:rgba(255,255,255,0.05)}
+.flex-row{display:flex;flex-wrap:wrap;gap:12px}
+.flex-row>*{flex:1 1 200px}
+.progress-container{
+  margin-top:16px;
+  background:var(--bg);
+  border-radius:8px;
+  overflow:hidden;
+  height:8px;
+}
+.progress-bar{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--accent),#34d399);
+  transition:width 0.2s;
+}
+.status{
+  margin-top:12px;
+  font-size:0.85rem;
+  color:var(--muted);
+  min-height:20px;
+}
+.status.error{color:#f87171}
+.status.success{color:#4ade80}
+.preview-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
+  margin-top:16px;
+}
+.preview-box{
+  background:var(--bg);
+  border-radius:10px;
+  padding:12px;
+  border:1px solid var(--border);
+}
+.preview-label{
+  font-size:0.75rem;
+  color:var(--muted);
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.preview-box video{
+  width:100%;
+  border-radius:8px;
+  background:#000;
+  max-height:300px;
+}
+.meta-info{
+  margin-top:8px;
+  font-size:0.8rem;
+  color:var(--muted);
+}
+.meta-info span{
+  display:inline-block;
+  margin-right:12px;
+}
+.download-btn{
+  margin-top:16px;
+  width:100%;
+}
+.loading-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,0.9);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+}
+.loading-overlay.hidden{display:none}
+.spinner{
+  width:48px;height:48px;
+  border:4px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{margin-top:16px;color:var(--muted);font-size:0.9rem}
+.hint{font-size:0.75rem;color:var(--muted);margin-top:4px}
+.trust{text-align:center;font-size:13px;color:var(--muted);margin-top:24px;padding-bottom:24px}
+.size-badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:6px;
+  font-size:0.8rem;
+  font-weight:500;
+}
+.size-badge.original{background:rgba(248,113,113,0.15);color:#f87171}
+.size-badge.compressed{background:rgba(74,222,128,0.15);color:#4ade80}
+.savings{
+  text-align:center;
+  padding:12px;
+  background:rgba(74,222,128,0.1);
+  border-radius:8px;
+  margin-top:12px;
+  font-size:0.9rem;
+  color:#4ade80;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading FFmpeg.wasm (~25MB)...</div>
+  <div class="hint" style="margin-top:8px">First load may take a moment</div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="brand">Adhurjya Store</div>
+      <div class="brand-sub">All-in-one browser tools</div>
+    </div>
+    <a href="../index.html" class="back">← Back to tools</a>
+  </div>
+</header>
+
+<div class="container">
+  <h1>Video Compressor</h1>
+  <p class="subtitle">Smart compress videos without losing visual quality — 100% in your browser</p>
+
+  <div class="card">
+    <div class="card-title">Upload Video</div>
+    <div class="field">
+      <label>Select MP4 or WebM file</label>
+      <input type="file" id="video-input" accept="video/mp4,video/webm,.mp4,.webm">
+      <div class="hint">Recommended: Up to 100MB for smooth processing</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Compression Settings</div>
+    <div class="flex-row">
+      <div class="field">
+        <label>Quality</label>
+        <select id="quality-select">
+          <option value="high">High (Best quality, larger file)</option>
+          <option value="medium" selected>Medium (Balanced)</option>
+          <option value="low">Low (Smallest file)</option>
+        </select>
+        <div class="hint">High=CRF 20-23, Medium=CRF 24-27, Low=CRF 28-32</div>
+      </div>
+      <div class="field">
+        <label>Resolution</label>
+        <select id="resolution-select">
+          <option value="original" selected>Original</option>
+          <option value="1080">1080p (Full HD)</option>
+          <option value="720">720p (HD)</option>
+          <option value="480">480p (SD)</option>
+          <option value="360">360p</option>
+          <option value="240">240p</option>
+          <option value="144">144p</option>
+        </select>
+        <div class="hint">Downscaling uses high-quality Lanczos filter</div>
+      </div>
+    </div>
+
+    <button id="compress-btn" class="btn" disabled>
+      Compress Video
+    </button>
+
+    <div class="progress-container" id="progress-container" style="display:none">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div id="status" class="status"></div>
+  </div>
+
+  <div class="card" id="result-card" style="display:none">
+    <div class="card-title">Result</div>
+    
+    <div class="preview-grid">
+      <div class="preview-box">
+        <div class="preview-label">Original</div>
+        <video id="original-video" controls></video>
+        <div class="meta-info">
+          <span id="original-size"></span>
+          <span id="original-resolution"></span>
+        </div>
+      </div>
+      <div class="preview-box">
+        <div class="preview-label">Compressed</div>
+        <video id="compressed-video" controls></video>
+        <div class="meta-info">
+          <span id="compressed-size"></span>
+          <span id="compressed-resolution"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="savings" class="savings"></div>
+
+    <button id="download-btn" class="btn download-btn">
+      Download Compressed Video
+    </button>
+  </div>
+
+  <div class="trust">
+    Part of <strong>Adhurjya Store</strong> • Runs fully in your browser • No uploads to any server
+  </div>
+</div>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+
+<script>
+const { FFmpeg } = FFmpegWASM;
+const { fetchFile } = FFmpegUtil;
+
+let ffmpeg = null;
+let inputFile = null;
+let compressedBlob = null;
+let originalVideoURL = null;
+
+const loadingOverlay = document.getElementById('loading-overlay');
+const videoInput = document.getElementById('video-input');
+const qualitySelect = document.getElementById('quality-select');
+const resolutionSelect = document.getElementById('resolution-select');
+const compressBtn = document.getElementById('compress-btn');
+const progressContainer = document.getElementById('progress-container');
+const progressBar = document.getElementById('progress-bar');
+const statusEl = document.getElementById('status');
+const resultCard = document.getElementById('result-card');
+const originalVideo = document.getElementById('original-video');
+const compressedVideo = document.getElementById('compressed-video');
+const originalSizeEl = document.getElementById('original-size');
+const originalResEl = document.getElementById('original-resolution');
+const compressedSizeEl = document.getElementById('compressed-size');
+const compressedResEl = document.getElementById('compressed-resolution');
+const savingsEl = document.getElementById('savings');
+const downloadBtn = document.getElementById('download-btn');
+
+async function initFFmpeg() {
+  ffmpeg = new FFmpeg();
+  
+  ffmpeg.on('log', ({ message }) => {
+    console.log(message);
+  });
+  
+  ffmpeg.on('progress', ({ progress, time }) => {
+    const pct = Math.round(progress * 100);
+    progressBar.style.width = pct + '%';
+    statusEl.textContent = `Encoding: ${pct}% complete`;
+  });
+
+  try {
+    await ffmpeg.load({
+      coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+      wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+    });
+    loadingOverlay.classList.add('hidden');
+  } catch (err) {
+    console.error('FFmpeg load error:', err);
+    loadingOverlay.querySelector('.loading-text').textContent = 'Failed to load FFmpeg. Please refresh.';
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function getVideoMeta(videoEl) {
+  return new Promise((resolve) => {
+    if (videoEl.readyState >= 1) {
+      resolve({ width: videoEl.videoWidth, height: videoEl.videoHeight });
+    } else {
+      videoEl.addEventListener('loadedmetadata', () => {
+        resolve({ width: videoEl.videoWidth, height: videoEl.videoHeight });
+      }, { once: true });
+    }
+  });
+}
+
+videoInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) {
+    compressBtn.disabled = true;
+    return;
+  }
+  
+  inputFile = file;
+  compressBtn.disabled = false;
+  resultCard.style.display = 'none';
+  
+  if (originalVideoURL) URL.revokeObjectURL(originalVideoURL);
+  originalVideoURL = URL.createObjectURL(file);
+  originalVideo.src = originalVideoURL;
+  
+  originalSizeEl.innerHTML = `<span class="size-badge original">${formatBytes(file.size)}</span>`;
+  
+  const meta = await getVideoMeta(originalVideo);
+  originalResEl.textContent = `${meta.width}×${meta.height}`;
+});
+
+function getCRF(quality) {
+  switch (quality) {
+    case 'high': return 22;
+    case 'medium': return 26;
+    case 'low': return 30;
+    default: return 26;
+  }
+}
+
+function getScaleFilter(targetHeight, originalWidth, originalHeight) {
+  if (targetHeight === 'original') return null;
+  
+  const target = parseInt(targetHeight);
+  if (originalHeight <= target) return null;
+  
+  return `scale=-2:${target}:flags=lanczos`;
+}
+
+async function compressVideo() {
+  if (!ffmpeg || !inputFile) return;
+  
+  compressBtn.disabled = true;
+  progressContainer.style.display = 'block';
+  progressBar.style.width = '0%';
+  statusEl.textContent = 'Preparing...';
+  statusEl.className = 'status';
+  resultCard.style.display = 'none';
+
+  try {
+    const inputName = 'input' + (inputFile.name.endsWith('.webm') ? '.webm' : '.mp4');
+    const outputName = 'output.mp4';
+    
+    statusEl.textContent = 'Loading video into memory...';
+    const fileData = await fetchFile(inputFile);
+    await ffmpeg.writeFile(inputName, fileData);
+    
+    const meta = await getVideoMeta(originalVideo);
+    const quality = qualitySelect.value;
+    const resolution = resolutionSelect.value;
+    const crf = getCRF(quality);
+    const scaleFilter = getScaleFilter(resolution, meta.width, meta.height);
+    
+    let ffmpegArgs = [
+      '-i', inputName,
+      '-c:v', 'libx264',
+      '-preset', 'medium',
+      '-crf', crf.toString(),
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-movflags', '+faststart',
+      '-g', '60',
+      '-bf', '2'
+    ];
+    
+    if (scaleFilter) {
+      ffmpegArgs.push('-vf', scaleFilter);
+    }
+    
+    ffmpegArgs.push('-y', outputName);
+    
+    statusEl.textContent = 'Compressing video...';
+    await ffmpeg.exec(ffmpegArgs);
+    
+    statusEl.textContent = 'Reading compressed file...';
+    const data = await ffmpeg.readFile(outputName);
+    compressedBlob = new Blob([data.buffer], { type: 'video/mp4' });
+    
+    if (compressedVideo.src) URL.revokeObjectURL(compressedVideo.src);
+    compressedVideo.src = URL.createObjectURL(compressedBlob);
+    
+    const compMeta = await getVideoMeta(compressedVideo);
+    compressedSizeEl.innerHTML = `<span class="size-badge compressed">${formatBytes(compressedBlob.size)}</span>`;
+    compressedResEl.textContent = `${compMeta.width}×${compMeta.height}`;
+    
+    const savedBytes = inputFile.size - compressedBlob.size;
+    const savedPct = ((savedBytes / inputFile.size) * 100).toFixed(1);
+    
+    if (savedBytes > 0) {
+      savingsEl.textContent = `Saved ${formatBytes(savedBytes)} (${savedPct}% smaller)`;
+      savingsEl.style.display = 'block';
+    } else {
+      savingsEl.textContent = 'No size reduction achieved with current settings';
+      savingsEl.style.background = 'rgba(248,113,113,0.1)';
+      savingsEl.style.color = '#f87171';
+      savingsEl.style.display = 'block';
+    }
+    
+    resultCard.style.display = 'block';
+    statusEl.textContent = 'Compression complete!';
+    statusEl.className = 'status success';
+    
+    await ffmpeg.deleteFile(inputName);
+    await ffmpeg.deleteFile(outputName);
+    
+  } catch (err) {
+    console.error('Compression error:', err);
+    statusEl.textContent = 'Compression failed: ' + (err.message || 'Unknown error');
+    statusEl.className = 'status error';
+  } finally {
+    compressBtn.disabled = false;
+    progressContainer.style.display = 'none';
+  }
+}
+
+function downloadCompressed() {
+  if (!compressedBlob) return;
+  
+  const originalName = inputFile.name.replace(/\.[^.]+$/, '');
+  const fileName = `${originalName}_compressed.mp4`;
+  
+  const url = URL.createObjectURL(compressedBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+compressBtn.addEventListener('click', compressVideo);
+downloadBtn.addEventListener('click', downloadCompressed);
+
+initFFmpeg();
+</script>
+
+</body>
+</html>
