@@ -1,3 +1,32 @@
+(function() {
+  const coi = {
+    shouldRegister: () => !window.crossOriginIsolated,
+    doReload: () => window.location.reload(),
+    quiet: false,
+  };
+
+  const n = navigator;
+
+  if (coi.shouldRegister()) {
+    if (window.isSecureContext && n.serviceWorker) {
+      n.serviceWorker.register(window.document.currentScript.src)
+        .then(registration => {
+          if (!coi.quiet) console.log("COOP/COEP Service Worker registered.");
+          if (registration.active && !n.serviceWorker.controller) {
+            coi.doReload();
+          }
+        });
+    }
+  }
+
+  if (n.serviceWorker) {
+    n.serviceWorker.addEventListener("controllerchange", () => {
+      if (!coi.quiet) console.log("COOP/COEP Service Worker controllerchange, reloading.");
+      coi.doReload();
+    });
+  }
+})();
+
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", (event) => {
