@@ -156,7 +156,7 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
 <div id="loading-overlay" class="loading-overlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loading-text">Loading Video Encoder...</div>
-  <div class="loading-hint" id="loading-hint">Downloading FFmpeg (~31MB). Cached for future use.</div>
+  <div class="loading-hint" id="loading-hint">Initializing FFmpeg core. Cached for future use.</div>
   <div class="loading-progress">
     <div class="loading-progress-bar" id="loading-progress-bar"></div>
   </div>
@@ -178,7 +178,7 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
 
   <div class="card">
     <div class="card-title">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
       Upload Video
     </div>
     
@@ -287,12 +287,10 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
   </div>
 </div>
 
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+<script src="/ffmpeg/ffmpeg.min.js"></script>
 <script>
 (async function() {
-  const { FFmpeg } = FFmpegWASM;
-  const { fetchFile, toBlobURL } = FFmpegUtil;
+  const { createFFmpeg, fetchFile } = FFmpeg;
   
   let ffmpeg = null;
   let inputFile = null;
@@ -331,33 +329,21 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
 
   async function initFFmpeg() {
     try {
-      ffmpeg = new FFmpeg();
-      
-      ffmpeg.on('log', ({ message }) => {
-        console.log('[FFmpeg]', message);
+      loadingText.textContent = 'Initializing Video Encoder...';
+      loadingProgressBar.style.width = '30%';
+
+      ffmpeg = createFFmpeg({ 
+        log: true,
+        corePath: '/ffmpeg/ffmpeg-core.js'
       });
       
-      ffmpeg.on('progress', ({ progress }) => {
-        const pct = Math.min(99, Math.round(progress * 100));
+      ffmpeg.setProgress(({ ratio }) => {
+        const pct = Math.min(99, Math.round(ratio * 100));
         progressBar.style.width = pct + '%';
         progressPercent.textContent = pct + '%';
       });
 
-      loadingText.textContent = 'Downloading FFmpeg core...';
-      loadingProgressBar.style.width = '20%';
-
-      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-      
-      const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript');
-      loadingProgressBar.style.width = '60%';
-      
-      const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm');
-      loadingProgressBar.style.width = '95%';
-
-      await ffmpeg.load({
-        coreURL,
-        wasmURL
-      });
+      await ffmpeg.load();
       
       loadingProgressBar.style.width = '100%';
       ffmpegLoaded = true;
@@ -366,7 +352,7 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
     } catch (err) {
       console.error('FFmpeg load error:', err);
       loadingText.innerHTML = '<span style="color:#f87171">Failed to load encoder</span>';
-      loadingHint.innerHTML = err.message + '<br><br><a href="../index.html" style="color:#22c55e">← Return to tools</a>';
+      loadingHint.innerHTML = (err.message || 'Unknown error') + '<br><br><a href="../index.html" style="color:#22c55e">← Return to tools</a>';
       document.querySelector('.spinner').style.display = 'none';
     }
   }
@@ -483,7 +469,7 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
       
       progressStatus.textContent = 'Loading video into memory...';
       const fileData = await fetchFile(inputFile);
-      await ffmpeg.writeFile(inputName, fileData);
+      ffmpeg.FS('writeFile', inputName, fileData);
       
       const meta = await getVideoMeta(originalVideo);
       const quality = qualitySelect.value;
@@ -510,13 +496,13 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
       ffmpegArgs.push('-y', outputName);
       
       progressStatus.textContent = 'Encoding video... This may take a while.';
-      await ffmpeg.exec(ffmpegArgs);
+      await ffmpeg.run(...ffmpegArgs);
       
       progressStatus.textContent = 'Finalizing...';
       progressBar.style.width = '100%';
       progressPercent.textContent = '100%';
       
-      const data = await ffmpeg.readFile(outputName);
+      const data = ffmpeg.FS('readFile', outputName);
       compressedBlob = new Blob([data.buffer], { type: 'video/mp4' });
       
       if (compressedVideo.src) URL.revokeObjectURL(compressedVideo.src);
@@ -546,8 +532,8 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(3
       progressStatus.className = 'progress-status success';
       
       try {
-        await ffmpeg.deleteFile(inputName);
-        await ffmpeg.deleteFile(outputName);
+        ffmpeg.FS('unlink', inputName);
+        ffmpeg.FS('unlink', outputName);
       } catch (e) {}
       
       resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
