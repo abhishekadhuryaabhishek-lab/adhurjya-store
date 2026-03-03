@@ -1,0 +1,7 @@
+{
+  "projectId": "b9452b0f-81a3-4b95-bb61-32ee17a00a92",
+  "createdAt": 1737099000000,
+  "startupCommands": [
+    "npx --yes serve -l 3000"
+  ]
+}

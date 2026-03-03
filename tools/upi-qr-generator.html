@@ -1,0 +1,994 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI QR Generator - Adhurjya Store</title>
+  <meta name="description" content="Ultra-premium UPI QR generator with live preview, logo overlay, history, high-resolution PNG/PDF export, and one-tap sharing.">
+  <style>
+    :root {
+      --bg-color: #0a0f1a;
+      --card-bg: #111827;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-color: #10b981;
+      --border-color: rgba(148, 163, 184, 0.26);
+      --open-btn-gradient: linear-gradient(135deg, #10b981, #059669);
+      --soft-bg: rgba(15, 23, 42, 0.82);
+    }
+
+    body.day-mode {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent-color: #059669;
+      --border-color: rgba(148, 163, 184, 0.42);
+      --open-btn-gradient: linear-gradient(135deg, #22c55e, #14b8a6);
+      --soft-bg: #f1f5f9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(900px 460px at 100% -18%, rgba(16, 185, 129, 0.18), transparent 42%), var(--bg-color);
+      color: var(--text-primary);
+    }
+
+    .container {
+      width: min(1120px, 94vw);
+      margin: 0 auto;
+      padding: 24px 0 44px;
+    }
+
+    .top-bar { margin-bottom: 14px; }
+
+    .open-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      color: #ffffff !important;
+      background: var(--open-btn-gradient) !important;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 0.2s ease;
+    }
+
+    .open-tool-btn:hover { transform: translateY(-1px); }
+
+    h1 {
+      margin: 8px 0 8px;
+      text-align: center;
+      font-size: clamp(1.42rem, 2.8vw, 2.06rem);
+    }
+
+    .subtitle {
+      margin: 0 auto 16px;
+      text-align: center;
+      color: var(--text-secondary);
+      max-width: 860px;
+      font-size: 0.94rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.84rem;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      padding: 11px 12px;
+      font: inherit;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+
+    input:focus-visible,
+    select:focus-visible {
+      border-color: color-mix(in srgb, var(--accent-color) 60%, var(--border-color) 40%);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 22%, transparent 78%);
+    }
+
+    input[type="file"]::file-selector-button {
+      border: 0;
+      padding: 8px 10px;
+      margin-right: 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      background: var(--open-btn-gradient) !important;
+      color: #ffffff !important;
+      cursor: pointer;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+      background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 34px;
+    }
+
+    select option {
+      background: var(--card-bg);
+      color: var(--text-primary);
+    }
+    .amount-chips,
+    .logo-chips,
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      background: var(--soft-bg);
+      color: var(--text-primary);
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent-color) 52%, var(--border-color) 48%);
+    }
+
+    .chip.active {
+      border-color: color-mix(in srgb, var(--accent-color) 65%, var(--border-color) 35%);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 24%, transparent 76%);
+    }
+
+    .option-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      user-select: none;
+    }
+
+    .toggle input {
+      width: auto;
+      transform: scale(1.1);
+      accent-color: var(--accent-color);
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .action-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--open-btn-gradient) !important;
+      color: #ffffff !important;
+    }
+
+    .action-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: saturate(1.08);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.56;
+      cursor: not-allowed;
+      transform: none;
+      filter: grayscale(0.1);
+    }
+
+    .preview-card {
+      height: 100%;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .preview-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+    }
+
+    .qr-preview {
+      min-height: 390px;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--accent-color) 22%, var(--border-color) 78%);
+      background: color-mix(in srgb, var(--soft-bg) 72%, transparent);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 12px;
+      position: relative;
+    }
+
+    #qr-canvas {
+      width: min(100%, 360px);
+      height: auto;
+      display: none;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+    }
+
+    .preview-empty {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    .payload {
+      margin: 0;
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      word-break: break-all;
+      background: color-mix(in srgb, var(--soft-bg) 70%, transparent);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .history-wrap {
+      margin-top: 6px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
+    }
+
+    .history-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+    }
+
+    .mini-btn {
+      width: auto;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .mini-btn:hover {
+      border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color) 60%);
+      color: var(--text-primary);
+    }
+
+    .privacy-note {
+      margin: 8px 0 0;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .kbd-note {
+      margin: 0;
+      font-size: 0.77rem;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    .hidden-engine {
+      position: absolute;
+      inset: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .grid,
+      .option-row,
+      .action-grid { grid-template-columns: 1fr; }
+
+      .container {
+        width: min(1120px, 96vw);
+        padding-top: 16px;
+      }
+
+      .qr-preview { min-height: 320px; }
+      .kbd-note { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <a class="open-tool-btn" href="../index.html">Back to Dashboard</a>
+    </div>
+
+    <h1>UPI QR Generator</h1>
+    <p class="subtitle">Generate premium UPI QR instantly with custom styles, amount presets, logo overlays, local history, and share-ready PNG/PDF export.</p>
+
+    <section class="layout">
+      <div class="card">
+        <div class="grid">
+          <div class="field">
+            <label for="payee-name">Payee Name</label>
+            <input id="payee-name" type="text" placeholder="Adhurjya Store" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="upi-id">UPI ID</label>
+            <input id="upi-id" type="text" placeholder="name@bank" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="amount">Amount (INR)</label>
+            <input id="amount" type="number" min="0" step="0.01" placeholder="100.00" inputmode="decimal">
+            <div class="amount-chips" id="amount-chips">
+              <button type="button" class="chip" data-amount="10">&#8377;10</button>
+              <button type="button" class="chip" data-amount="50">&#8377;50</button>
+              <button type="button" class="chip" data-amount="100">&#8377;100</button>
+              <button type="button" class="chip" data-amount="200">&#8377;200</button>
+              <button type="button" class="chip" data-amount="500">&#8377;500</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="note">Payment Note</label>
+            <input id="note" type="text" placeholder="Order Payment" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="option-row" style="margin-top:12px;">
+          <div class="field">
+            <label for="fg-color">QR Foreground Color</label>
+            <input id="fg-color" type="color" value="#111827" aria-label="QR foreground color">
+          </div>
+          <div class="field">
+            <label for="bg-color">QR Background Color</label>
+            <input id="bg-color" type="color" value="#ffffff" aria-label="QR background color">
+          </div>
+          <div class="field">
+            <label for="dot-style">Dot Style</label>
+            <select id="dot-style">
+              <option value="square" selected>Square Dots</option>
+              <option value="rounded">Rounded Dots</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="logo-upload">Custom Logo Upload</label>
+            <input id="logo-upload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>Preset Logos</label>
+          <div class="logo-chips" id="logo-presets">
+            <button type="button" class="chip active" data-logo="none">No Logo</button>
+            <button type="button" class="chip" data-logo="phonepe">PhonePe</button>
+            <button type="button" class="chip" data-logo="gpay">GPay</button>
+            <button type="button" class="chip" data-logo="paytm">Paytm</button>
+          </div>
+        </div>
+
+        <label class="toggle">
+          <input id="brand-watermark" type="checkbox" checked>
+          <span>Add "Powered by Adhurjya Store" watermark on QR</span>
+        </label>
+
+        <div class="action-grid">
+          <button id="generate-btn" class="action-btn" type="button">Generate</button>
+          <button id="download-png-btn" class="action-btn" type="button" disabled>Download PNG</button>
+          <button id="download-pdf-btn" class="action-btn" type="button" disabled>Download PDF Poster</button>
+          <button id="share-btn" class="action-btn" type="button" disabled>Share QR</button>
+        </div>
+
+        <p class="kbd-note">Shortcuts: <strong>Alt + G</strong> focus amount, <strong>Alt + D</strong> download PNG.</p>
+
+        <div class="history-wrap">
+          <div class="history-head">
+            <span>Recent Setups (last 5)</span>
+            <button id="clear-history-btn" class="mini-btn" type="button">Clear</button>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </div>
+      </div>
+
+      <div class="card preview-card">
+        <div class="preview-title">
+          <span>QR Preview</span>
+          <span id="status-text">Waiting for UPI ID + Name...</span>
+        </div>
+        <div class="qr-preview">
+          <canvas id="qr-canvas" width="1200" height="1200"></canvas>
+          <div id="preview-empty" class="preview-empty">Live preview appears instantly as you type payee name and UPI ID.</div>
+        </div>
+        <p id="upi-payload" class="payload">upi://pay?pa=&pn=&am=&tn=</p>
+        <p class="privacy-note">100% client-side processing. No payment or QR data is sent to any server.</p>
+      </div>
+    </section>
+
+    <div id="qr-engine" class="hidden-engine" aria-hidden="true"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script>
+    if (localStorage.getItem("theme") === "day") {
+      document.body.classList.add("day-mode");
+    }
+
+    const HISTORY_KEY = "adhurjya_upi_qr_history_v1";
+
+    const refs = {
+      payeeName: document.getElementById("payee-name"),
+      upiId: document.getElementById("upi-id"),
+      amount: document.getElementById("amount"),
+      note: document.getElementById("note"),
+      amountChips: document.getElementById("amount-chips"),
+      fgColor: document.getElementById("fg-color"),
+      bgColor: document.getElementById("bg-color"),
+      dotStyle: document.getElementById("dot-style"),
+      logoUpload: document.getElementById("logo-upload"),
+      logoPresets: document.getElementById("logo-presets"),
+      brandWatermark: document.getElementById("brand-watermark"),
+      generateBtn: document.getElementById("generate-btn"),
+      downloadPngBtn: document.getElementById("download-png-btn"),
+      downloadPdfBtn: document.getElementById("download-pdf-btn"),
+      shareBtn: document.getElementById("share-btn"),
+      clearHistoryBtn: document.getElementById("clear-history-btn"),
+      historyList: document.getElementById("history-list"),
+      qrCanvas: document.getElementById("qr-canvas"),
+      previewEmpty: document.getElementById("preview-empty"),
+      statusText: document.getElementById("status-text"),
+      payloadText: document.getElementById("upi-payload"),
+      qrEngine: document.getElementById("qr-engine")
+    };
+
+    const state = {
+      qr: null,
+      activeLogoKey: "none",
+      logoImage: null,
+      logoUrl: "",
+      payload: "",
+      hasValidCore: false,
+      qrBlob: null
+    };
+
+    const presetLogoSvg = {
+      phonepe: "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='56' fill='#5f259f'/><circle cx='128' cy='128' r='78' fill='white' opacity='0.16'/><text x='128' y='148' text-anchor='middle' font-size='92' font-family='Arial' font-weight='700' fill='white'>P</text></svg>",
+      gpay: "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='56' fill='white'/><rect x='10' y='10' width='236' height='236' rx='48' fill='none' stroke='#dbe4f3' stroke-width='10'/><text x='128' y='144' text-anchor='middle' font-size='72' font-family='Arial' font-weight='700' fill='#1a73e8'>G</text><text x='174' y='144' text-anchor='middle' font-size='48' font-family='Arial' font-weight='700' fill='#34a853'>P</text></svg>",
+      paytm: "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='56' fill='#f7fbff'/><rect x='10' y='10' width='236' height='236' rx='48' fill='none' stroke='#bfdbfe' stroke-width='10'/><text x='128' y='148' text-anchor='middle' font-size='56' font-family='Arial' font-weight='700' fill='#00baf2'>Pay</text><text x='188' y='148' text-anchor='middle' font-size='56' font-family='Arial' font-weight='700' fill='#0f172a'>tm</text></svg>"
+    };
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function makeBlobUrlFromSvg(svg) {
+      return URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    }
+
+    function loadImageFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Image load failed"));
+        img.src = url;
+      });
+    }
+
+    function formatAmountValue(raw) {
+      const n = Number(raw);
+      if (!Number.isFinite(n) || n <= 0) return "";
+      return n.toFixed(2);
+    }
+
+    function buildUpiPayload() {
+      const pa = refs.upiId.value.trim();
+      const pn = refs.payeeName.value.trim();
+      const am = formatAmountValue(refs.amount.value);
+      const tn = refs.note.value.trim();
+      const payload = "upi://pay?pa=" + encodeURIComponent(pa) + "&pn=" + encodeURIComponent(pn) + "&am=" + encodeURIComponent(am) + "&tn=" + encodeURIComponent(tn);
+      return { payload, pa, pn, am, tn, valid: Boolean(pa && pn) };
+    }
+
+    function initQrEngine() {
+      refs.qrEngine.innerHTML = "";
+      state.qr = new QRCode(refs.qrEngine, {
+        text: "upi://pay?pa=&pn=&am=&tn=",
+        width: 512,
+        height: 512,
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function getQrMatrix(payload) {
+      if (!state.qr) initQrEngine();
+      state.qr.makeCode(payload);
+      const model = state.qr._oQRCode;
+      if (!model || !Array.isArray(model.modules)) return null;
+      return model.modules;
+    }
+
+    function isFinderArea(row, col, count) {
+      const inTopLeft = row <= 8 && col <= 8;
+      const inTopRight = row <= 8 && col >= count - 9;
+      const inBottomLeft = row >= count - 9 && col <= 8;
+      return inTopLeft || inTopRight || inBottomLeft;
+    }
+
+    function drawRoundedDot(ctx, x, y, size) {
+      const r = size * 0.47;
+      ctx.beginPath();
+      ctx.arc(x + size / 2, y + size / 2, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function roundedRectPath(ctx, x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      if (typeof ctx.roundRect === "function") {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, rr);
+        return;
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+    function drawQrCanvas(payload) {
+      const modules = getQrMatrix(payload);
+      if (!modules) return false;
+
+      const canvas = refs.qrCanvas;
+      const ctx = canvas.getContext("2d", { alpha: false });
+      const width = canvas.width;
+      const height = canvas.height;
+      const hasWatermark = refs.brandWatermark.checked;
+      const fg = refs.fgColor.value;
+      const bg = refs.bgColor.value;
+      const rounded = refs.dotStyle.value === "rounded";
+
+      const qrAreaHeight = hasWatermark ? Math.floor(height * 0.9) : height;
+      const count = modules.length;
+      const quiet = 4;
+      const totalModules = count + quiet * 2;
+      const moduleSize = Math.floor(Math.min(width, qrAreaHeight) / totalModules);
+      const drawSize = moduleSize * totalModules;
+      const offsetX = Math.floor((width - drawSize) / 2);
+      const offsetY = Math.floor((qrAreaHeight - drawSize) / 2);
+
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = fg;
+
+      for (let row = 0; row < count; row += 1) {
+        for (let col = 0; col < count; col += 1) {
+          if (!modules[row][col]) continue;
+          const x = offsetX + (col + quiet) * moduleSize;
+          const y = offsetY + (row + quiet) * moduleSize;
+          if (rounded && !isFinderArea(row, col, count)) {
+            drawRoundedDot(ctx, x, y, moduleSize);
+          } else {
+            ctx.fillRect(x, y, moduleSize, moduleSize);
+          }
+        }
+      }
+
+      if (state.logoImage) {
+        const logoSize = Math.round(drawSize * 0.18);
+        const lx = Math.round((width - logoSize) / 2);
+        const ly = Math.round((qrAreaHeight - logoSize) / 2);
+        const pad = Math.round(logoSize * 0.12);
+
+        ctx.fillStyle = "#ffffff";
+        roundedRectPath(
+          ctx,
+          lx - pad,
+          ly - pad,
+          logoSize + pad * 2,
+          logoSize + pad * 2,
+          Math.max(12, Math.round(logoSize * 0.2))
+        );
+        ctx.fill();
+        ctx.drawImage(state.logoImage, lx, ly, logoSize, logoSize);
+      }
+
+      if (hasWatermark) {
+        ctx.fillStyle = fg;
+        ctx.font = "700 40px Inter, system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Powered by Adhurjya Store", width / 2, Math.floor(height * 0.95));
+      }
+
+      return true;
+    }
+
+    function updatePreviewState(success, message) {
+      refs.qrCanvas.style.display = success ? "block" : "none";
+      refs.previewEmpty.style.display = success ? "none" : "block";
+      refs.statusText.textContent = message;
+      refs.downloadPngBtn.disabled = !success;
+      refs.downloadPdfBtn.disabled = !success;
+      refs.shareBtn.disabled = !success;
+    }
+
+    function canvasToBlob(canvas, type) {
+      return new Promise((resolve) => canvas.toBlob(resolve, type, 1));
+    }
+
+    async function renderQrRealtime() {
+      const data = buildUpiPayload();
+      state.payload = data.payload;
+      state.hasValidCore = data.valid;
+      refs.payloadText.textContent = data.payload;
+
+      if (!data.valid) {
+        updatePreviewState(false, "Waiting for UPI ID + Name...");
+        state.qrBlob = null;
+        return;
+      }
+
+      const ok = drawQrCanvas(data.payload);
+      if (!ok) {
+        updatePreviewState(false, "QR engine unavailable.");
+        state.qrBlob = null;
+        return;
+      }
+
+      state.qrBlob = await canvasToBlob(refs.qrCanvas, "image/png");
+      updatePreviewState(true, "Live QR ready");
+    }
+
+    function getCurrentSetup() {
+      return {
+        payeeName: refs.payeeName.value.trim(),
+        upiId: refs.upiId.value.trim(),
+        amount: formatAmountValue(refs.amount.value),
+        note: refs.note.value.trim(),
+        fg: refs.fgColor.value,
+        bg: refs.bgColor.value,
+        dotStyle: refs.dotStyle.value,
+        brandWatermark: refs.brandWatermark.checked,
+        logoKey: state.activeLogoKey,
+        at: Date.now()
+      };
+    }
+
+    function saveHistory() {
+      const setup = getCurrentSetup();
+      if (!setup.payeeName || !setup.upiId) return;
+      let list = [];
+      try {
+        list = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      } catch (error) {
+        list = [];
+      }
+      list = list.filter((entry) => !(entry.upiId === setup.upiId && entry.amount === setup.amount && entry.note === setup.note));
+      list.unshift(setup);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 5)));
+      renderHistory();
+    }
+
+    function applySetup(setup) {
+      refs.payeeName.value = setup.payeeName || "";
+      refs.upiId.value = setup.upiId || "";
+      refs.amount.value = setup.amount || "";
+      refs.note.value = setup.note || "";
+      refs.fgColor.value = setup.fg || "#111827";
+      refs.bgColor.value = setup.bg || "#ffffff";
+      refs.dotStyle.value = setup.dotStyle || "square";
+      refs.brandWatermark.checked = Boolean(setup.brandWatermark);
+
+      if (setup.logoKey && setup.logoKey !== "upload") {
+        activateLogoPreset(setup.logoKey);
+      } else if (setup.logoKey === "upload") {
+        state.activeLogoKey = "upload";
+      } else {
+        activateLogoPreset("none");
+      }
+      renderQrRealtime();
+    }
+
+    function renderHistory() {
+      let list = [];
+      try {
+        list = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      } catch (error) {
+        list = [];
+      }
+
+      if (!list.length) {
+        refs.historyList.innerHTML = '<span class="chip">No history yet</span>';
+        return;
+      }
+
+      refs.historyList.innerHTML = list.map((entry, index) => {
+        const amount = entry.amount ? " - &#8377;" + escapeHtml(entry.amount) : "";
+        return '<button type="button" class="chip" data-history-index="' + index + '">' + escapeHtml(entry.payeeName || "Unknown") + amount + '</button>';
+      }).join("");
+    }
+
+    async function activateLogoPreset(key) {
+      state.activeLogoKey = key;
+      const chips = Array.from(refs.logoPresets.querySelectorAll(".chip"));
+      chips.forEach((chip) => chip.classList.toggle("active", chip.dataset.logo === key));
+
+      if (state.logoUrl) {
+        URL.revokeObjectURL(state.logoUrl);
+        state.logoUrl = "";
+      }
+
+      if (key === "none") {
+        state.logoImage = null;
+        await renderQrRealtime();
+        return;
+      }
+
+      const svg = presetLogoSvg[key];
+      if (!svg) {
+        state.logoImage = null;
+        await renderQrRealtime();
+        return;
+      }
+
+      const url = makeBlobUrlFromSvg(svg);
+      try {
+        state.logoImage = await loadImageFromUrl(url);
+      } catch (error) {
+        state.logoImage = null;
+      }
+      state.logoUrl = url;
+      await renderQrRealtime();
+    }
+
+    async function handleLogoUpload(file) {
+      if (!file) return;
+      if (state.logoUrl) {
+        URL.revokeObjectURL(state.logoUrl);
+        state.logoUrl = "";
+      }
+
+      const chips = Array.from(refs.logoPresets.querySelectorAll(".chip"));
+      chips.forEach((chip) => chip.classList.remove("active"));
+
+      const url = URL.createObjectURL(file);
+      try {
+        state.logoImage = await loadImageFromUrl(url);
+        state.logoUrl = url;
+        state.activeLogoKey = "upload";
+      } catch (error) {
+        state.logoImage = null;
+      }
+      await renderQrRealtime();
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1200);
+    }
+
+    async function downloadPng() {
+      if (!state.qrBlob) return;
+      downloadBlob(state.qrBlob, "adhurjya-upi-qr.png");
+    }
+    async function downloadPdfPoster() {
+      if (!state.qrBlob || !window.jspdf || !window.jspdf.jsPDF) return;
+      const jsPDF = window.jspdf.jsPDF;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const imgData = refs.qrCanvas.toDataURL("image/png");
+      const payee = refs.payeeName.value.trim() || "Payee";
+      const upi = refs.upiId.value.trim() || "";
+      const amount = formatAmountValue(refs.amount.value);
+      const note = refs.note.value.trim();
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(26);
+      pdf.text("Scan & Pay", 105, 24, { align: "center" });
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(13);
+      pdf.text(payee, 105, 34, { align: "center" });
+      if (upi) pdf.text("UPI: " + upi, 105, 41, { align: "center" });
+      if (amount) pdf.text("Amount: INR " + amount, 105, 48, { align: "center" });
+      if (note) pdf.text("Note: " + note, 105, 55, { align: "center" });
+
+      pdf.addImage(imgData, "PNG", 33, 60, 144, 144);
+      pdf.setFontSize(10);
+      pdf.text("Powered by Adhurjya Store", 105, 214, { align: "center" });
+      pdf.save("adhurjya-upi-poster.pdf");
+    }
+
+    async function shareQr() {
+      if (!state.qrBlob) return;
+      const file = new File([state.qrBlob], "adhurjya-upi-qr.png", { type: "image/png" });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: "UPI QR - Adhurjya Store",
+            text: state.payload,
+            files: [file]
+          });
+          return;
+        } catch (error) {}
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "UPI QR - Adhurjya Store",
+            text: state.payload
+          });
+          return;
+        } catch (error) {}
+      }
+
+      downloadPng();
+      alert("Web Share is unavailable on this device. PNG downloaded instead.");
+    }
+
+    function bindEvents() {
+      const realtimeFields = [
+        refs.payeeName,
+        refs.upiId,
+        refs.amount,
+        refs.note,
+        refs.fgColor,
+        refs.bgColor,
+        refs.dotStyle,
+        refs.brandWatermark
+      ];
+      realtimeFields.forEach((el) => el.addEventListener("input", renderQrRealtime));
+      refs.dotStyle.addEventListener("change", renderQrRealtime);
+      refs.brandWatermark.addEventListener("change", renderQrRealtime);
+
+      refs.amountChips.addEventListener("click", (event) => {
+        const chip = event.target.closest(".chip[data-amount]");
+        if (!chip) return;
+        refs.amount.value = chip.dataset.amount;
+        Array.from(refs.amountChips.querySelectorAll(".chip")).forEach((item) => {
+          item.classList.toggle("active", item === chip);
+        });
+        renderQrRealtime();
+      });
+
+      refs.logoPresets.addEventListener("click", (event) => {
+        const chip = event.target.closest(".chip[data-logo]");
+        if (!chip) return;
+        activateLogoPreset(chip.dataset.logo);
+      });
+
+      refs.logoUpload.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        handleLogoUpload(file);
+      });
+
+      refs.generateBtn.addEventListener("click", async () => {
+        await renderQrRealtime();
+        if (state.hasValidCore) {
+          saveHistory();
+          refs.statusText.textContent = "Generated and saved to recent history";
+        }
+      });
+
+      refs.downloadPngBtn.addEventListener("click", downloadPng);
+      refs.downloadPdfBtn.addEventListener("click", downloadPdfPoster);
+      refs.shareBtn.addEventListener("click", shareQr);
+
+      refs.clearHistoryBtn.addEventListener("click", () => {
+        localStorage.removeItem(HISTORY_KEY);
+        renderHistory();
+      });
+
+      refs.historyList.addEventListener("click", (event) => {
+        const chip = event.target.closest(".chip[data-history-index]");
+        if (!chip) return;
+        let list = [];
+        try {
+          list = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+        } catch (error) {
+          list = [];
+        }
+        const item = list[Number(chip.dataset.historyIndex)];
+        if (!item) return;
+        applySetup(item);
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (!event.altKey) return;
+        const key = event.key.toLowerCase();
+        if (key === "g") {
+          event.preventDefault();
+          refs.amount.focus();
+          refs.amount.select();
+        } else if (key === "d") {
+          event.preventDefault();
+          if (!refs.downloadPngBtn.disabled) {
+            downloadPng();
+          }
+        }
+      });
+    }
+
+    initQrEngine();
+    bindEvents();
+    renderHistory();
+    activateLogoPreset("none");
+    renderQrRealtime();
+  </script>
+</body>
+</html>

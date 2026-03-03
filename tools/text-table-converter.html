@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="../coi-serviceworker.js"></script>
+<title>Text ↔ Table Converter v1.4 – Adhurjya Tools</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Text, image & HTML table converter with sample data, Excel download, column alignment, drag & drop and A4 PDF export.">
+
+<!-- OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+
+<!-- Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --bg:#020617;--card:#020b29;--border:#1f2937;
+  --text:#e5e7eb;--muted:#9ca3af;--accent:#22c55e;--info:#38bdf8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg);color:var(--text);
+}
+.container{max-width:1200px;margin:auto;padding:20px}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:18px;margin-bottom:16px;
+}
+h1{margin:0 0 6px;font-size:1.45rem}
+p{margin:0 0 12px;font-size:.9rem;color:var(--muted)}
+textarea{
+  width:100%;min-height:160px;background:#020617;color:var(--text);
+  border:1px solid var(--border);border-radius:10px;
+  padding:12px;font-size:14px;
+}
+.controls,.actions,.align-controls{
+  display:flex;flex-wrap:wrap;gap:10px;margin-top:10px
+}
+select,button,label,input[type="file"]{
+  background:#020617;color:var(--text);
+  border:1px solid var(--border);border-radius:10px;
+  padding:8px 12px;font-size:14px;
+}
+button{cursor:pointer}
+.primary{
+  background:linear-gradient(135deg,#22c55e,#2dd4bf);
+  color:#020617;border:none;font-weight:600;
+}
+.table-wrap{
+  overflow:auto;border:1px solid var(--border);
+  border-radius:10px;margin-top:10px
+}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px}
+th{background:#041b2d}
+pre{white-space:pre-wrap}
+.status{margin-top:8px;font-size:13px;color:var(--info)}
+.drop-zone{
+  margin-top:10px;padding:18px;border:2px dashed var(--border);
+  border-radius:12px;text-align:center;color:var(--muted)
+}
+.drop-zone.dragover{border-color:var(--accent);color:var(--accent)}
+
+/* ===== GLOBAL HEADER ===== */
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:999;
+  background:linear-gradient(180deg,#020617,#020b25);
+  border-bottom:1px solid #1f2937;
+  margin-top:0;
+}
+.site-header .inner{
+  max-width:1200px;
+  margin:auto;
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.brand{
+  line-height:1.2;
+}
+.brand-title{
+  font-size:1.05rem;
+  font-weight:600;
+  color:#e5e7eb;
+}
+.brand-sub{
+  font-size:.8rem;
+  color:#9ca3af;
+}
+.back-link{
+  color:#22c55e;
+  font-size:.9rem;
+  text-decoration:none;
+  font-weight:500;
+}
+.back-link:hover{
+  text-decoration:underline;
+}
+</style>
+</head>
+
+<body>
+<header class="site-header">
+  <div class="inner">
+    <div class="brand">
+      <div class="brand-title">Adhurjya Store</div>
+      <div class="brand-sub">All-in-one browser tools</div>
+    </div>
+
+    <a href="/index.html" class="back-link">← Back to tools</a>
+  </div>
+</header>
+<div class="container">
+
+<div class="card">
+<h1>Text ↔ Table Converter</h1>
+<p>Convert text, images or HTML tables into clean tables, text, Excel or A4 PDF.</p>
+
+<textarea id="inputText" placeholder="Paste text, OCR result or HTML table here"></textarea>
+
+<div class="controls">
+  <select id="mode">
+    <option value="text-to-table">Text → Table</option>
+    <option value="table-to-text">Table → Text</option>
+  </select>
+
+  <select id="separator">
+    <option value="auto">Auto detect</option>
+    <option value="tab">Tab</option>
+    <option value="comma">Comma</option>
+    <option value="space">Space</option>
+  </select>
+
+  <label><input type="checkbox" id="header" checked> Header row</label>
+
+  <select id="exportType">
+    <option value="plain">Plain Text</option>
+    <option value="csv">CSV</option>
+  </select>
+
+  <button class="primary" onclick="convert()">Convert</button>
+  <button onclick="clearAll()">Clear All</button>
+  <button onclick="loadSampleData()">Load Sample Data</button>
+</div>
+
+<div class="controls">
+  <input type="file" id="fileInput" accept="image/*,.html" onchange="handleFile(this.files[0])">
+</div>
+
+<div class="drop-zone" id="dropZone">
+  Drag & Drop Image or HTML file here
+</div>
+
+<div class="align-controls">
+  <label>Column Align:
+    <select id="colAlign" onchange="applyAlignment()">
+      <option value="left">Left</option>
+      <option value="center">Center</option>
+      <option value="right">Right</option>
+    </select>
+  </label>
+</div>
+
+<div id="status" class="status"></div>
+</div>
+
+<div class="card">
+<h3>Output Preview</h3>
+<div id="preview" class="table-wrap"></div>
+
+<div class="actions">
+  <button onclick="copyOutput()">Copy Output</button>
+  <button onclick="downloadPDF()">Download PDF (A4)</button>
+  <button onclick="downloadExcel()">Download Excel (.xlsx)</button>
+</div>
+</div>
+
+</div>
+
+<script>
+/* SAMPLE DATA */
+const sampleTableText = `Name Title Department Employee_ID Year Salary
+Rahul Sharma Accounts EMP001 2019 28000
+Anita Verma Human_Resources EMP002 2020 32000
+Sourav Das IT EMP003 2018 45000
+Pooja Singh Marketing EMP004 2021 30000
+Amit Kumar Sales EMP005 2017 40000
+Neha Roy Customer_Support EMP006 2022 25000
+Rakesh Patel Logistics EMP007 2016 38000
+Kavita Sen Finance EMP008 2019 36000
+Arjun Malhotra Operations EMP009 2018 42000
+Priya Nair HR EMP010 2021 31000
+Vikash Gupta IT EMP011 2015 50000
+Sneha Iyer Marketing EMP012 2022 29000
+Manoj Yadav Sales EMP013 2016 41000
+Ritu Chatterjee Customer_Support EMP014 2020 27000
+Sanjay Mehta Admin EMP015 2014 46000`;
+
+let lastOutput="";
+
+/* HELPERS */
+function cleanOCRText(t){return t.replace(/(\d)\s*-\s*(\d)/g,"$1$2");}
+function detectSep(l){
+  if(l.includes("\t")) return "\t";
+  if(l.includes(",")) return ",";
+  if(/\s{2,}/.test(l)) return /\s{2,}/;
+  return " ";
+}
+
+/* LOAD SAMPLE */
+function loadSampleData(){
+  inputText.value = sampleTableText;
+  status.textContent = "✔ Sample data loaded. Click Convert.";
+}
+
+/* CONVERT */
+function convert(){
+  let text=inputText.value.trim(); if(!text) return;
+  status.textContent=""; preview.innerHTML=""; lastOutput="";
+  text=cleanOCRText(text); const isHTML=text.includes("<table");
+  if(mode.value==="table-to-text"&&!isHTML){
+    mode.value="text-to-table";
+    status.textContent="ℹ Plain text detected. Switched to Text → Table.";
+  }
+  if(mode.value==="text-to-table"){
+    const lines=text.split("\n").filter(l=>l.trim());
+    const sep=separator.value==="auto"?detectSep(lines[0]):
+      (separator.value==="tab"?"\t":separator.value==="comma"?",":" ");
+    let html="<table>";
+    lines.forEach((l,i)=>{
+      html+="<tr>";
+      l.trim().split(sep).filter(Boolean).forEach(c=>{
+        html+=(header.checked&&i===0)?`<th>${c}</th>`:`<td>${c}</td>`;
+      });
+      html+="</tr>";
+    });
+    html+="</table>";
+    preview.innerHTML=html; lastOutput=html; applyAlignment();
+  }else{
+  // ✅ FIRST: preview এর ভিতরে যদি table already থাকে
+  const table = preview.querySelector("table");
+  if(table){
+    let out = "";
+    [...table.querySelectorAll("tr")].forEach(r=>{
+      out += [...r.children]
+        .map(c=>c.textContent.trim())
+        .join(exportType.value==="csv"?",":" | ")
+        + "\n";
+    });
+    preview.innerHTML = `<pre>${out}</pre>`;
+    lastOutput = out;
+    return;
+  }
+
+  // ✅ FALLBACK: যদি user HTML table paste করে
+  const t = document.createElement("div");
+  t.innerHTML = text;
+  let out = "";
+  [...t.querySelectorAll("tr")].forEach(r=>{
+    out += [...r.children]
+      .map(c=>c.textContent.trim())
+      .join(exportType.value==="csv"?",":" | ")
+      + "\n";
+  });
+  preview.innerHTML = `<pre>${out}</pre>`;
+  lastOutput = out;
+}
+}
+
+/* ALIGN */
+function applyAlignment(){
+  preview.querySelectorAll("td,th").forEach(c=>{
+    c.style.textAlign=colAlign.value;
+  });
+}
+
+/* FILE HANDLER */
+async function handleFile(file){
+  if(!file) return; status.textContent="Processing file...";
+  if(file.type.startsWith("image/")){
+    const r=await Tesseract.recognize(file,"eng");
+    inputText.value=cleanOCRText(r.data.text);
+    status.textContent="✔ Image OCR completed."; return;
+  }
+  if(file.name.endsWith(".html")){
+    const fr=new FileReader();
+    fr.onload=()=>{inputText.value=fr.result;status.textContent="✔ HTML loaded.";};
+    fr.readAsText(file);
+  }
+}
+
+/* DRAG & DROP */
+dropZone.ondragover=e=>{e.preventDefault();dropZone.classList.add("dragover");};
+dropZone.ondragleave=()=>dropZone.classList.remove("dragover");
+dropZone.ondrop=e=>{
+  e.preventDefault();dropZone.classList.remove("dragover");
+  handleFile(e.dataTransfer.files[0]);
+};
+
+/* ACTIONS */
+function copyOutput(){if(lastOutput)navigator.clipboard.writeText(lastOutput);}
+function clearAll(){
+  inputText.value=""; preview.innerHTML=""; status.textContent="";
+  lastOutput=""; fileInput.value="";
+}
+
+/* PDF */
+function downloadPDF(){
+  if(!preview.innerHTML) return;
+  const w=window.open("","","width=800,height=600");
+  w.document.write(`<html><head><style>
+  body{font-family:Arial;padding:20px}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #000;padding:6px;font-size:12px}
+  th{background:#eee}
+  @page{size:A4;margin:20mm}
+  </style></head><body>${preview.innerHTML}</body></html>`);
+  w.document.close(); w.print();
+}
+
+/* EXCEL */
+function downloadExcel(){
+  const t=preview.querySelector("table"); if(!t) return;
+  const wb=XLSX.utils.table_to_book(t,{sheet:"Sheet1"});
+  XLSX.writeFile(wb,"table.xlsx");
+}
+</script>
+
+<script src="../site-protection.js"></script>
+</body>
+</html>

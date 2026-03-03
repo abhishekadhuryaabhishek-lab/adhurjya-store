@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to Speech Engine - Adhurjya Store</title>
+  <meta name="description" content="Premium browser-side TTS with OCR, UTF-8 translation, file reading, live progress, bookmarks, and MP3 download.">
+  <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<script src="../mespeak/mespeak.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0a0f1a;
+      --card-bg: #111827;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-color: #10b981;
+      --border-color: rgba(148, 163, 184, 0.28);
+      --open-btn-gradient: linear-gradient(135deg, #10b981, #059669);
+      --soft: rgba(15, 23, 42, 0.65);
+      --input: rgba(15, 23, 42, 0.56);
+      --word-highlight: rgba(16, 185, 129, 0.35);
+    }
+    body.day-mode {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent-color: #059669;
+      --border-color: rgba(148, 163, 184, 0.42);
+      --open-btn-gradient: linear-gradient(135deg, #22c55e, #14b8a6);
+      --soft: #f1f5f9;
+      --input: #ffffff;
+      --word-highlight: rgba(20, 184, 166, 0.22);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(980px 420px at 100% -22%, rgba(16, 185, 129, 0.2), transparent 45%), var(--bg-color);
+      color: var(--text-primary);
+    }
+    .container { width: min(1160px, 94vw); margin: 0 auto; padding: 24px 0 48px; }
+    .top-bar { margin-bottom: 12px; }
+    .hero { text-align: center; margin: 6px 0 14px; }
+    h1 { margin: 0; font-size: clamp(1.45rem, 2.7vw, 2.2rem); }
+    .hero p { margin: 8px auto 0; max-width: 760px; color: var(--text-secondary); font-size: 0.94rem; }
+    .layout { display: grid; grid-template-columns: 1.7fr 1fr; gap: 14px; align-items: start; }
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+    .card h2 { margin: 0 0 10px; font-size: 1.02rem; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .card-head h2 { margin: 0; }
+    .mini-btn { max-width: 160px; }
+    .grid-2, .grid-3 { display: grid; gap: 10px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    label { display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    textarea, select, input, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--input);
+      color: var(--text-primary);
+      padding: 10px 11px;
+      font: inherit;
+      transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+    }
+    .editor { position: relative; border: 1px solid var(--border-color); border-radius: 12px; background: var(--input); overflow: hidden; }
+    #highlight, #txt { min-height: 250px; margin: 0; padding: 14px; line-height: 1.6; font-size: 1rem; font-family: inherit; letter-spacing: 0.1px; white-space: pre-wrap; word-break: break-word; }
+    #highlight { position: absolute; inset: 0; z-index: 1; color: transparent; pointer-events: none; overflow: hidden; }
+    #highlight mark { color: transparent; background: var(--word-highlight); border-radius: 4px; }
+    #txt { position: relative; z-index: 2; background: transparent; border: 0; resize: vertical; outline: 0; }
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .pill { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 999px; background: var(--soft); font-size: 0.82rem; color: var(--text-secondary); }
+    .actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    .actions2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    .action-btn { background: var(--open-btn-gradient) !important; color: #ffffff !important; border: 0; font-weight: 700; cursor: pointer; }
+    .action-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.04); }
+    .action-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: none; }
+    .range { display: flex; align-items: center; gap: 8px; }
+    .range input[type="range"] { padding: 0; border: 0; background: transparent; flex: 1; }
+    .val { min-width: 42px; text-align: right; font-size: 0.85rem; color: var(--text-secondary); }
+    .progress { margin-top: 10px; height: 10px; border-radius: 999px; border: 1px solid var(--border-color); background: var(--soft); overflow: hidden; }
+    #bar { height: 100%; width: 0; background: var(--open-btn-gradient); transition: width 0.15s linear; }
+    #status { margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--soft); font-size: 0.9rem; color: var(--text-secondary); min-height: 40px; }
+    .open-tool-btn { text-decoration: none; display: inline-flex; align-items: center; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color); }
+    .tiny { margin: 6px 0 0; color: var(--text-secondary); font-size: 0.78rem; }
+    @media (max-width: 1040px) { .layout { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .grid-2, .grid-3, .actions, .actions2 { grid-template-columns: 1fr; } .container { width: min(1160px, 95vw); padding-top: 16px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar"><a class="open-tool-btn action-btn" href="../index.html">← Back to Dashboard</a></div>
+    <section class="hero">
+      <h1>Text to Speech Engine</h1>
+      <p>Browser-side Bengali, Hindi, and English TTS with OCR, TXT/PDF import, UTF-8 safe translation, live stats, resume bookmark, and direct MP3 export.</p>
+    </section>
+    <div class="layout">
+      <main>
+        <section class="card">
+          <div class="card-head">
+            <h2>Input</h2>
+            <button id="clearAll" type="button" class="action-btn mini-btn">Clear All</button>
+          </div>
+          <div class="editor">
+            <pre id="highlight" aria-hidden="true"></pre>
+            <textarea id="txt" placeholder="Type, paste, OCR, or import text here..."></textarea>
+          </div>
+          <div class="meta">
+            <span class="pill" id="wordP">Words: 0</span>
+            <span class="pill" id="charP">Characters: 0</span>
+            <span class="pill" id="timeP">Estimated Time: 0s</span>
+            <span class="pill" id="curP">Current Word: -</span>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Controls</h2>
+          <div class="grid-3">
+            <div><label for="lang">Language</label><select id="lang"></select></div>
+            <div><label for="voice">Voice</label><select id="voice"></select></div>
+            <div><label for="trg">Translate To</label><select id="trg"><option value="bn">Bengali</option><option value="en">English</option></select></div>
+            <div><label for="rate">Rate</label><div class="range"><input id="rate" type="range" min="0.5" max="2" step="0.05" value="1"><span id="rateV" class="val">1.00</span></div></div>
+            <div><label for="pitch">Pitch</label><div class="range"><input id="pitch" type="range" min="0.5" max="2" step="0.05" value="1"><span id="pitchV" class="val">1.00</span></div></div>
+            <div><label for="vol">Volume</label><div class="range"><input id="vol" type="range" min="0" max="1" step="0.01" value="1"><span id="volV" class="val">1.00</span></div></div>
+          </div>
+          <div class="actions">
+            <button id="speak" type="button" class="action-btn">Speak</button>
+            <button id="pause" type="button" class="action-btn">Pause</button>
+            <button id="resume" type="button" class="action-btn">Resume</button>
+            <button id="stop" type="button" class="action-btn">Stop</button>
+            <button id="translate" type="button" class="action-btn">Translate</button>
+            <button id="download" type="button" class="action-btn">Download Audio (MP3)</button>
+            <button id="resumeMark" type="button" class="action-btn">Resume Bookmark</button>
+          </div>
+        </section>
+      </main>
+      <aside>
+        <section class="card">
+          <h2>OCR + File Reader</h2>
+          <div class="grid-2">
+            <div><label for="fTxt">Upload TXT/PDF</label><input id="fTxt" type="file" accept=".txt,.pdf,text/plain,application/pdf"></div>
+            <div><label for="fImg">Upload Image</label><input id="fImg" type="file" accept="image/*"></div>
+          </div>
+          <div class="actions2">
+            <button id="import" type="button" class="action-btn">Import File Text</button>
+            <button id="ocr" type="button" class="action-btn">OCR to Text</button>
+          </div>
+          <p class="tiny">OCR via Tesseract.js and PDF parsing via pdf.js. 100% client-side.</p>
+        </section>
+        <section class="card">
+          <h2>Stats</h2>
+          <div class="meta">
+            <span class="pill" id="progressP">Progress: 0%</span>
+            <span class="pill" id="stateP">State: Idle</span>
+          </div>
+          <div class="progress"><div id="bar"></div></div>
+          <div id="status" role="status" aria-live="polite">Ready.</div>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <script>
+    (function() { "use strict";
+      if (localStorage.getItem("theme") === "day") document.body.classList.add("day-mode");
+      window.addEventListener("storage", (e) => { if (e.key === "theme") document.body.classList.toggle("day-mode", e.newValue === "day"); });
+
+      const $ = (id) => document.getElementById(id);
+      const synth = window.speechSynthesis;
+      const KEY = "adhurjya_tts_bookmark_v2";
+
+      const txt = $("txt"), highlight = $("highlight"), lang = $("lang"), voice = $("voice"), trg = $("trg");
+      const rate = $("rate"), pitch = $("pitch"), vol = $("vol"), status = $("status");
+      const bar = $("bar"), progressP = $("progressP"), stateP = $("stateP");
+      const wordP = $("wordP"), charP = $("charP"), timeP = $("timeP"), curP = $("curP");
+
+      let voices = [], tokens = [], utterance = null;
+      let charIndex = 0, wordIndex = -1, speaking = false, paused = false;
+      let speechStarted = false;
+      let meSpeakLoading = false;
+      const meSpeakVoiceLoaded = {};
+      const meSpeakVoiceMap = { "bn": "bn", "hi": "hi", "en": "en-us" };
+
+      if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+      const priority = [["bn-IN", "Bengali (India)"], ["bn-BD", "Bengali (Bangladesh)"], ["hi-IN", "Hindi (India)"], ["en-IN", "English (India)"], ["en-US", "English (US)"], ["en-GB", "English (UK)"]];
+
+      const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      const ensureUtf8 = (text) => { try { return new TextDecoder("utf-8", { fatal: false }).decode(new TextEncoder().encode(String(text || ""))); } catch (e) { return String(text || ""); } };
+      const setStatus = (msg, tone) => { status.textContent = msg; status.style.color = tone === "error" ? "#ef4444" : tone === "warn" ? "#f59e0b" : tone === "ok" ? "#22c55e" : "var(--text-secondary)"; };
+      const langBase = (code) => String(code || "").toLowerCase().split("-")[0];
+
+      // Promise-based voice loader to avoid polling and race conditions
+      function waitForVoices() {
+        return new Promise(resolve => {
+          let v = synth.getVoices();
+          if (v && v.length) return resolve(v);
+          const handler = () => {
+            const vs = synth.getVoices();
+            if (vs && vs.length) {
+              synth.onvoiceschanged = null;
+              resolve(vs);
+            }
+          };
+          synth.onvoiceschanged = handler;
+          // safety timeout: resolve whatever is available after 2s
+          setTimeout(() => resolve(synth.getVoices()), 2000);
+        });
+      }
+
+      async function refreshVoices() {
+        try {
+          voices = await waitForVoices();
+          console.log('Available voices:', voices);
+          setStatus("System voices loaded.", "ok");
+          const langs = [...new Set(voices.map(v => v.lang))];
+          const sortedLangs = [...priority.filter(p => langs.includes(p[0])), ...langs.filter(l => !priority.some(p => p[0] === l)).map(l => [l, l])];
+          const currentLang = lang.value || "bn-IN";
+          lang.innerHTML = sortedLangs.map(([code, name]) => `<option value="${code}" ${code === currentLang ? "selected" : ""}>${name}</option>`).join('');
+          populateVoices();
+        } catch (err) {
+          console.error('refreshVoices error', err);
+          setStatus('Failed to load system voices.', 'warn');
+        }
+      }
+
+      function populateVoices() {
+        const selectedLang = lang.value;
+        const filtered = voices.filter(v => v.lang === selectedLang);
+        const list = (filtered.length ? filtered : voices).map(v => `<option value="${esc(v.name)}">${esc(v.name)} (${v.localService ? 'Local' : 'Online'})</option>`).join('');
+        voice.innerHTML = list;
+        if (!voice.value && voice.options.length) voice.value = voice.options[0].value;
+      }
+
+      function selectBestVoice(langCode) {
+        const base = String(langCode || '').split('-')[0];
+        return (
+          voices.find(v => v.lang === langCode) ||
+          voices.find(v => v.lang && v.lang.startsWith(base)) ||
+          voices.find(v => v.localService) ||
+          voices[0] || null
+        );
+      }
+
+      async function speak() {
+        const text = txt.value.trim();
+        if (!text) {
+          setStatus("Please enter text to speak.", "warn");
+          return;
+        }
+
+        synth.cancel();
+        await new Promise(r => setTimeout(r, 80));
+
+        utterance = new SpeechSynthesisUtterance(text);
+
+        const selectedVoice =
+          voices.find(v => v.name === voice.value) ||
+          voices.find(v => v.lang === lang.value) ||
+          voices.find(v => v.localService) ||
+          voices[0];
+
+        if (!selectedVoice) {
+          setStatus("No voice available in browser.", "error");
+          return;
+        }
+
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+        utterance.rate = parseFloat(rate.value);
+        utterance.pitch = parseFloat(pitch.value);
+        utterance.volume = parseFloat(vol.value);
+
+        speechStarted = false;
+
+        utterance.onstart = () => {
+            speechStarted = true;
+            stateP.textContent = "State: Speaking";
+            setStatus("Speaking...", "ok");
+        };
+
+        utterance.onend = () => {
+            stateP.textContent = "State: Idle";
+
+            if (!speechStarted) {
+                setStatus("Speech engine failed to start. Try another voice.", "error");
+            } else {
+                setStatus("Speech finished.", "ok");
+            }
+
+            speechStarted = false;
+        };
+
+        utterance.onerror = (e) => {
+            console.warn("Speech error:", e);
+
+            if (e && e.error === "synthesis-failed") {
+                const fallback =
+                    voices.find(v => v.localService) ||
+                    voices[0];
+
+                if (fallback && fallback.name !== utterance.voice.name) {
+                    utterance.voice = fallback;
+                    try { synth.speak(utterance); } catch (err) { setStatus("Voice not supported by browser.", "error"); }
+                } else {
+                    setStatus("Voice not supported by browser.", "error");
+                }
+            } else {
+                setStatus("Speech error: " + (e && e.error ? e.error : String(e)), "error");
+            }
+        };
+
+        synth.speak(utterance);
+      }
+
+      const stopSpeak = (internal) => { if (synth) synth.cancel(); speaking = false; paused = false; if (!internal) { charIndex = 0; wordIndex = -1; updateMeta(); highlightText(); stateP.textContent = "State: Idle"; } };
+      const pauseSpeak = () => { if (speaking && !paused) synth.pause(); };
+      const resumeSpeak = () => { if (paused) synth.resume(); };
+
+      function onBoundary(e) {
+        if (e.name !== 'word') return;
+        charIndex = e.charIndex;
+        wordIndex = tokens.findIndex(t => t.start >= charIndex);
+        updateMeta();
+        highlightText();
+      }
+
+      function onEnd() {
+        stopSpeak(false);
+        setStatus("Speech finished.", "ok");
+        saveBookmark();
+      }
+
+      async function initMeSpeak() {
+        if (!window.meSpeak) {
+          setStatus("MeSpeak script failed to load.", "error");
+          return false;
+        }
+
+        if (meSpeak.isConfigLoaded()) return true;
+
+        return new Promise(resolve => {
+          meSpeak.loadConfig(
+        "../mespeak/mespeak_config.json",
+             () => {
+              if (meSpeak.isConfigLoaded()) {
+                resolve(true);
+              } else {
+                setStatus("MeSpeak config load failed.", "error");
+                resolve(false);
+              }
+            }
+          );
+        });
+      }
+
+      function getMeSpeakVoice(languageCode) { return meSpeakVoiceMap[langBase(languageCode || lang.value)] || "en-us"; }
+
+      async function downloadWithMeSpeak() {
+        const text = txt.value.trim();
+        if (!text) return setStatus("Text is empty.", "warn");
+
+        const ready = await initMeSpeak();
+        if (!ready) return;
+
+        const voiceId = getMeSpeakVoice(lang.value);
+
+        const voicePathMap = {
+          "en-us": "../mespeak/voices/en-us.json",
+          "hi": "../mespeak/voices/hi.json",
+          "bn": "../mespeak/voices/bn.json"
+        };
+
+        const voicePath = voicePathMap[voiceId] || "../mespeak/voices/en-us.json";
+
+        setStatus(`Loading ${voiceId} voice...`, "warn");
+
+        meSpeak.loadVoice(voicePath, (success) => {
+          if (success && meSpeak.isVoiceLoaded(voiceId)) {
+            const wavSamples = meSpeak.speak(text, { voice: voiceId, rawdata: true });
+            if (!wavSamples) return setStatus("Audio generation failed.", "error");
+            encodeToMp3(wavSamples);
+          } else {
+            setStatus("Voice load failed.", "error");
+          }
+        });
+      }
+
+      function encodeToMp3(wavSamples) {
+  if (!window.lamejs) {
+    setStatus("MP3 encoder not loaded.", "error");
+    return;
+  }
+
+  const sampleRate = 22050;
+  const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, 128);
+  const mp3Data = [];
+  const blockSize = 1152;
+
+  let samples;
+
+  if (wavSamples instanceof Int16Array) {
+    samples = wavSamples;
+  } else {
+    samples = new Int16Array(wavSamples.length);
+    for (let i = 0; i < wavSamples.length; i++) {
+      let s = Math.max(-1, Math.min(1, wavSamples[i]));
+      samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+  }
+
+  for (let i = 0; i < samples.length; i += blockSize) {
+    const chunk = samples.subarray(i, i + blockSize);
+    const mp3buf = mp3encoder.encodeBuffer(chunk);
+    if (mp3buf.length > 0) mp3Data.push(mp3buf);
+  }
+
+  const endBuf = mp3encoder.flush();
+  if (endBuf.length > 0) mp3Data.push(endBuf);
+
+  const blob = new Blob(mp3Data, { type: "audio/mpeg" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "adhurjya-tts.mp3";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+  setStatus("MP3 download started.", "ok");
+}
+
+      async function importFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        setStatus("Reading file...", "warn");
+        try {
+          if (file.type === "application/pdf") {
+            const data = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(data).promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              fullText += content.items.map(item => item.str).join(" ") + "\n";
+            }
+            txt.value = ensureUtf8(fullText);
+          } else {
+            txt.value = ensureUtf8(await file.text());
+          }
+          charIndex = 0; updateMeta(); setStatus("File imported successfully.", "ok");
+        } catch (err) { setStatus(`File import failed: ${err.message}`, "error"); }
+        e.target.value = "";
+      }
+
+      async function ocrImage(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!window.Tesseract) return setStatus("OCR engine not loaded yet.", "warn");
+        setStatus("Running OCR on image...", "warn");
+        try {
+          const worker = await Tesseract.createWorker({ logger: m => { if (m.status === 'recognizing text') { const p = Math.round(m.progress * 100); bar.style.width = `${p}%`; progressP.textContent = `Progress: ${p}%`; } } });
+          await worker.loadLanguage('eng+hin+ben');
+          await worker.initialize('eng+hin+ben');
+          const { data: { text } } = await worker.recognize(file);
+          await worker.terminate();
+          txt.value = ensureUtf8(text);
+          charIndex = 0; updateMeta(); setStatus("OCR complete.", "ok");
+        } catch (err) { setStatus(`OCR failed: ${err.message}`, "error"); }
+        e.target.value = "";
+      }
+
+      function translateText() {
+        const text = txt.value.trim();
+        if (!text) return setStatus("No text to translate.", "warn");
+        const targetLang = trg.value;
+        const sourceLang = langBase(lang.value);
+        const url = `https://translate.google.com/?sl=${sourceLang}&tl=${targetLang}&text=${encodeURIComponent(text)}&op=translate`;
+        window.open(url, '_blank');
+        setStatus("Opened Google Translate in a new tab.", "ok");
+      }
+
+      const tokenizeText = () => { tokens = (txt.value.match(/\S+/g) || []).map(word => ({ word, start: txt.value.indexOf(word) })); };
+      const updateValues = () => { ["rate", "pitch", "vol"].forEach(id => $(`${id}V`).textContent = parseFloat($(id).value).toFixed(2)); };
+      const updateMeta = () => {
+        const text = txt.value;
+        const words = text.trim().split(/\s+/).filter(Boolean);
+        wordP.textContent = `Words: ${words.length}`;
+        charP.textContent = `Characters: ${text.length}`;
+        timeP.textContent = `Est. Time: ${Math.round(words.length / (2.5 * parseFloat(rate.value)))}s`;
+        curP.textContent = `Current Word: ${wordIndex > -1 && tokens[wordIndex] ? tokens[wordIndex].word : "-"}`;
+        const progress = text.length > 0 ? (charIndex / text.length) * 100 : 0;
+        bar.style.width = `${progress}%`;
+        progressP.textContent = `Progress: ${Math.round(progress)}%`;
+      };
+
+      function highlightText() {
+        if (wordIndex < 0 || !tokens[wordIndex]) { highlight.innerHTML = ""; return; }
+        const currentToken = tokens[wordIndex];
+        const text = txt.value;
+        const before = esc(text.substring(0, currentToken.start));
+        const word = esc(currentToken.word);
+        const after = esc(text.substring(currentToken.start + currentToken.word.length));
+        highlight.innerHTML = `${before}<mark>${word}</mark>${after}`;
+      }
+
+      const saveBookmark = () => { try { localStorage.setItem(KEY, JSON.stringify({ text: txt.value, charIndex, lang: lang.value, voice: voice.value, rate: rate.value, pitch: pitch.value, vol: vol.value })); } catch (e) { console.warn("Bookmark save failed"); } };
+      const readBookmark = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } };
+      function resumeFromBookmark() {
+        const m = readBookmark();
+        if (!m) return setStatus("No bookmark found.", "warn");
+        txt.value = m.text || "";
+        charIndex = Math.max(0, Math.min(Number(m.charIndex) || 0, txt.value.length));
+        if (m.lang) lang.value = m.lang;
+        populateVoices();
+        if (m.voice) voice.value = m.voice;
+        if (Number.isFinite(m.rate)) rate.value = String(m.rate);
+        if (Number.isFinite(m.pitch)) pitch.value = String(m.pitch);
+        if (Number.isFinite(m.vol)) vol.value = String(m.vol);
+        updateValues(); updateMeta(); speak();
+      }
+
+      function bindEvents() {
+        txt.addEventListener("input", () => { charIndex = 0; updateMeta(); });
+        txt.addEventListener("scroll", () => { highlight.scrollTop = txt.scrollTop; highlight.scrollLeft = txt.scrollLeft; });
+        ["rate", "pitch", "vol"].forEach(id => $(id).addEventListener("input", () => { updateValues(); if (id === 'rate') updateMeta(); }));
+        lang.addEventListener("change", populateVoices);
+        $("speak").addEventListener("click", speak);
+        $("pause").addEventListener("click", pauseSpeak);
+        $("resume").addEventListener("click", resumeSpeak);
+        $("stop").addEventListener("click", () => stopSpeak(false));
+        $("translate").addEventListener("click", translateText);
+        $("fTxt").addEventListener("change", importFile);
+        $("fImg").addEventListener("change", ocrImage);
+        $("import").addEventListener("click", () => $("fTxt").click());
+        $("ocr").addEventListener("click", () => $("fImg").click());
+        $("download").addEventListener("click", downloadWithMeSpeak);
+        $("clearAll").addEventListener("click", () => { txt.value = ""; stopSpeak(false); });
+        $("resumeMark").addEventListener("click", resumeFromBookmark);
+      }
+
+      function setupVoiceLoading() {
+        if (synth.onvoiceschanged !== undefined) {
+          synth.onvoiceschanged = refreshVoices;
+        }
+        refreshVoices(); // First attempt
+      }
+      setupVoiceLoading();
+      bindEvents();
+      updateValues();
+      updateMeta();
+    })();
+</script>
+</body>
+</html>

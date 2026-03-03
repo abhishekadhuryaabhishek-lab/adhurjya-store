@@ -1,0 +1,973 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Govt Job Image and Sign Resizer - Adhurjya Store</title>
+  <meta name="description" content="Resize photo and signature for government job forms with strict KB limits. 100% browser-side.">
+  <style>
+    :root {
+      --bg-color: #0a0f1a;
+      --card-bg: #111827;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-color: #10b981;
+      --border-color: rgba(148, 163, 184, 0.28);
+      --soft-bg: #0f172a;
+      --ok-color: #22c55e;
+      --warn-color: #f59e0b;
+      --danger-color: #ef4444;
+      --open-btn-gradient: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    body.day-mode {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent-color: #059669;
+      --border-color: rgba(148, 163, 184, 0.42);
+      --soft-bg: #f1f5f9;
+      --ok-color: #15803d;
+      --warn-color: #b45309;
+      --danger-color: #b91c1c;
+      --open-btn-gradient: linear-gradient(135deg, #22c55e, #14b8a6);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg-color);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .container {
+      width: min(1180px, 94vw);
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .top-bar { margin-bottom: 16px; }
+
+    .open-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 0;
+      background: var(--open-btn-gradient);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    h1 {
+      margin: 6px 0 8px;
+      text-align: center;
+      font-size: clamp(1.45rem, 2.7vw, 2rem);
+    }
+
+    .subtitle {
+      margin: 0 auto 16px;
+      text-align: center;
+      color: var(--text-secondary);
+      max-width: 820px;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.86rem;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="range"],
+    select {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+        linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 34px;
+    }
+
+    select option,
+    select optgroup {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+    }
+
+    input[type="range"] {
+      padding: 8px 0;
+      accent-color: var(--accent-color);
+    }
+
+    button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="range"]:focus,
+    select:focus {
+      border-color: color-mix(in srgb, var(--accent-color) 55%, var(--border-color) 45%);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent 75%);
+    }
+
+    body.day-mode input[type="text"],
+    body.day-mode input[type="number"],
+    body.day-mode input[type="range"],
+    body.day-mode select,
+    body.day-mode select option,
+    body.day-mode select optgroup {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .privacy-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--soft-bg);
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .doc-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+    }
+
+    .dropzone {
+      border: 1.6px dashed var(--border-color);
+      border-radius: 12px;
+      background: var(--soft-bg);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--accent-color);
+      background: color-mix(in srgb, var(--soft-bg) 82%, var(--accent-color) 18%);
+    }
+
+    .dropzone p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .dropzone .accent {
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .rule {
+      margin: 0 0 12px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .preview-box {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--soft-bg);
+      padding: 10px;
+    }
+
+    .preview-box h3 {
+      margin: 0 0 8px;
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .img-wrap {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      background: #0b1120;
+      display: grid;
+      place-items: center;
+    }
+
+    body.day-mode .img-wrap {
+      background: #e2e8f0;
+    }
+
+    .img-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    .placeholder {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0 8px;
+    }
+
+    .meta {
+      margin: 8px 0 0;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      min-height: 1.2em;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .primary-btn {
+      border: 0;
+      background: var(--open-btn-gradient);
+      color: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .download-btn {
+      text-decoration: none;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-weight: 600;
+      background: transparent;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    .download-btn.ready {
+      pointer-events: auto;
+      opacity: 1;
+      border-color: color-mix(in srgb, var(--accent-color) 50%, var(--border-color) 50%);
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      min-height: 1.25em;
+    }
+
+    .status.ok { color: var(--ok-color); }
+    .status.warn { color: var(--warn-color); }
+    .status.error { color: var(--danger-color); }
+
+    .footer-note {
+      margin-top: 6px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.83rem;
+    }
+
+    @media (max-width: 960px) {
+      .profile-grid,
+      .work-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .field-grid,
+      .preview-grid,
+      .btn-row {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        width: min(1180px, 96vw);
+        padding-top: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <a class="open-tool-btn" href="../index.html">Back to Dashboard</a>
+    </div>
+
+    <h1>Govt Job Image and Sign Resizer</h1>
+    <p class="subtitle">Preset-ready photo and signature resizing for SSC, WBPSC, WB Police, and IBPS with strict KB targeting. Everything runs in your browser only.</p>
+
+    <section class="card">
+      <div class="profile-grid">
+        <div class="field">
+          <label for="exam-profile">Exam Profile Preset</label>
+          <select id="exam-profile">
+            <option value="ssc">SSC (Photo 20-50KB | Sign 10-20KB)</option>
+            <option value="wbpsc">WBPSC / WBCS</option>
+            <option value="wbpolice">WB Police (WBPRB)</option>
+            <option value="ibps">Banking / IBPS</option>
+            <option value="custom">Custom (Manual Override)</option>
+          </select>
+        </div>
+        <div class="privacy-box">100% Privacy: processing happens locally in your browser. No upload to server.</div>
+      </div>
+    </section>
+
+    <div class="work-grid">
+      <section class="card doc-card">
+        <h2>Passport Photo</h2>
+        <div id="photo-dropzone" class="dropzone">
+          <input id="photo-input" type="file" accept="image/*" hidden>
+          <p>Drag and drop photo here or <span class="accent">click to browse</span></p>
+        </div>
+
+        <p id="photo-rule-text" class="rule"></p>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="photo-width">Width (px)</label>
+            <input id="photo-width" type="number" min="1">
+          </div>
+          <div class="field">
+            <label for="photo-height">Height (px)</label>
+            <input id="photo-height" type="number" min="1">
+          </div>
+          <div class="field">
+            <label for="photo-min-kb">Min KB</label>
+            <input id="photo-min-kb" type="number" min="1" step="0.1">
+          </div>
+          <div class="field">
+            <label for="photo-max-kb">Max KB</label>
+            <input id="photo-max-kb" type="number" min="1" step="0.1">
+          </div>
+        </div>
+
+        <div class="preview-grid">
+          <div class="preview-box">
+            <h3>Original</h3>
+            <div class="img-wrap">
+              <img id="photo-original-preview" alt="Original photo preview">
+              <div id="photo-original-placeholder" class="placeholder">No image selected</div>
+            </div>
+            <p id="photo-original-meta" class="meta">-</p>
+          </div>
+          <div class="preview-box">
+            <h3>Processed</h3>
+            <div class="img-wrap">
+              <img id="photo-processed-preview" alt="Processed photo preview">
+              <div id="photo-processed-placeholder" class="placeholder">Processed preview will appear here</div>
+            </div>
+            <p id="photo-processed-meta" class="meta">-</p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="photo-process-btn" class="primary-btn" type="button">Process Photo</button>
+          <a id="photo-download" class="download-btn" href="#" download="photo.jpg">Download JPG</a>
+        </div>
+        <p id="photo-status" class="status"></p>
+      </section>
+
+      <section class="card doc-card">
+        <h2>Signature</h2>
+        <div id="sign-dropzone" class="dropzone">
+          <input id="sign-input" type="file" accept="image/*" hidden>
+          <p>Drag and drop signature here or <span class="accent">click to browse</span></p>
+        </div>
+
+        <p id="sign-rule-text" class="rule"></p>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="sign-width">Width (px)</label>
+            <input id="sign-width" type="number" min="1">
+          </div>
+          <div class="field">
+            <label for="sign-height">Height (px)</label>
+            <input id="sign-height" type="number" min="1">
+          </div>
+          <div class="field">
+            <label for="sign-min-kb">Min KB</label>
+            <input id="sign-min-kb" type="number" min="1" step="0.1">
+          </div>
+          <div class="field">
+            <label for="sign-max-kb">Max KB</label>
+            <input id="sign-max-kb" type="number" min="1" step="0.1">
+          </div>
+        </div>
+
+        <div class="preview-grid">
+          <div class="preview-box">
+            <h3>Original</h3>
+            <div class="img-wrap">
+              <img id="sign-original-preview" alt="Original signature preview">
+              <div id="sign-original-placeholder" class="placeholder">No image selected</div>
+            </div>
+            <p id="sign-original-meta" class="meta">-</p>
+          </div>
+          <div class="preview-box">
+            <h3>Processed</h3>
+            <div class="img-wrap">
+              <img id="sign-processed-preview" alt="Processed signature preview">
+              <div id="sign-processed-placeholder" class="placeholder">Processed preview will appear here</div>
+            </div>
+            <p id="sign-processed-meta" class="meta">-</p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="sign-process-btn" class="primary-btn" type="button">Process Signature</button>
+          <a id="sign-download" class="download-btn" href="#" download="signature.jpg">Download JPG</a>
+        </div>
+        <p id="sign-status" class="status"></p>
+      </section>
+    </div>
+
+    <p class="footer-note">Manual override is always enabled. You can edit width, height, and KB limits at any time.</p>
+  </div>
+
+  <script>
+    if (localStorage.getItem("theme") === "day") {
+      document.body.classList.add("day-mode");
+    }
+
+    const CM_TO_INCH = 0.3937007874;
+    const DPI = 300;
+
+    const PRESETS = {
+      ssc: {
+        label: "SSC",
+        photo: {
+          minKB: 20,
+          maxKB: 50,
+          width: cmToPx(3.5),
+          height: cmToPx(4.5),
+          note: "3.5 x 4.5 cm"
+        },
+        sign: {
+          minKB: 10,
+          maxKB: 20,
+          width: cmToPx(4.0),
+          height: cmToPx(2.0),
+          note: "4.0 x 2.0 cm"
+        }
+      },
+      wbpsc: {
+        label: "WBPSC/WBCS",
+        photo: {
+          minKB: 20,
+          maxKB: 100,
+          width: 138,
+          height: 177,
+          note: "Portal-friendly size"
+        },
+        sign: {
+          minKB: 10,
+          maxKB: 20,
+          width: 138,
+          height: 59,
+          note: "Portal-friendly size"
+        }
+      },
+      wbpolice: {
+        label: "WB Police",
+        photo: {
+          minKB: 10,
+          maxKB: 50,
+          width: 200,
+          height: 240,
+          note: "Common WBPRB format"
+        },
+        sign: {
+          minKB: 5,
+          maxKB: 20,
+          width: 140,
+          height: 80,
+          note: "Common WBPRB format"
+        }
+      },
+      ibps: {
+        label: "Banking/IBPS",
+        photo: {
+          minKB: 20,
+          maxKB: 50,
+          width: 200,
+          height: 230,
+          note: "IBPS standard"
+        },
+        sign: {
+          minKB: 10,
+          maxKB: 20,
+          width: 140,
+          height: 60,
+          note: "IBPS standard"
+        }
+      }
+    };
+
+    const state = {
+      photo: { file: null, originalUrl: "", processedUrl: "", processedBlob: null },
+      sign: { file: null, originalUrl: "", processedUrl: "", processedBlob: null }
+    };
+
+    const autoTimers = { photo: null, sign: null };
+
+    init();
+
+    function init() {
+      setupDropzone("photo");
+      setupDropzone("sign");
+      setupButtons("photo");
+      setupButtons("sign");
+      setupLiveControls("photo");
+      setupLiveControls("sign");
+
+      const presetSelect = document.getElementById("exam-profile");
+      presetSelect.addEventListener("change", () => applyPreset(presetSelect.value));
+
+      applyPreset(presetSelect.value);
+    }
+
+    function cmToPx(cm, dpi = DPI) {
+      return Math.round(cm * CM_TO_INCH * dpi);
+    }
+
+    function applyPreset(presetKey) {
+      if (presetKey === "custom") {
+        setRuleText("photo", "Custom mode active. Enter your own dimensions and KB range.");
+        setRuleText("sign", "Custom mode active. Enter your own dimensions and KB range.");
+        return;
+      }
+
+      const preset = PRESETS[presetKey];
+      if (!preset) return;
+
+      ["photo", "sign"].forEach((kind) => {
+        const cfg = preset[kind];
+        document.getElementById(kind + "-width").value = cfg.width;
+        document.getElementById(kind + "-height").value = cfg.height;
+        document.getElementById(kind + "-min-kb").value = cfg.minKB;
+        document.getElementById(kind + "-max-kb").value = cfg.maxKB;
+
+        setRuleText(
+          kind,
+          `${preset.label}: ${kind === "photo" ? "Photo" : "Sign"} ${cfg.minKB}-${cfg.maxKB}KB, ${cfg.width}x${cfg.height}px (${cfg.note})`
+        );
+
+        if (state[kind].file) {
+          scheduleAutoProcess(kind, 100);
+        }
+      });
+    }
+
+    function setRuleText(kind, text) {
+      document.getElementById(kind + "-rule-text").textContent = "Preset Rule: " + text;
+    }
+
+    function setupDropzone(kind) {
+      const zone = document.getElementById(kind + "-dropzone");
+      const input = document.getElementById(kind + "-input");
+
+      zone.addEventListener("click", () => input.click());
+      input.addEventListener("change", () => {
+        if (input.files && input.files[0]) {
+          handleSelectedFile(kind, input.files[0]);
+        }
+      });
+
+      ["dragenter", "dragover"].forEach((evt) => {
+        zone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          zone.classList.add("dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach((evt) => {
+        zone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          zone.classList.remove("dragover");
+        });
+      });
+
+      zone.addEventListener("drop", (e) => {
+        const file = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+        if (file) {
+          handleSelectedFile(kind, file);
+        }
+      });
+    }
+
+    function setupButtons(kind) {
+      document.getElementById(kind + "-process-btn").addEventListener("click", () => processDocument(kind, false));
+    }
+
+    function setupLiveControls(kind) {
+      ["width", "height", "min-kb", "max-kb"].forEach((key) => {
+        document.getElementById(`${kind}-${key}`).addEventListener("input", () => {
+          if (state[kind].file) {
+            scheduleAutoProcess(kind, 260);
+          }
+        });
+      });
+    }
+
+    async function handleSelectedFile(kind, file) {
+      if (!file.type.startsWith("image/")) {
+        setStatus(kind, "Please select an image file.", "error");
+        return;
+      }
+
+      const item = state[kind];
+      item.file = file;
+      item.processedBlob = null;
+
+      if (item.originalUrl) URL.revokeObjectURL(item.originalUrl);
+      if (item.processedUrl) URL.revokeObjectURL(item.processedUrl);
+
+      item.originalUrl = URL.createObjectURL(file);
+      item.processedUrl = "";
+
+      const originalImg = document.getElementById(kind + "-original-preview");
+      const originalPlaceholder = document.getElementById(kind + "-original-placeholder");
+      originalImg.src = item.originalUrl;
+      originalImg.style.display = "block";
+      originalPlaceholder.style.display = "none";
+
+      const processedImg = document.getElementById(kind + "-processed-preview");
+      const processedPlaceholder = document.getElementById(kind + "-processed-placeholder");
+      processedImg.removeAttribute("src");
+      processedImg.style.display = "none";
+      processedPlaceholder.style.display = "block";
+
+      setDownloadState(kind, false);
+
+      try {
+        const image = await loadImageFromFile(file);
+        document.getElementById(kind + "-original-meta").textContent = `${formatKB(file.size)} | ${image.naturalWidth}x${image.naturalHeight}px`;
+      } catch (err) {
+        document.getElementById(kind + "-original-meta").textContent = `${formatKB(file.size)} | Could not read dimensions`;
+      }
+
+      setStatus(kind, "File loaded. Applying compression...", "warn");
+      scheduleAutoProcess(kind, 120);
+    }
+
+    function scheduleAutoProcess(kind, delayMs) {
+      clearTimeout(autoTimers[kind]);
+      autoTimers[kind] = setTimeout(() => {
+        processDocument(kind, true);
+      }, delayMs);
+    }
+
+    async function processDocument(kind, silent) {
+      const current = state[kind];
+      if (!current.file) {
+        if (!silent) setStatus(kind, "Select an image first.", "error");
+        return;
+      }
+
+      const width = parseInt(document.getElementById(kind + "-width").value, 10);
+      const height = parseInt(document.getElementById(kind + "-height").value, 10);
+      const minKB = parseFloat(document.getElementById(kind + "-min-kb").value);
+      const maxKB = parseFloat(document.getElementById(kind + "-max-kb").value);
+
+      if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) {
+        setStatus(kind, "Width/Height must be valid positive numbers.", "error");
+        return;
+      }
+
+      if (!Number.isFinite(minKB) || !Number.isFinite(maxKB) || minKB <= 0 || maxKB <= 0 || minKB > maxKB) {
+        setStatus(kind, "KB range is invalid. Ensure Min KB <= Max KB.", "error");
+        return;
+      }
+
+      const processBtn = document.getElementById(kind + "-process-btn");
+      processBtn.disabled = true;
+      processBtn.textContent = "Processing...";
+      if (!silent) setStatus(kind, "Processing with strict KB control...", "warn");
+
+      try {
+        const result = await resizeWithBinarySearch(current.file, {
+          width,
+          height,
+          minKB,
+          maxKB,
+          mode: "contain"
+        });
+
+        if (current.processedUrl) URL.revokeObjectURL(current.processedUrl);
+        current.processedBlob = result.blob;
+        current.processedUrl = URL.createObjectURL(result.blob);
+
+        const processedImg = document.getElementById(kind + "-processed-preview");
+        const processedPlaceholder = document.getElementById(kind + "-processed-placeholder");
+        processedImg.src = current.processedUrl;
+        processedImg.style.display = "block";
+        processedPlaceholder.style.display = "none";
+
+        const rangeText = `${minKB}-${maxKB}KB`;
+        let message = `${formatKB(result.blob.size)} | ${width}x${height}px | JPEG Q ${result.quality.toFixed(3)} | Target ${rangeText}`;
+        if (result.padded) {
+          message += " | padded to meet minimum KB";
+        }
+        document.getElementById(kind + "-processed-meta").textContent = message;
+
+        const namePrefix = kind === "photo" ? "photo" : "sign";
+        const profileValue = document.getElementById("exam-profile").value;
+        const profileLabel = profileValue === "custom" ? "custom" : PRESETS[profileValue].label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        const downloadName = `${namePrefix}-${profileLabel}.jpg`;
+        setDownloadState(kind, true, current.processedUrl, downloadName);
+
+        if (result.inRange) {
+          setStatus(kind, "Processed successfully. Output is within target KB range.", "ok");
+        } else {
+          setStatus(kind, "Processed, but exact range could not be met by quality-only compression. Check output stats.", "warn");
+        }
+      } catch (err) {
+        setStatus(kind, "Processing failed: " + (err && err.message ? err.message : "Unknown error"), "error");
+      } finally {
+        processBtn.disabled = false;
+        processBtn.textContent = kind === "photo" ? "Process Photo" : "Process Signature";
+      }
+    }
+
+    async function resizeWithBinarySearch(file, options) {
+      const { width, height, minKB, maxKB, mode } = options;
+      const minBytes = Math.round(minKB * 1024);
+      const maxBytes = Math.round(maxKB * 1024);
+
+      const image = await loadImageFromFile(file);
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      drawOnCanvas(canvas, image, mode);
+
+      let low = 0.04;
+      let high = 0.98;
+      let bestBlob = null;
+      let bestQuality = low;
+
+      for (let i = 0; i < 20; i += 1) {
+        const quality = (low + high) / 2;
+        const blob = await canvasToJpegBlob(canvas, quality);
+        if (!blob) throw new Error("Could not encode image.");
+
+        if (blob.size > maxBytes) {
+          high = quality;
+        } else {
+          bestBlob = blob;
+          bestQuality = quality;
+          low = quality;
+        }
+      }
+
+      if (!bestBlob) {
+        bestBlob = await canvasToJpegBlob(canvas, 0.04);
+        bestQuality = 0.04;
+      }
+
+      let padded = false;
+
+      if (bestBlob.size < minBytes) {
+        const highestBlob = await canvasToJpegBlob(canvas, 0.98);
+        if (highestBlob && highestBlob.size >= minBytes && highestBlob.size <= maxBytes) {
+          bestBlob = highestBlob;
+          bestQuality = 0.98;
+        } else if (highestBlob && highestBlob.size < minBytes) {
+          const paddedResult = padBlobToMinBytes(highestBlob, minBytes);
+          bestBlob = paddedResult.blob;
+          padded = paddedResult.padded;
+          bestQuality = 0.98;
+        }
+      }
+
+      const finalSize = bestBlob.size;
+      const inRange = finalSize >= minBytes && finalSize <= maxBytes;
+
+      return {
+        blob: bestBlob,
+        quality: bestQuality,
+        inRange,
+        padded
+      };
+    }
+
+    function drawOnCanvas(canvas, image, mode) {
+      const ctx = canvas.getContext("2d", { alpha: false });
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      if (mode === "cover") {
+        const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+        const drawWidth = image.naturalWidth * scale;
+        const drawHeight = image.naturalHeight * scale;
+        const offsetX = (canvas.width - drawWidth) / 2;
+        const offsetY = (canvas.height - drawHeight) / 2;
+        ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+        return;
+      }
+
+      const scale = Math.min(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+      const drawWidth = image.naturalWidth * scale;
+      const drawHeight = image.naturalHeight * scale;
+      const offsetX = (canvas.width - drawWidth) / 2;
+      const offsetY = (canvas.height - drawHeight) / 2;
+      ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+    }
+
+    function canvasToJpegBlob(canvas, quality) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality);
+      });
+    }
+
+    function padBlobToMinBytes(blob, minBytes) {
+      if (blob.size >= minBytes) {
+        return { blob, padded: false };
+      }
+
+      const paddingBytes = minBytes - blob.size;
+      const pad = new Uint8Array(paddingBytes);
+      pad.fill(0x20);
+
+      return {
+        blob: new Blob([blob, pad], { type: "image/jpeg" }),
+        padded: true
+      };
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve(img);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Could not read image."));
+        };
+        img.src = url;
+      });
+    }
+
+    function formatKB(bytes) {
+      return `${(bytes / 1024).toFixed(2)} KB`;
+    }
+
+    function setStatus(kind, text, tone) {
+      const el = document.getElementById(kind + "-status");
+      el.className = "status" + (tone ? " " + tone : "");
+      el.textContent = text;
+    }
+
+    function setDownloadState(kind, ready, url, name) {
+      const link = document.getElementById(kind + "-download");
+      if (ready) {
+        link.classList.add("ready");
+        link.href = url;
+        link.download = name;
+      } else {
+        link.classList.remove("ready");
+        link.href = "#";
+      }
+    }
+
+    window.addEventListener("beforeunload", () => {
+      ["photo", "sign"].forEach((kind) => {
+        if (state[kind].originalUrl) URL.revokeObjectURL(state[kind].originalUrl);
+        if (state[kind].processedUrl) URL.revokeObjectURL(state[kind].processedUrl);
+      });
+    });
+  </script>
+</body>
+</html>

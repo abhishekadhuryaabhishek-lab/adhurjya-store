@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube SEO & Metadata Extractor - Adhurjya Store</title>
+  <meta name="description" content="High-performance YouTube SEO and metadata extractor with hidden tags, thumbnail downloader, SEO score, and AI-style templates.">
+  <style>
+    :root{
+      --bg-color:var(--bg,#0b1220);
+      --card-bg:var(--card,#111827);
+      --text-primary:var(--text,#e2e8f0);
+      --text-secondary:var(--muted,#94a3b8);
+      --border-color:var(--border,rgba(148,163,184,.34));
+      --accent:var(--accent,#22c55e);
+      --accent-2:#06b6d4;
+      --danger:#ef4444;
+      --soft:rgba(148,163,184,.12);
+      --chip:rgba(34,197,94,.16);
+      --input-bg:rgba(15,23,42,.28);
+      --table-head-bg:rgba(148,163,184,.16);
+      --table-cell-bg:var(--card-bg);
+      --metric-bg:rgba(148,163,184,.1);
+      --help-bg:rgba(148,163,184,.09);
+    }
+    body.day-mode{
+      --bg-color:#f1f5f9;
+      --card-bg:#ffffff;
+      --text-primary:#0f172a;
+      --text-secondary:#334155;
+      --border-color:rgba(100,116,139,.34);
+      --soft:rgba(148,163,184,.18);
+      --input-bg:rgba(248,250,252,.98);
+      --table-head-bg:rgba(148,163,184,.28);
+      --table-cell-bg:#ffffff;
+      --metric-bg:rgba(148,163,184,.14);
+      --help-bg:rgba(148,163,184,.18);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;
+      background:var(--bg-color);color:var(--text-primary)
+    }
+    .wrap{width:min(1120px,94vw);margin:auto;padding:22px 0 50px}
+    .head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+    .back,.back-link{
+      appearance:none;-webkit-appearance:none;border:none;
+      color:#ffffff !important;text-decoration:none;font-weight:700;padding:9px 14px;border-radius:10px;
+      background-color:#10b981 !important;
+      background-image:var(--open-btn-gradient,linear-gradient(135deg,#10b981,#059669)) !important;
+      box-shadow:0 4px 15px rgba(0,0,0,0.3);
+      display:inline-flex;align-items:center;gap:8px
+    }
+    h1{margin:0;text-align:right;font-size:clamp(1.25rem,2.4vw,2rem);color:var(--text-primary)}
+    h2{margin:0 0 10px;color:var(--text-primary);font-size:1.08rem}
+    .card{
+      background:var(--card-bg,#111827);border:1px solid var(--border-color);border-radius:14px;
+      padding:16px;margin-bottom:14px;color:var(--text-primary)
+    }
+    .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+    label{display:block;margin-bottom:6px;color:var(--text-secondary);font-size:.92rem}
+    input,textarea,button{font:inherit;border-radius:10px}
+    input,textarea{
+      width:100%;padding:11px 12px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);outline:none
+    }
+    input::placeholder,textarea::placeholder{color:var(--text-secondary)}
+    input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(34,197,94,.25)}
+    #go.btn{
+      appearance:none;-webkit-appearance:none;border:none;cursor:pointer;
+      padding:11px 14px;font-weight:700;color:#ffffff !important;
+      background-color:#10b981 !important;
+      background-image:var(--open-btn-gradient,linear-gradient(135deg,#10b981,#059669)) !important;
+      box-shadow:0 4px 15px rgba(0,0,0,0.3);min-width:185px
+    }
+    body.day-mode .back,body.day-mode .back-link{
+      background-color:#10b981 !important;
+      background-image:var(--open-btn-gradient,linear-gradient(135deg,#10b981,#059669)) !important;
+      color:#ffffff !important;
+    }
+    body.day-mode #go.btn{
+      background-color:#10b981 !important;
+      background-image:var(--open-btn-gradient,linear-gradient(135deg,#10b981,#059669)) !important;
+      color:#ffffff !important;
+    }
+    .btn2,.dl{
+      cursor:pointer;border:1px solid var(--border-color);background:transparent;color:var(--text-primary);
+      padding:9px 12px;border-radius:10px;text-decoration:none;font-weight:600;display:inline-flex;justify-content:center
+    }
+    .btn2[disabled],.dl[disabled]{opacity:.56;cursor:not-allowed}
+    .note{margin:10px 0 0;color:var(--text-secondary);font-size:.9rem}
+    .status{margin-top:10px;min-height:1.2rem;color:var(--text-secondary);font-size:.9rem}
+    .status.err{color:var(--danger)}
+    .prog{display:none}
+    .prog.show{display:block}
+    .track{height:10px;border-radius:999px;overflow:hidden;background:var(--soft);border:1px solid var(--border-color)}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .24s ease}
+    .ptext{margin:8px 0 0;color:var(--text-secondary);font-size:.9rem}
+    .skeleton{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .skeleton.show{display:grid}
+    .sk{
+      min-height:110px;border-radius:10px;border:1px solid var(--border-color);
+      background:linear-gradient(110deg,var(--soft) 20%,rgba(148,163,184,.22) 40%,var(--soft) 55%);background-size:180% 100%;
+      animation:sh 1.1s linear infinite
+    }
+    @keyframes sh{to{background-position-x:-180%}}
+    .results{display:none}
+    .results.show{display:block}
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .table-wrap{overflow:auto;border:1px solid var(--border-color);border-radius:10px;background:var(--table-cell-bg)}
+    table{width:100%;border-collapse:collapse;min-width:480px;background:var(--table-cell-bg)}
+    th,td{
+      border:1px solid var(--border-color);padding:10px;vertical-align:top;font-size:.92rem;
+      color:var(--text-primary);word-break:break-word;background:var(--table-cell-bg)
+    }
+    th{width:178px;background:var(--table-head-bg);color:var(--text-primary);font-weight:700;text-align:left}
+    .score{display:inline-flex;gap:8px;padding:7px 12px;border-radius:999px;font-weight:700;color:#fff;margin-bottom:8px}
+    .score.low{background:linear-gradient(135deg,#ef4444,#dc2626)}
+    .score.mid{background:linear-gradient(135deg,#f59e0b,#f97316)}
+    .score.high{background:linear-gradient(135deg,#16a34a,#0ea5e9)}
+    .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
+    .metric{border:1px solid var(--border-color);border-radius:10px;background:var(--metric-bg);padding:10px}
+    .metric small{display:block;color:var(--text-secondary);margin-bottom:3px}
+    .metric strong{font-size:1.12rem;color:var(--text-primary)}
+    .tips{margin:10px 0 0;padding-left:18px;color:var(--text-secondary)}
+    .thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .thumb{border:1px solid var(--border-color);border-radius:12px;overflow:hidden;background:var(--soft);display:flex;flex-direction:column}
+    .thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:rgba(15,23,42,.35)}
+    .thumb .b{padding:10px;display:flex;flex-direction:column;gap:7px;flex:1}
+    .thumb p{margin:0;font-size:.84rem;color:var(--text-primary)}
+    .thumb .t{font-size:.9rem;font-weight:700;color:var(--text-primary)}
+    .thumb.un img{filter:grayscale(1);opacity:.56}
+    .thumb.un .dl{pointer-events:none;opacity:.56}
+    .acts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+    .tags{display:flex;flex-wrap:wrap;gap:8px}
+    .tag{
+      border:1px solid var(--border-color);background:var(--chip);border-radius:999px;padding:6px 11px;
+      font-size:.86rem;line-height:1;color:var(--text-primary)
+    }
+    .tag-help{
+      width:100%;border:1px solid var(--border-color);background:var(--help-bg);border-radius:12px;padding:12px
+    }
+    .tag-help p{margin:0 0 8px;color:var(--text-primary)}
+    .tag-help ol{margin:0;padding-left:18px;color:var(--text-secondary)}
+    .tag-help li{margin-bottom:6px}
+    .inline-code{
+      display:inline-block;border:1px solid var(--border-color);border-radius:8px;padding:2px 6px;
+      background:var(--table-cell-bg);color:var(--text-primary);word-break:break-all
+    }
+    .muted{color:var(--text-secondary)}
+    .ideas{margin:0;padding-left:18px;color:var(--text-primary)}
+    .ideas li{margin-bottom:8px}
+    .desc{width:100%;min-height:118px;margin-top:10px;resize:vertical}
+    @media (max-width:980px){.thumbs{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+    @media (max-width:680px){
+      .head{flex-direction:column;align-items:flex-start}h1{text-align:left}.row{grid-template-columns:1fr}.btn{min-width:0}
+      .metrics{grid-template-columns:1fr}.thumbs{grid-template-columns:1fr}.skeleton.show{grid-template-columns:1fr}
+      table{min-width:0}
+      table,tbody,tr,th,td{display:block;width:100%}
+      tr{
+        border:1px solid var(--border-color);border-radius:10px;overflow:hidden;background:var(--table-cell-bg);
+        margin-bottom:10px
+      }
+      th,td{border:0;border-bottom:1px solid var(--border-color)}
+      th{width:100%}
+      td:last-child{border-bottom:0}
+      .table-wrap{border:0;background:transparent}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="head">
+      <a class="back back-link" href="../index.html"><span aria-hidden="true">&larr;</span> Back</a>
+      <h1>YouTube SEO &amp; Metadata Extractor</h1>
+    </header>
+
+    <section class="card">
+      <form id="form" novalidate>
+        <label for="url">YouTube URL or 11-character Video ID</label>
+        <div class="row">
+          <input id="url" type="text" placeholder="https://www.youtube.com/watch?v=...">
+          <button id="go" class="btn" type="submit">Extract SEO Data</button>
+        </div>
+      </form>
+      <p class="note">Fast mode: this extractor fetches YouTube watch HTML in parallel and prioritizes the real <code>meta[name=keywords]</code> tags.</p>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section id="prog" class="card prog" aria-live="polite">
+      <div class="track"><div id="bar" class="bar"></div></div>
+      <p id="ptext" class="ptext">Preparing...</p>
+    </section>
+
+    <section id="skeleton" class="card skeleton" aria-hidden="true">
+      <div class="sk"></div><div class="sk"></div><div class="sk"></div>
+    </section>
+
+    <section id="results" class="results">
+      <section class="card grid2">
+        <div>
+          <h2>Metadata Audit</h2>
+          <div class="table-wrap"><table><tbody id="meta"></tbody></table></div>
+          <p id="sources" class="muted"></p>
+        </div>
+        <div>
+          <h2>SEO Score</h2>
+          <div id="pill" class="score low">Score: 0/100</div>
+          <div class="metrics">
+            <div class="metric"><small>Tag Count</small><strong id="mTags">0</strong></div>
+            <div class="metric"><small>Description Length</small><strong id="mDesc">0</strong></div>
+            <div class="metric"><small>Status</small><strong id="mGrade">Low</strong></div>
+          </div>
+          <ul id="tips" class="tips"></ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Multi-Resolution Thumbnails</h2>
+        <p class="muted">MQ, HQ, SD, MaxRes/4K with independent download buttons.</p>
+        <p id="thumbStatus" class="muted"></p>
+        <div id="thumbs" class="thumbs"></div>
+      </section>
+
+      <section class="card">
+        <h2>Hidden Tag Extractor</h2>
+        <div class="acts">
+          <button id="copyAll" type="button" class="btn2">Copy All Tags</button>
+          <button id="copyCsv" type="button" class="btn2">Copy as CSV</button>
+        </div>
+        <div id="tags" class="tags"></div>
+      </section>
+
+      <section class="card">
+        <h2>AI-Style SEO Suggestions (Template)</h2>
+        <ol id="ideas" class="ideas"></ol>
+        <label for="desc">Suggested description draft</label>
+        <textarea id="desc" class="desc" readonly></textarea>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    (function(){
+      if(localStorage.getItem("theme")==="day") document.body.classList.add("day-mode");
+      var el={
+        form:gid("form"),url:gid("url"),go:gid("go"),status:gid("status"),prog:gid("prog"),bar:gid("bar"),ptext:gid("ptext"),
+        skeleton:gid("skeleton"),results:gid("results"),meta:gid("meta"),sources:gid("sources"),pill:gid("pill"),
+        mTags:gid("mTags"),mDesc:gid("mDesc"),mGrade:gid("mGrade"),tips:gid("tips"),thumbs:gid("thumbs"),thumbStatus:gid("thumbStatus"),
+        tags:gid("tags"),ideas:gid("ideas"),desc:gid("desc"),copyAll:gid("copyAll"),copyCsv:gid("copyCsv")
+      };
+      var state={
+        tags:[],
+        thumbMap:{},
+        lastVideoId:"",
+        runId:0,
+        progressTimer:null,
+        hardTimer:null,
+        startTime:0,
+        partialMeta:null,
+        finished:false
+      };
+
+      el.form.addEventListener("submit",function(e){e.preventDefault();run();});
+      el.copyAll.addEventListener("click",function(){if(!state.tags.length) return setStatus("No tags to copy.",1);copy(state.tags.join(", "),"Tags copied.");});
+      el.copyCsv.addEventListener("click",function(){
+        if(!state.tags.length) return setStatus("No tags to copy.",1);
+        var csv=state.tags.map(function(t){return "\""+t.replace(/"/g,"\"\"")+"\"";}).join(",");
+        copy(csv,"CSV copied.");
+      });
+      el.thumbs.addEventListener("click",function(e){
+        var btn=e.target.closest("button[data-dl]");
+        if(!btn||btn.disabled) return;
+        var key=btn.getAttribute("data-key"), id=btn.getAttribute("data-id");
+        if(!key||!id) return;
+        downloadThumb(id,key,btn);
+      });
+
+      async function run(){
+        var raw=(el.url.value||"").trim(), id=parseId(raw);
+        if(!raw) return setStatus("Enter a YouTube URL or video ID.",1);
+        if(!id) return setStatus("Invalid YouTube URL or ID.",1);
+
+        reset();
+        state.runId+=1;
+        state.lastVideoId=id;
+        state.partialMeta=emptyMeta();
+        state.finished=false;
+
+        loading(1);
+        setStatus("");
+        startProgressClock(state.runId);
+
+        var activeRun=state.runId;
+        state.hardTimer=setTimeout(function(){finalizeTimedOut(activeRun);},7000);
+
+        try{
+          var meta=await fetchMeta(id,activeRun);
+          if(!isActiveRun(activeRun)) return;
+          finalize(activeRun,meta,getThumbs(id),0);
+        }catch(err){
+          if(!isActiveRun(activeRun)) return;
+          var partial=state.partialMeta||emptyMeta();
+          partial.hints=(partial.hints||[]).concat(["Try again or use another network."]);
+          finalize(activeRun,partial,getThumbs(id),0,err);
+        }
+      }
+
+      function finalizeTimedOut(runId){
+        if(!isActiveRun(runId)||state.finished) return;
+        var partial=state.partialMeta||emptyMeta();
+        var hasData=!!(partial.title||partial.description||((partial.tags||[]).length));
+        if(!hasData) partial.hints=(partial.hints||[]).concat(["No metadata returned within 7 seconds."]);
+        finalize(runId,partial,getThumbs(state.lastVideoId),1,new Error("Timed out"));
+      }
+
+      function finalize(runId,meta,thumbs,timedOut,err){
+        if(!isActiveRun(runId)||state.finished) return;
+        state.finished=true;
+        clearTimeout(state.hardTimer);
+        stopProgressClock();
+
+        meta=normalizeMeta(meta||emptyMeta());
+        var audit=seo(meta.tags,meta.description), sug=suggest(meta);
+        drawMeta(state.lastVideoId,meta);
+        drawSeo(audit);
+        drawThumbs(thumbs||getThumbs(state.lastVideoId),state.lastVideoId);
+        drawTags(meta.tags,meta.watchFailed,state.lastVideoId);
+        drawIdeas(sug);
+
+        state.tags=meta.tags;
+        el.results.classList.add("show");
+
+        if(timedOut){
+          setProgress(100,"Stopped at 7 seconds.");
+          if(meta.title||meta.description||meta.tags.length) setStatus("Partial results shown after 7 seconds.");
+          else setStatus("No data was extracted in time. Try Again.",1);
+        }else if(meta.watchFailed&&!(meta.title||meta.description||meta.tags.length)){
+          setProgress(100,"Finished with no metadata.");
+          setStatus("Could not extract metadata. Try Again.",1);
+        }else if(err&&!(meta.title||meta.description||meta.tags.length)){
+          setProgress(100,"Finished with no metadata.");
+          setStatus("Could not extract metadata. Try Again.",1);
+        }else{
+          setProgress(100,"Done.");
+          setStatus("Extraction complete.");
+        }
+
+        setTimeout(function(){if(isActiveRun(runId)) loading(0);},180);
+      }
+
+      function parseId(input){
+        var raw=(input||"").trim().replace(/[<>]/g,"");
+        if(/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+        try{
+          var dec=decodeURIComponent(raw);
+          if(/^[a-zA-Z0-9_-]{11}$/.test(dec)) return dec;
+        }catch(_){}
+        var quick=raw.match(/(?:v=|\/)([a-zA-Z0-9_-]{11})(?=[?&#/]|$)/);
+        if(quick&&quick[1]) return sanitize(quick[1]);
+        var m=raw.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+        if(m&&m[1]) return sanitize(m[1]);
+        try{
+          var u=new URL(raw), q=u.searchParams.get("v"), host=(u.hostname||"").replace(/^www\./,"").toLowerCase();
+          if(q) return sanitize(q);
+          if(host==="youtu.be"){
+            var shortId=u.pathname.split("/").filter(Boolean)[0];
+            if(shortId) return sanitize(shortId);
+          }
+          if(host.indexOf("youtube.com")>-1){
+            var p=u.pathname.split("/").filter(Boolean);
+            if(p[0]==="embed"||p[0]==="v"||p[0]==="shorts"||p[0]==="live") return sanitize(p[1]||"");
+            if(p.length) return sanitize(p[p.length-1]);
+          }
+          var nested=u.searchParams.get("u");
+          if(nested){
+            try{
+              var deep=new URL("https://youtube.com"+nested);
+              var deepId=deep.searchParams.get("v");
+              if(deepId) return sanitize(deepId);
+            }catch(_){}
+          }
+        }catch(_){}
+        return null;
+      }
+      function sanitize(v){v=(v||"").replace(/[^a-zA-Z0-9_-]/g,"");return /^[a-zA-Z0-9_-]{11}$/.test(v)?v:null;}
+
+      async function fetchMeta(id,runId){
+        const API_KEY="AIzaSyD_DxhT-Jk9z3zW1a-XS3Shh1r40zSeSnM";
+        setProgressText("Fetching metadata via YouTube Data API v3...");
+        
+        var apiUrl="https://www.googleapis.com/youtube/v3/videos?part=snippet&id="+encodeURIComponent(id)+"&key="+encodeURIComponent(API_KEY);
+        
+        try{
+          var c=new AbortController(),to=setTimeout(function(){c.abort();},5000);
+          try{
+            var r=await fetch(apiUrl,{method:"GET",mode:"cors",credentials:"omit",signal:c.signal,cache:"no-store"});
+            if(!r.ok) throw new Error("API error: HTTP "+r.status);
+            var data=await r.json();
+            if(!isActiveRun(runId)) throw new Error("Cancelled");
+            
+            if(!data.items||!data.items.length) return emptyMeta();
+            
+            var item=data.items[0], snippet=item.snippet||{};
+            var meta={
+              title:clean(snippet.title||""),
+              description:clean(snippet.description||""),
+              category:clean(snippet.categoryId||"Not available")||"Not available",
+              tags:dedupeTags(snippet.tags||[]),
+              sources:["youtube_api_v3"],
+              hints:[],
+              watchFailed:0
+            };
+            
+            state.partialMeta=normalizeMeta(meta);
+            return meta;
+          }finally{clearTimeout(to);}
+        }catch(err){
+          if(!isActiveRun(runId)) throw err;
+          var failed=emptyMeta();
+          failed.hints.push("YouTube Data API fetch failed.");
+          state.partialMeta=normalizeMeta(failed);
+          throw err;
+        }
+      }
+
+      function parseWatchHtmlFast(html){
+        if(!html||typeof html!=="string") return null;
+        var title=metaContent(html,"property","og:title")||metaContent(html,"name","title")||extractTitleTag(html);
+        var description=metaContent(html,"name","description")||metaContent(html,"property","og:description")||"";
+        var category=metaContent(html,"itemprop","genre")||"";
+
+        // Primary target: real keywords from meta[name="keywords"].
+        var keywordsRaw=metaContent(html,"name","keywords");
+        var tags=splitCsv(keywordsRaw);
+        if(!tags.length){
+          var quickJson=html.match(/"keywords"\s*:\s*(\[[^\]]*\])/i);
+          if(quickJson&&quickJson[1]){
+            try{
+              var parsed=JSON.parse(quickJson[1]);
+              if(Array.isArray(parsed)) tags=parsed;
+            }catch(_){}
+          }
+        }
+
+        return{
+          title:clean(title),
+          description:clean(description),
+          category:clean(category),
+          tags:dedupeTags(tags)
+        };
+      }
+
+      function emptyMeta(){
+        return{title:"",description:"",category:"",tags:[],sources:[],hints:[],watchFailed:1};
+      }
+      function normalizeMeta(m){
+        return{
+          title:clean(m.title||""),
+          description:clean(m.description||""),
+          category:clean(m.category||"")||"Not available",
+          tags:dedupeTags(m.tags||[]),
+          sources:dedupe(m.sources||[]),
+          hints:dedupe(m.hints||[]),
+          watchFailed:!!m.watchFailed
+        };
+      }
+
+      function metaContent(html,a,v){
+        var e=escReg(v), x=escReg(a);
+        var r1=new RegExp("<meta[^>]*\\b"+x+"=[\"']"+e+"[\"'][^>]*\\bcontent=[\"']([^\"']*)[\"'][^>]*>","i");
+        var r2=new RegExp("<meta[^>]*\\bcontent=[\"']([^\"']*)[\"'][^>]*\\b"+x+"=[\"']"+e+"[\"'][^>]*>","i");
+        var y=html.match(r1)||html.match(r2);
+        return y&&y[1]?decode(y[1]):"";
+      }
+      function extractTitleTag(html){
+        var m=html.match(/<title>([^<]+)<\/title>/i);
+        if(!m||!m[1]) return "";
+        return decode(m[1]).replace(/\s*-\s*YouTube\s*$/i,"").trim();
+      }
+      function splitCsv(s){return s?s.split(",").map(function(x){return clean(x);}).filter(Boolean):[];}
+      function clean(s){return typeof s==="string"?s.replace(/\s+/g," ").trim():"";}
+      function dedupe(a){
+        var seen={},out=[]; for(var i=0;i<a.length;i++){var v=clean(a[i]),k=v.toLowerCase(); if(v&&!seen[k]){seen[k]=1;out.push(v);}}
+        return out;
+      }
+      function normTag(s){
+        return clean(s).toLowerCase().replace(/[_-]+/g," ").replace(/[^\w\s]/g,"").replace(/\s+/g," ").trim();
+      }
+      function isBlockedGenericTag(tag){
+        var t=normTag(tag);
+        if(!t) return true;
+        var blocked={
+          "video":1,
+          "sharing":1,
+          "camera phone":1,
+          "camera":1,
+          "phone":1,
+          "video phone":1,
+          "free":1,
+          "upload":1
+        };
+        return !!blocked[t];
+      }
+      function dedupeTags(a){
+        var seen={},out=[];
+        for(var i=0;i<(a||[]).length;i++){
+          var raw=clean(a[i]);
+          var key=normTag(raw);
+          if(!raw||!key||isBlockedGenericTag(raw)||seen[key]) continue;
+          seen[key]=1;
+          out.push(raw);
+        }
+        return out;
+      }
+
+      function getThumbs(id){
+        if(!id) return [];
+        var defs=[
+          {k:"maxresdefault",l:"MaxRes / 4K",save:"MaxRes",e:"1280x720+"},
+          {k:"sddefault",l:"SD",save:"SD",e:"640x480"},
+          {k:"hqdefault",l:"HQ",save:"HQ",e:"480x360"},
+          {k:"mqdefault",l:"MQ",save:"MQ",e:"320x180"}
+        ];
+        return defs.map(function(d){
+          return{
+            label:d.l,
+            save:d.save,
+            key:d.k,
+            expected:d.e,
+            url:"https://i.ytimg.com/vi/"+id+"/"+d.k+".jpg",
+            ok:1,
+            w:0,
+            h:0,
+            reason:"Direct thumbnail URL ready for download."
+          };
+        });
+      }
+
+      function seo(tags,desc){
+        var tc=tags.length, dl=clean(desc).length, tf=0,df=0;
+        tf=tc===0?0:tc<=4?.25:tc<=8?.6:tc<=15?1:tc<=25?.8:.62;
+        df=dl===0?0:dl<80?.2:dl<150?.55:dl<=400?1:dl<=800?.8:.62;
+        var score=Math.round(tf*60+df*40), grade=score>=85?"Excellent":score>=70?"Strong":score>=50?"Average":"Needs work";
+        var tips=[]; if(tc<8)tips.push("Use 8-15 focused tags around one primary keyword cluster.");
+        if(dl<150)tips.push("Expand description beyond 150 characters with clear search intent.");
+        if(tc>25)tips.push("Reduce excess tags to avoid keyword stuffing.");
+        if(dl>800)tips.push("Trim description and keep important terms in first lines.");
+        if(!tips.length)tips.push("Tag count and description length are in a strong SEO range.");
+        return{score:score,grade:grade,tc:tc,dl:dl,tips:tips};
+      }
+
+      function suggest(meta){
+        var kws=dedupe((meta.tags.length?meta.tags:fromTitle(meta.title)).slice(0,8));
+        var k1=kws[0]||"YouTube SEO",k2=kws[1]||"video ranking",k3=kws[2]||"growth strategy",k4=kws[3]||"creator tips";
+        return{
+          titles:[
+            "How to Boost "+tc(k1)+" in 2026 | "+tc(k2)+" Blueprint",
+            tc(k1)+" Secrets: "+tc(k2)+" + "+tc(k3)+" for Fast Growth",
+            "Top 7 "+tc(k1)+" Hacks Every Creator Should Use ("+tc(k4)+")",
+            tc(k1)+" for Beginners: Step-by-Step "+tc(k2)+" Guide"
+          ],
+          desc:[
+            "Want better YouTube rankings? This video explains "+k1+", "+k2+", and "+k3+" with practical actions.",
+            "Use these methods to improve discoverability, watch time, and metadata quality without guesswork.","",
+            "Suggested chapters:","00:00 Intro","00:40 "+tc(k1)+" setup","02:10 "+tc(k2)+" optimization","04:20 "+tc(k3)+" checklist","",
+            "Keywords: "+[k1,k2,k3,k4].join(", ")
+          ].join("\n")
+        };
+      }
+      function fromTitle(t){
+        var stop={the:1,and:1,with:1,from:1,this:1,that:1,your:1,into:1,video:1,guide:1,tutorial:1,for:1,you:1,are:1,but:1,how:1};
+        return clean(t).split(/\s+/).filter(function(w){return w.length>3&&!stop[w.toLowerCase()];});
+      }
+      function tc(s){return clean(s).split(" ").map(function(p){return p?p[0].toUpperCase()+p.slice(1):"";}).join(" ");}
+
+      function drawMeta(id,m){
+        var rows=[
+          ["Video ID",id],
+          ["Title",m.title||"Not available"],
+          ["Description",m.description||"Not available"],
+          ["Category",m.category||"Not available"],
+          ["Extracted Tags",String(m.tags.length)],
+          ["Tag Visibility",m.tags.length?"Visible in watch page metadata":"Not exposed in fetched watch page"]
+        ];
+        el.meta.innerHTML=rows.map(function(r){return "<tr><th>"+esc(r[0])+"</th><td>"+esc(r[1])+"</td></tr>";}).join("");
+        var src=m.sources.length?"Watch sources used: "+m.sources.join(", "):"No watch source succeeded.";
+        var hint=(m.hints&&m.hints.length)?(" | Notes: "+m.hints.join(" ")):"";
+        el.sources.textContent=src+hint;
+      }
+      function drawSeo(a){
+        el.pill.textContent="Score: "+a.score+"/100"; el.pill.className="score "+(a.score>=70?"high":a.score>=50?"mid":"low");
+        el.mTags.textContent=String(a.tc); el.mDesc.textContent=String(a.dl); el.mGrade.textContent=a.grade;
+        el.tips.innerHTML=a.tips.map(function(t){return "<li>"+esc(t)+"</li>";}).join("");
+      }
+      function drawThumbs(arr,id){
+        state.thumbMap={};
+        el.thumbs.innerHTML=arr.map(function(t){
+          state.thumbMap[t.key]=t;
+          var info=(t.w&&t.h)?(t.w+"x"+t.h):"Auto";
+          var msg=t.reason||"Ready for download";
+          var btn="<button class=\"dl\" type=\"button\" data-dl=\"1\" data-id=\""+eattr(id)+"\" data-key=\""+eattr(t.key)+"\">Download</button>";
+          return "<article class=\"thumb\"><img src=\""+eattr(t.url)+"\" alt=\""+eattr(t.label+" thumbnail")+"\" loading=\"lazy\"><div class=\"b\"><p class=\"t\">"+esc(t.label)+"</p><p class=\"muted\">Expected: "+esc(t.expected)+"</p><p class=\"muted\">Detected: "+esc(info)+"</p><p class=\"muted\">"+esc(msg)+"</p>"+btn+"</div></article>";
+        }).join("");
+        el.thumbStatus.textContent=arr.length+" thumbnail links generated.";
+      }
+      async function downloadThumb(videoId,key,btn){
+        var t=state.thumbMap[key];
+        if(!t||!t.url){setStatus("Selected thumbnail is unavailable.",1);return;}
+        var old=btn.textContent;
+        btn.disabled=true;
+        btn.textContent="Downloading...";
+        try{
+          var blob=await fetchBlobWithFallback(t.url);
+          var obj=URL.createObjectURL(blob),a=document.createElement("a");
+          a.href=obj;
+          a.download="thumbnail_"+t.key+".jpg";
+          a.style.display="none";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function(){URL.revokeObjectURL(obj);},1000);
+          setStatus("Downloaded "+t.label+" thumbnail.");
+        }catch(_){
+          setStatus("Download failed. Try another network and retry.",1);
+        }finally{
+          btn.disabled=false;
+          btn.textContent=old;
+        }
+      }
+      function drawTags(tags,watchFailed,id){
+        if(!tags.length){
+          if(watchFailed){
+            var proxyUrl="https://api.allorigins.win/raw?url="+encodeURIComponent("https://www.youtube.com/watch?v="+id);
+            el.tags.innerHTML=""
+              + "<div class=\"tag-help\">"
+              + "<p>Watch page fetch failed from all parallel sources. Use manual extraction:</p>"
+              + "<ol>"
+              + "<li>Open video page source and search for <span class=\"inline-code\">meta name=\"keywords\"</span>.</li>"
+              + "<li>Try this proxy URL in browser: <span class=\"inline-code\">"+esc(proxyUrl)+"</span></li>"
+              + "<li>If you own this video, check YouTube Studio -> Details for exact tags.</li>"
+              + "</ol>"
+              + "</div>";
+          }else{
+            el.tags.innerHTML="<div class=\"tag-help\"><p>No public keywords were found in the fetched watch HTML for this video.</p></div>";
+          }
+          el.copyAll.disabled=true;
+          el.copyCsv.disabled=true;
+          return;
+        }
+        el.tags.innerHTML=tags.map(function(t){return "<span class=\"tag\">"+esc(t)+"</span>";}).join("");
+        el.copyAll.disabled=false;
+        el.copyCsv.disabled=false;
+      }
+      function drawIdeas(s){el.ideas.innerHTML=s.titles.map(function(t){return "<li>"+esc(t)+"</li>";}).join(""); el.desc.value=s.desc;}
+
+      async function copy(text,msg){
+        try{
+          if(navigator.clipboard&&window.isSecureContext) await navigator.clipboard.writeText(text);
+          else{var t=document.createElement("textarea");t.value=text;t.style.position="fixed";t.style.opacity="0";document.body.appendChild(t);t.focus();t.select();document.execCommand("copy");t.remove();}
+          setStatus(msg);
+        }catch(_){setStatus("Clipboard access failed in this browser.",1);}
+      }
+      async function fetchText(url,timeoutMs){
+        var c=new AbortController(),to=setTimeout(function(){c.abort();},timeoutMs||5000);
+        try{
+          var r=await fetch(url,{method:"GET",mode:"cors",credentials:"omit",signal:c.signal,cache:"no-store"});
+          if(!r.ok) throw new Error("HTTP "+r.status);
+          return r.text();
+        }finally{clearTimeout(to);}
+      }
+      async function fetchBlobWithFallback(url){
+        var attempts=[
+          url,
+          "https://corsproxy.io/?"+encodeURIComponent(url),
+          "https://api.allorigins.win/raw?url="+encodeURIComponent(url)
+        ];
+        var lastErr=null;
+        for(var i=0;i<attempts.length;i++){
+          try{
+            var c=new AbortController(),to=setTimeout(function(){c.abort();},7000);
+            try{
+              var r=await fetch(attempts[i],{method:"GET",mode:"cors",credentials:"omit",signal:c.signal,cache:"no-store"});
+              if(!r.ok) throw new Error("HTTP "+r.status);
+              var blob=await r.blob();
+              if(blob&&blob.size>600) return blob;
+              throw new Error("Empty image response");
+            }finally{clearTimeout(to);}
+          }catch(err){lastErr=err;}
+        }
+        throw lastErr||new Error("Could not fetch image bytes.");
+      }
+      function decode(x){var t=document.createElement("textarea");t.innerHTML=x;return t.value;}
+      function escReg(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
+      function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+      function eattr(s){return esc(s).replace(/`/g,"&#96;");}
+      function gid(id){return document.getElementById(id);}
+      function setStatus(msg,err){el.status.textContent=msg||""; el.status.className=err?"status err":"status";}
+      function setProgress(v,t){el.bar.style.width=Math.max(0,Math.min(100,v))+"%"; el.ptext.textContent=t||"";}
+      function setProgressText(t){el.ptext.textContent=t||"";}
+      function isActiveRun(runId){return runId===state.runId;}
+      function startProgressClock(runId){
+        stopProgressClock();
+        state.startTime=Date.now();
+        setProgress(3,"Preparing extraction...");
+        state.progressTimer=setInterval(function(){
+          if(!isActiveRun(runId)||state.finished){stopProgressClock();return;}
+          var elapsed=Date.now()-state.startTime;
+          var pct=Math.min(96,Math.round((elapsed/7000)*96));
+          var msg="Fetching watch page in parallel...";
+          if(elapsed>4800) msg="Parsing metadata and keywords...";
+          if(elapsed>6200) msg="Finalizing output...";
+          setProgress(pct,msg);
+        },120);
+      }
+      function stopProgressClock(){
+        if(state.progressTimer){clearInterval(state.progressTimer);state.progressTimer=null;}
+      }
+      function loading(on){el.go.disabled=!!on; el.prog.classList.toggle("show",!!on); el.skeleton.classList.toggle("show",!!on);}
+      function reset(){
+        clearTimeout(state.hardTimer);
+        stopProgressClock();
+        state.thumbMap={};
+        state.lastVideoId="";
+        state.partialMeta=emptyMeta();
+        state.finished=false;
+        el.results.classList.remove("show"); el.meta.innerHTML=""; el.sources.textContent=""; el.tips.innerHTML=""; el.thumbs.innerHTML="";
+        el.thumbStatus.textContent="";
+        el.tags.innerHTML=""; el.ideas.innerHTML=""; el.desc.value=""; el.pill.textContent="Score: 0/100"; el.pill.className="score low";
+        el.mTags.textContent="0"; el.mDesc.textContent="0"; el.mGrade.textContent="Low"; state.tags=[];
+        el.copyAll.disabled=true;
+        el.copyCsv.disabled=true;
+        setProgress(0,"Preparing...");
+      }
+      reset();
+    }());
+  </script>
+  <script src="../site-protection.js"></script>
+</body>
+</html>

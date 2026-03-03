@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Adhurjya Store — All-in-one Toolbox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Adhurjya Store — client-side toolbox for photos, PDFs, and media." />
+   <meta name="robots" content="index, follow" />
+  <meta name="google-site-verification" content="tVysuLpqwr0_z7-zV-BauxXp2F_kUjZfCIajrCmDJHw" />
+
+  <!-- ADDED: AI-Optimized meta keywords -->
+  <meta name="keywords" content="Adhurjya Store, Adhurjya tools, photo to PDF converter, image compressor, PDF compressor, merge PDF online, PDF to image, image to text, OCR Bengali, OCR Hindi, OCR English, Bengali OCR online, Hindi OCR online, ID photo maker, passport size photo maker, document tools India, free PDF tools, browser tools, client-side tools, offline PDF tools, image resizer, image format converter" />
+
+  <!-- ✅ ADDED: Favicon + Manifest SEO boost (files later create korte hobe) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
+  <!-- ✅ ADDED: Performance / PageSpeed tags -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="//www.highperformanceformat.com" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+  <!-- ✅ ADDED: Sitemap (later sitemap.xml banale kaj korbe) -->
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="https://adhurjyatools.in/sitemap.xml" />
+
+  <!-- ✅ ADDED: OpenGraph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Adhurjya Store" />
+  <meta property="og:url" content="https://adhurjyatools.in/" />
+  <meta property="og:title" content="Adhurjya Store — All-in-one Browser Toolbox" />
+  <meta property="og:description" content="Convert, compress and manage your photos & PDFs directly in your browser. No uploads, no login, just pure client-side magic." />
+  <meta property="og:image" content="https://adhurjyatools.in/og-image.jpg" />
+
+  <!-- ✅ ADDED: Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Adhurjya Store — All-in-one Browser Toolbox" />
+  <meta name="twitter:description" content="Convert, compress and manage your photos & PDFs directly in your browser. No uploads, no login." />
+  <meta name="twitter:image" content="https://adhurjyatools.in/og-image.jpg" />
+
+  <!-- ✅ ADDED: JSON-LD Schema (WebSite) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Adhurjya Store",
+    "url": "https://adhurjyatools.in/",
+    "description": "Adhurjya Store is an all-in-one browser toolbox for photos and PDFs — photo to PDF, image compressor, PDF tools, OCR (English, Hindi, Bengali) and ID photo maker, all 100% client-side.",
+    "inLanguage": "en-IN",
+    "isAccessibleForFree": true,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Adhurjya Store",
+      "url": "https://adhurjyatools.in/"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://adhurjyatools.in/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    },
+    "about": {
+      "@type": "Thing",
+      "name": "Online photo and PDF tools",
+      "description": "Client-side tools for photo to PDF, image compression, PDF compression and merging, OCR in English, Hindi and Bengali, PDF to image, image resize and ID photo creation."
+    }
+  }
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- External Libraries (UMD globals) -->
+  <!-- pdf-lib -->
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <!-- Tesseract.js -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <!-- pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <!-- ONNX Runtime Web (for U²-Net human segmentation, future use) -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+
+<link rel="stylesheet" href="style.css" />
+
+<!-- Christmas theme disabled - uncomment to re-enable -->
+<!-- <link rel="stylesheet" href="christmas.css"> -->
+
+</head>
+<body>
+<header>
+
+<!-- Christmas elements disabled -->
+<!-- <div class="christmas-ribbon">🎄 Merry Christmas 🎄</div> -->
+<!-- <div class="snow-layer"></div> -->
+
+
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">A</div>
+      <div>
+        <div class="logo-title">Adhurjya Store</div>
+        <div class="logo-sub">All-in-one browser toolbox • 100% client-side</div>
+      </div>
+    </div>
+    <div class="pill">
+      <span class="pill-dot"></span>
+      <span>Runs offline in your browser</span>
+    </div>
+<a
+  href="documentation.html"
+  target="_blank"
+  rel="noopener"
+  class="btn btn-outline"
+  style="font-size:0.75rem;padding:0.4rem 0.75rem;"
+>How to use</a>
+<button id="theme-toggle" class="btn btn-outline" style="font-size:0.75rem;padding:0.4rem 0.75rem;" onclick="toggleTheme()" title="Toggle Day/Night mode">
+  <span id="theme-icon">☀️</span>
+</button>
+  </div>
+  <select id="color-theme-selector" style="margin-left:1rem;min-width:120px;max-width:180px;border-radius:6px;padding:0.3rem 0.7rem;background:var(--card);color:var(--text);border:1px solid var(--border);font-size:0.95rem;outline:none;">
+      <option value="normal">Normal</option>
+      <option value="royal-purple">Royal Purple</option>
+      <option value="ocean-blue">Ocean Blue</option>
+      <option value="sunset-orange">Sunset Orange</option>
+      <option value="glass-cyan">Glass Cyan</option>
+      <option value="dark-neon">Dark Neon</option>
+    </select>
+</header>
+
+<main>
+  <!-- HOME / TOOL GRID -->
+  <section id="home-section">
+    <div class="hero">
+      <div class="hero-eyebrow">Free Browser Tools</div>
+      <div class="hero-title">Convert, compress & manage your files instantly</div>
+      <div class="hero-sub">
+        All tools run 100% in your browser. No uploads, no signups, no waiting. 
+        Perfect for photos, PDFs, documents and everyday tasks.
+      </div>
+      <div class="hero-badges">
+        <span class="hero-badge">Photo to PDF</span>
+        <span class="hero-badge">Image Compress</span>
+        <span class="hero-badge">PDF Tools</span>
+        <span class="hero-badge">ID Photo Maker</span>
+      </div>
+      <div class="hero-cta">
+        <a href="#tools-grid" class="btn">Explore Tools</a>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:30px 0;">
+      <div id="adsterra-300x250"></div>
+    </div>
+
+    <script>
+      atOptions = {
+        'key' : '05bc1f9edafb9b6108cdf31d22d1dad2',
+        'format' : 'iframe',
+        'height' : 250,
+        'width' : 300,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/05bc1f9edafb9b6108cdf31d22d1dad2/invoke.js"></script>
+
+    <!-- GRID of tools -->
+    <div id="tools-grid">
+      <div class="section-header">
+        <h2>All Tools</h2>
+        <p>Select a tool to get started. Everything runs locally in your browser.</p>
+      </div>
+      <div class="tool-grid">
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-image">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Photo → PDF Converter</h3>
+          <p>Combine multiple photos into a single high-quality PDF with size-friendly compression.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">JPG/PNG</span>
+            <span class="tool-tag">Multi-page</span>
+          </div>
+          <button class="btn" onclick="openTool('photo-pdf')">Open Tool</button>
+        </div>
+      </div> 
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-image">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Photo Size Compressor</h3>
+          <p>Shrink image file size with adjustable quality and max dimensions.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Compress</span>
+          </div>
+          <button class="btn" onclick="openTool('photo-compress')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-image">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Image Resizer</h3>
+          <p>Resize images to exact width/height while keeping aspect ratio if needed.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Resize</span>
+          </div>
+          <button class="btn" onclick="openTool('image-resize')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-pdf">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>PDF Compressor</h3>
+          <p>Re-render PDF pages as compressed images to reduce size.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">PDF</span>
+          </div>
+          <button class="btn" onclick="openTool('pdf-compress')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-pdf">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Merge PDF</h3>
+          <p>Combine multiple PDF files into a single document.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Merge</span>
+          </div>
+          <button class="btn" onclick="openTool('pdf-merge')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-pdf">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>PDF to Image</h3>
+          <p>Convert PDF pages into downloadable images.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">PDF → PNG/JPG</span>
+          </div>
+          <button class="btn" onclick="openTool('pdf-to-image')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-image">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Image Format Converter</h3>
+          <p>Convert between JPG, PNG and WEBP formats.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Format</span>
+          </div>
+          <button class="btn" onclick="openTool('image-format')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-image">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>ID Photo Maker</h3>
+          <p>Passport-style ID photo with background color & multi copies.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">ID / Passport</span>
+          </div>
+          <button class="btn" onclick="openTool('id-photo')">Open Tool</button>
+        </div>
+      </div>
+     
+      <div class="tool-card">
+        <div class="tool-card-icon icon-security">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Strong Password Generator</h3>
+          <p>Create ultra-strong passwords with strength meter & copy button.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Password</span>
+            <span class="tool-tag">Security</span>
+          </div>
+          <button class="btn" onclick="openTool('password')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-pdf">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18A2.25 2.25 0 0118 20.25h-1.5m-9 0H6A2.25 2.25 0 013.75 18v-1.5M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>PDF Split &amp; Edit (Pages)</h3>
+          <p>Select, reorder, rotate &amp; export specific pages from a PDF.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Split</span>
+            <span class="tool-tag">Reorder &amp; Rotate</span>
+          </div>
+          <button class="btn" onclick="openTool('pdf-pages')">Open Tool</button>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-social">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Indian Trending Hashtag Generator</h3>
+          <p>Generate trending Indian hashtags for Instagram, YouTube & Facebook — Indian gods, food, places, lifestyle, jobs & tech niches.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Hashtags</span>
+            <span class="tool-tag">Instagram</span>
+            <span class="tool-tag">YouTube</span>
+            <span class="tool-tag">Facebook</span>
+          </div>
+          <a href="tools/indian-hashtag-generator.html" class="btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-text">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5"/></svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Text ↔ Table Converter</h3>
+          <p>Convert text, images & tables into Excel and PDF.</p>
+          <a href="tools/text-table-converter.html" class="btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-image">
+          <i class="fas fa-id-card" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>Govt Job Resizer</h3>
+          <p>Resize photo and signature for Indian government job forms with KB-friendly output.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">India Jobs</span>
+            <span class="tool-tag">Photo/Sign</span>
+          </div>
+          <a href="tools/govt-job-resizer.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-icon icon-image">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.776 48.776 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+          </svg>
+        </div>
+        <div class="tool-card-content">
+          <h3>Ultra Passport & ID Photo Maker Pro</h3>
+          <p>Create passport size photos online instantly. Crop, resize, auto-fit on A4 sheet, add cutting guides, and export high-quality PDF for print.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Passport</span>
+            <span class="tool-tag">ID Photo</span>
+            <span class="tool-tag">Print Ready</span>
+            <span class="tool-tag">PDF Export</span>
+          </div>
+          <a href="tools/ultra-passport-id-photo-maker.html" class="open-tool-btn" aria-label="Open Ultra Passport & ID Photo Maker Pro">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-social">
+          <i class="fab fa-youtube" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>YouTube SEO Extractor</h3>
+          <p>Extract useful video metadata, title ideas, and SEO-focused keyword references.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">YouTube</span>
+            <span class="tool-tag">SEO</span>
+          </div>
+          <a href="tools/youtube-seo-extractor.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-security">
+          <i class="fas fa-shield-halved" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>Remove Photo Hidden Data</h3>
+          <p>Remove hidden metadata from images before sharing to protect your privacy.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Privacy</span>
+            <span class="tool-tag">Security</span>
+          </div>
+          <a href="tools/exif-remover.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-video">
+          <i class="fas fa-video" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>Screen Recorder</h3>
+          <p>Record your full screen, selected window, or browser tab directly from the browser.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Recording</span>
+            <span class="tool-tag">No Install</span>
+          </div>
+          <a href="tools/screen-recorder.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-text">
+          <i class="fas fa-qrcode" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>Create UPI QR</h3>
+          <p>Create UPI payment QR codes for personal or business payments in seconds.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">UPI</span>
+            <span class="tool-tag">Payments</span>
+          </div>
+          <a href="tools/upi-qr-generator.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-text">
+          <i class="fas fa-volume-high" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>Text-to-Speech</h3>
+          <p>Convert typed text into natural speech with voice and language control.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">Voice</span>
+            <span class="tool-tag">Accessibility</span>
+          </div>
+          <a href="tools/text-to-speech.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon tool-card-icon icon-utility">
+          <i class="fas fa-file-invoice" aria-hidden="true"></i>
+        </div>
+        <div class="tool-card-content">
+          <h3>Make GST Invoice</h3>
+          <p>Generate GST-compliant invoices quickly for products, services, and billing records.</p>
+          <div class="tool-tags">
+            <span class="tool-tag">GST</span>
+            <span class="tool-tag">Invoice</span>
+          </div>
+          <a href="tools/gst-invoice-gen.html" class="open-tool-btn">Open Tool</a>
+        </div>
+      </div>
+
+    </div> <!-- .tool-grid end -->
+    </div> <!-- #tools-grid end -->
+  </section>
+
+  <!-- 1. Photo → PDF Converter -->
+  <section id="panel-photo-pdf" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Photo → PDF Converter</h3>
+        <p>Combine multiple photos into a single high-quality PDF.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+
+    <div class="section">
+      <div class="field">
+        <label>Select photos (in order)</label>
+        <input id="photoPdf-input" type="file" accept="image/*" multiple />
+        <small>You can reorder photos below before making the PDF.</small>
+      </div>
+
+      <div class="field">
+        <label>Max longer side (px)</label>
+        <input id="photoPdf-maxDim" type="number" min="600" max="3000" value="1600" />
+        <small>Images will be scaled down if larger than this.</small>
+      </div>
+
+      <div class="field">
+        <label>JPEG quality</label>
+        <input id="photoPdf-quality" type="range" min="0.3" max="1" step="0.05" value="0.7" />
+        <small>Balance between quality &amp; size.</small>
+      </div>
+
+      <button class="btn mt-sm" onclick="generatePhotoPdf()">Generate PDF</button>
+
+      <div id="photoPdf-status" class="status mt-xs"></div>
+
+      <a id="photoPdf-download" class="download-link" href="#" style="display:none;" download="photos.pdf">
+        ⬇ Download PDF
+      </a>
+
+      <div class="divider"></div>
+      <div class="section-title">Selected photos</div>
+      <div id="photoPdf-list" class="thumb-list"></div>
+    </div>
+  </section>
+
+  <!-- 2. Photo Size Compressor -->
+  <section id="panel-photo-compress" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Photo Size Compressor</h3>
+        <p>Compress an image with adjustable quality and optional max size.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select image</label>
+        <input id="compress-input" type="file" accept="image/*" />
+      </div>
+      <div class="flex flex-wrap gap-sm">
+        <div class="field" style="flex:1 1 120px;max-width:180px;">
+          <label>Quality</label>
+          <input id="compress-quality" type="range" min="0.2" max="1" step="0.05" value="0.7" />
+          <small><span id="compress-quality-label">70</span>%</small>
+        </div>
+        <div class="field" style="flex:1 1 120px;max-width:180px;">
+          <label>Max width (px, optional)</label>
+          <input id="compress-maxW" type="number" min="200" max="4000" placeholder="e.g. 1600" />
+        </div>
+        <div class="field" style="flex:1 1 120px;max-width:180px;">
+          <label>Max height (px, optional)</label>
+          <input id="compress-maxH" type="number" min="200" max="4000" placeholder="e.g. 1600" />
+        </div>
+      </div>
+      <button class="btn mt-sm" onclick="compressPhoto()">Compress Image</button>
+      <div class="status mt-xs">
+        Original: <span id="compress-original-size">–</span> KB • Compressed: <span id="compress-new-size">–</span> KB
+      </div>
+      <a id="compress-download" class="download-link" href="#" style="display:none;" download="compressed.jpg">⬇ Download compressed image</a>
+      <div class="divider"></div>
+      <div class="section-title">Preview</div>
+      <div class="preview-row">
+        <div style="flex:1;">
+          <div class="pill-small">Original</div>
+          <img id="compress-original-preview" class="preview-img mt-xs" alt="" />
+        </div>
+        <div style="flex:1;">
+          <div class="pill-small">Compressed</div>
+          <img id="compress-new-preview" class="preview-img mt-xs" alt="" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Image Resizer -->
+  <section id="panel-image-resize" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Image Resizer</h3>
+        <p>Resize images to specific dimensions with optional aspect ratio lock.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select image</label>
+        <input id="resize-input" type="file" accept="image/*" />
+      </div>
+      <div class="flex flex-wrap gap-sm mt-xs">
+        <div class="field" style="flex:1 1 90px;max-width:150px;">
+          <label>Width (px)</label>
+          <input id="resize-width" type="number" min="10" />
+        </div>
+        <div class="field" style="flex:1 1 90px;max-width:150px;">
+          <label>Height (px)</label>
+          <input id="resize-height" type="number" min="10" />
+        </div>
+        <div class="field" style="flex:1 1 90px;max-width:160px;">
+          <label>
+            <input id="resize-keep-aspect" type="checkbox" checked />
+            Keep aspect ratio
+          </label>
+        </div>
+      </div>
+      <button class="btn mt-sm" onclick="resizeImage()">Resize Image</button>
+      <div id="resize-status" class="status"></div>
+      <a id="resize-download" class="download-link" href="#" style="display:none;" download="resized.png">⬇ Download resized image</a>
+      <div class="divider"></div>
+      <div class="section-title">Preview</div>
+      <div class="preview-row">
+        <div style="flex:1;">
+          <div class="pill-small">Original</div>
+          <img id="resize-original-preview" class="preview-img mt-xs" alt="" />
+        </div>
+        <div style="flex:1;">
+          <div class="pill-small">Resized</div>
+          <img id="resize-new-preview" class="preview-img mt-xs" alt="" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. PDF Compressor -->
+  <section id="panel-pdf-compress" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>PDF Compressor</h3>
+        <p>Re-render pages as compressed images and rebuild a smaller PDF.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select PDF</label>
+        <input id="pdfc-input" type="file" accept="application/pdf" />
+      </div>
+      <div class="field">
+        <label>Quality preset</label>
+        <select id="pdfc-quality">
+          <option value="high">High (better quality, larger)</option>
+          <option value="medium" selected>Medium</option>
+          <option value="small">Small (smaller size)</option>
+        </select>
+      </div>
+      <button class="btn mt-sm" onclick="compressPdf()">Compress PDF</button>
+      <div id="pdfc-status" class="status"></div>
+      <a id="pdfc-download" class="download-link" href="#" style="display:none;" download="compressed.pdf">⬇ Download compressed PDF</a>
+      <div class="hint mt-xs">Note: This is a simplified client-side compressor. Very large PDFs may be slow or may fail on low-RAM devices.</div>
+    </div>
+  </section>
+
+  <!-- 7. Merge PDF -->
+  <section id="panel-pdf-merge" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Merge PDF</h3>
+        <p>Combine multiple PDF files into a single document.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select PDFs</label>
+        <input id="merge-input" type="file" accept="application/pdf" multiple />
+      </div>
+      <div id="merge-list" class="thumb-list"></div>
+      <button class="btn mt-sm" onclick="mergePdfs()">Merge PDFs</button>
+      <div id="merge-status" class="status"></div>
+      <a id="merge-download" class="download-link" href="#" style="display:none;" download="merged.pdf">⬇ Download merged PDF</a>
+    </div>
+  </section>
+
+  <!-- 8. PDF to Image -->
+  <section id="panel-pdf-to-image" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>PDF to Image</h3>
+        <p>Render PDF pages as images you can download.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select PDF</label>
+        <input id="p2i-input" type="file" accept="application/pdf" />
+      </div>
+      <div class="flex flex-wrap gap-sm">
+        <div class="field" style="flex:1 1 100px;max-width:150px;">
+          <label>From page</label>
+          <input id="p2i-from" type="number" min="1" placeholder="1" />
+        </div>
+        <div class="field" style="flex:1 1 100px;max-width:150px;">
+          <label>To page</label>
+          <input id="p2i-to" type="number" min="1" placeholder="leave blank for last" />
+        </div>
+        <div class="field" style="flex:1 1 120px;max-width:180px;">
+          <label>Image type</label>
+          <select id="p2i-type">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn mt-sm" onclick="pdfToImages()">Convert</button>
+      <div id="p2i-status" class="status"></div>
+      <div id="p2i-gallery" class="section mt-md"></div>
+    </div>
+  </section>
+
+  <!-- 9. Image Format Converter -->
+  <section id="panel-image-format" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Image Format Converter</h3>
+        <p>Convert between JPG, PNG and WEBP formats.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select image</label>
+        <input id="fmt-input" type="file" accept="image/*" />
+      </div>
+      <div class="flex flex-wrap gap-sm">
+        <div class="field" style="flex:1 1 120px;max-width:180px;">
+          <label>Output format</label>
+          <select id="fmt-output">
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WEBP</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1 1 120px;max-width:200px;">
+          <label>Quality (JPG/WEBP)</label>
+          <input id="fmt-quality" type="range" min="0.2" max="1" step="0.05" value="0.85" />
+          <small><span id="fmt-quality-label">85</span>%</small>
+        </div>
+      </div>
+      <button class="btn mt-sm" onclick="convertFormat()">Convert</button>
+      <div id="fmt-status" class="status"></div>
+      <a id="fmt-download" class="download-link" href="#" style="display:none;">⬇ Download converted image</a>
+      <div class="divider"></div>
+      <div class="section-title">Preview</div>
+      <img id="fmt-preview" class="preview-img mt-xs" alt="" />
+    </div>
+  </section>
+
+  <!-- 11. ID Photo Maker -->
+  <section id="panel-id-photo" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>ID Photo Maker</h3>
+        <p>Crop a portrait and generate passport-style ID photos with multiple copies.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+    <div class="section">
+      <div class="field">
+        <label>Select portrait photo</label>
+        <input id="id-input" type="file" accept="image/*" />
+      </div>
+      <div class="flex flex-wrap gap-sm mt-xs">
+        <div class="field" style="flex:1 1 150px;max-width:220px;">
+          <label>Preset size (single ID)</label>
+          <select id="id-preset">
+            <option value="295x413">Passport (~35×49 mm → 295×413 px)</option>
+            <option value="600x600">2×2 inch (~300 DPI → 600×600 px)</option>
+            <option value="413x531">Visa (~413×531 px)</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1 1 150px;max-width:220px;">
+          <label>Background color</label>
+          <select id="id-bg">
+            <option value="#ffffff">White</option>
+            <option value="#1d4ed8">Blue</option>
+            <option value="#dc2626">Red</option>
+            <option value="#f1f5f9">Off-white</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-sm mt-xs">
+        <div class="field" style="flex:1 1 150px;max-width:220px;">
+          <label>Copies layout</label>
+          <div class="flex gap-xs">
+            <input id="id-cols" type="number" min="1" max="5" value="3" style="max-width:60px;" />
+            <span style="align-self:center;font-size:0.78rem;">per row</span>
+            <input id="id-rows" type="number" min="1" max="6" value="4" style="max-width:60px;margin-left:0.4rem;" />
+            <span style="align-self:center;font-size:0.78rem;">rows</span>
+          </div>
+          <small>Sheet will contain cols × rows ID copies.</small>
+        </div>
+      </div>
+      <div id="id-crop-container" class="id-crop-wrapper mt-sm" style="display:none;">
+        <img id="id-img" class="id-crop-img" alt="" />
+        <div id="id-crop-rect" class="crop-rect"></div>
+      </div>
+      <button class="btn mt-sm" onclick="generateIdPhoto()">Generate ID Photo Sheet</button>
+      <div id="id-status" class="status"></div>
+      <a id="id-download" class="download-link" href="#" style="display:none;" download="id-photos.png">⬇ Download ID photos sheet</a>
+    </div>
+  </section>
+
+    <!-- 13. Strong Password Generator (native style) -->
+  <section id="panel-password" class="tool-panel">
+    <div class="tool-header">
+      <div>
+        <h2>Strong Password Generator</h3>
+        <p>Generate ultra-strong passwords with instant strength meter.</p>
+      </div>
+      <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+    </div>
+
+    <div class="section">
+      <!-- Generated password + copy -->
+      <div class="field">
+        <label>Generated password</label>
+        <div class="spg-output-row">
+          <input
+            type="text"
+            id="spg-password-output"
+            readonly
+            value="Generating..."
+          />
+          <button type="button" class="btn btn-outline" id="spg-copy-btn">
+            Copy <span style="font-size:0.8em;font-weight:400;">(কপি)</span>
+          </button>
+        </div>
+        <div id="spg-copy-msg">Copied!</div>
+      </div>
+
+      <!-- Length slider -->
+      <div class="field">
+        <label>Length (দৈর্ঘ্য)</label>
+        <div class="flex flex-between">
+          <small class="hint">8–32 characters</small>
+          <span id="spg-length-val" class="badge-soft">16</span>
+        </div>
+        <input
+          type="range"
+          id="spg-length-slider"
+          min="8"
+          max="32"
+          value="16"
+        />
+      </div>
+
+      <!-- Character types -->
+      <div class="field">
+        <label>Character types</label>
+        <div class="spg-options-row">
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-upper" checked style="margin-right:6px;">
+            <span>ABC (বড় হাতের লেখা)</span>
+          </label>
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-lower" checked style="margin-right:6px;">
+            <span>abc (ছোট হাতের লেখা)</span>
+          </label>
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-numbers" checked style="margin-right:6px;">
+            <span>123 (সংখ্যা)</span>
+          </label>
+          <label class="mode-pill">
+            <input type="checkbox" id="spg-check-symbols" checked style="margin-right:6px;">
+            <span>!@# (প্রতীক)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <button type="button" class="btn mt-sm" id="spg-generate-btn">
+        Generate New Password<br />
+        <span style="font-size:0.85em;font-weight:400;">
+          (নতুন পাসওয়ার্ড তৈরি করুন)
+        </span>
+      </button>
+
+      <!-- Strength meter -->
+      <div class="field mt-sm">
+        <label>Password strength</label>
+        <div class="flex flex-between">
+          <div id="spg-strength-label" class="hint">Strength: —</div>
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-inner"
+            id="spg-strength-bar-fill"
+            style="width:0%;"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Error text -->
+      <div id="spg-error-msg"></div>
+    </div>
+  </section>
+
+<!--  NEW: PDF Split & Edit (Pages) -->
+<section id="panel-pdf-pages" class="tool-panel">
+  <div class="tool-header">
+    <div>
+      <h2>PDF Split &amp; Edit (Pages)</h3>
+      <p>Select, reorder, rotate &amp; export pages from a single PDF.</p>
+    </div>
+    <button class="btn btn-outline" onclick="goHome()">← Back to tools</button>
+  </div>
+
+  <!-- Upload -->
+  <div class="section">
+    <div class="field">
+      <label>Upload PDF file</label>
+      <input id="pdfPages-input" type="file" accept="application/pdf" />
+      <small>Big PDFs work too, but may be slow on low-RAM devices.</small>
+    </div>
+    <div id="pdfPages-status" class="status"></div>
+  </div>
+
+  <!-- Split by page ranges -->
+  <div class="section">
+    <div class="section-title">Split by page ranges</div>
+    <div class="field">
+      <label>Page ranges (based on current page order)</label>
+      <input
+        id="pdfPages-range"
+        type="text"
+        placeholder="e.g. 1-3,5,7-10"
+      />
+      <small>
+        Use commas to separate ranges. Examples:
+        <strong>1-5</strong>, <strong>2,4,6-8</strong>.
+      </small>
+    </div>
+    <button class="btn" id="pdfPages-split-btn">
+      Split &amp; Download Selected Pages
+    </button>
+    <div id="pdfPages-split-status" class="status mt-xs"></div>
+  </div>
+
+  <!-- Page editor -->
+  <div class="section">
+    <div class="section-title flex-between">
+      <span>Page editor</span>
+      <span id="pdfPages-page-count" class="badge-soft">No PDF loaded</span>
+    </div>
+    <div class="hint">
+      Reorder, rotate or delete pages below. Final export follows this order.
+    </div>
+
+    <div id="pdfPages-thumb-container">
+      <div id="pdfPages-thumb-grid" class="pdfPages-thumb-grid"></div>
+    </div>
+
+    <div id="pdfPages-editor-status" class="status mt-xs"></div>
+
+    <div class="mt-sm flex flex-wrap gap-sm">
+      <button class="btn" id="pdfPages-download-edited-btn">
+        Download Edited PDF
+      </button>
+    </div>
+  </div>
+</section>
+
+ <!-- Trust & E-E-A-T section -->
+  <section class="trust-section" aria-label="Why Adhurjya Store is safe and trusted">
+    <div class="trust-title">Why people can trust Adhurjya Store</div>
+    <div class="trust-sub">
+      All tools run directly in your browser tab — no file upload to any server.
+      Perfect for marksheets, ID photos, office PDFs and day-to-day work.
+    </div>
+
+    <div class="trust-grid">
+      <div class="trust-card">
+        <strong>100% client-side processing</strong>
+        Photos &amp; PDFs are handled locally in your device’s memory using JavaScript.
+        We don’t see, store or log your documents — once you close the tab, everything is gone.
+      </div>
+
+      <div class="trust-card">
+        <strong>Built for real-life documents</strong>
+        Photo → PDF, table OCR, ID photo maker, compressor — সব গুলোই
+        practical কাজের জন্য বানানো: exams, forms, office use, online apply ইত্যাদি।
+        আমরা আস্তে আস্তে সব টুল আরও stable করছি।
+      </div>
+
+      <div class="trust-card">
+        <strong>No login, no signup, no hidden paywall</strong>
+        You can start using tools instantly. Future “Pro” features clearly আলাদা করে দেখানো হবে,
+        যাতে free আর paid কখনও mix না হয় — no surprise charges.
+      </div>
+    </div>
+
+    <div class="trust-footer">
+      Adhurjya Store is an independent browser-tools project from India.
+      We regularly test tools on mobile &amp; low-end laptops so that students, job-seekers and office users
+      can use them safely without heavy apps.
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+<script src="site-protection.js"></script>
+
+</body>
+</html>

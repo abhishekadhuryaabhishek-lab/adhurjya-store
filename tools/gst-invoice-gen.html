@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GST Invoice Generator - Adhurjya Store</title>
+  <meta name="description" content="Ultra-Premium GST Invoice Generator for Adhurjya Store - client-side, PDF, QR, signatures" />
+
+  <!-- Required CDN: jsPDF, AutoTable, QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* Government-style printable invoice: white background, black text, Arial */
+    :root{
+      --page-bg: #ffffff;
+      --text-color: #000000;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--page-bg);color:var(--text-color);font-family:Arial, Helvetica, sans-serif}
+    .container{max-width:800px;margin:20px auto;padding:18px;background:var(--page-bg)}
+    /* Official theme page border */
+    body.theme-official .container{border:1px solid #000;padding:20px}
+    .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .open-tool-btn{display:inline-flex;align-items:center;padding:6px 10px;border:1px solid #000;background:#fff;color:#000;text-decoration:none}
+
+    /* Header: seller on left, invoice meta on right */
+    .inv-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #000;padding-bottom:8px}
+    .seller{font-weight:700;font-size:18px}
+    .seller .gst{font-weight:400;font-size:12px}
+    .inv-meta{font-size:13px;text-align:right}
+
+    /* Bill to */
+    .bill-to{margin-top:12px;border-bottom:1px solid #000;padding-bottom:8px}
+    .bill-to label{display:block;font-size:12px;margin-bottom:4px}
+
+    /* Items table: full-width, black borders, no rounded corners */
+    .items-wrap{margin-top:12px}
+    table.items{width:100%;border-collapse:collapse;border:1px solid #000}
+    table.items thead th{padding:8px;font-size:12px;border:1px solid #000;background:transparent}
+    table.items tbody td{padding:8px;font-size:12px;border:1px solid #000;vertical-align:middle}
+    table.items tbody tr{counter-increment:row}
+    table.items tbody tr::before{content:counter(row);display:table-cell;padding:8px;border:1px solid #000;text-align:center}
+
+    /* Inputs: unobtrusive on print, but visible on screen */
+    input,select,textarea,button{font:inherit}
+    input,select,textarea{width:100%;padding:6px;border:1px solid #000;background:transparent;color:var(--text-color)}
+    /* Fixed heights for table controls to keep row heights consistent */
+    table.items tbody td input, table.items tbody td select { height:32px; box-sizing:border-box; }
+    table.items tbody td input.small, table.items tbody td select.small { height:32px; }
+    /* Discount wrapper inside TD to allow flex without making TD flex */
+    .discount-wrap{ display:flex; align-items:center; gap:6px; height:100%; }
+    .discount-wrap select{ min-width:50px; }
+    .discount-wrap input{ width:86px; }
+    textarea{min-height:80px}
+
+    .actions{display:flex;gap:8px;margin-top:12px}
+    .btn{padding:8px 10px;border:1px solid #000;background:#fff;color:#000;cursor:pointer}
+    .invalid{border-color:#c00 !important}
+
+    /* Totals block right-aligned */
+    .totals-block{margin-top:12px;display:flex;justify-content:flex-end}
+    .totals-block .box{min-width:260px;text-align:right}
+    .totals-block .box .line{display:flex;justify-content:space-between;padding:4px 0}
+    .totals-block .box .grand{font-weight:700;font-size:1.1rem;border-top:1px solid #000;padding-top:6px;margin-top:6px}
+
+    /* Signature area */
+    .sig-pad{background:transparent;border:1px solid #000}
+
+    /* QR box: keep visible but simple */
+    .qr-box{display:flex;align-items:center;justify-content:center;padding:4px;border:1px solid #000}
+
+    /* Remove rounded corners globally */
+    .card, .open-tool-btn, .btn, input, select, textarea {border-radius:0}
+
+    /* Printer-friendly rules */
+    @media print{
+      body{background:#ffffff;color:#000}
+      .open-tool-btn, .btn{display:none}
+      .container{max-width:794px;margin:0 auto;padding:12mm}
+      table.items thead th, table.items tbody td{font-size:11px}
+    }
+
+    /* Responsive layout fixes */
+    /* Prevent horizontal body scroll while allowing inner scrolls */
+    html, body { overflow-x: hidden; }
+    .container { width: 100%; max-width: 800px; margin: 16px auto; padding: 14px; box-sizing: border-box; }
+    img, table, .card, .open-tool-btn, .btn { max-width: 100%; box-sizing: border-box; }
+    /* Scroll wrapper for tables to avoid overflow on small screens */
+    .table-scroll{ overflow-x: auto; -webkit-overflow-scrolling: touch; width:100%; }
+    .table-scroll table { width:100%; min-width:0; }
+    /* Ensure inputs/selects don't exceed viewport */
+    input, select, textarea { max-width: 100%; box-sizing: border-box; }
+
+    /* State field grid: clearer separation of State Name and State Code */
+    .state-grid{ display:grid; grid-template-columns: 2fr 1fr; gap:10px; align-items:center; }
+    .state-grid label{ display:block; font-size:12px; margin-bottom:4px }
+    .state-grid input{ height:32px; box-sizing:border-box; }
+
+    /* Mobile breakpoint: collapse grids and stack elements */
+    @media (max-width: 768px){
+      .grid{display:block}
+      .inv-header, .top-bar{flex-direction:column;align-items:stretch}
+      .inv-header > div{width:100%}
+      .inv-meta{width:100%;text-align:left;margin-top:8px}
+      .bill-to{display:block}
+      .bill-to > div{width:100%}
+      .bill-to [style*="grid-template-columns"]{display:block}
+      .totals-block{flex-direction:column;align-items:stretch}
+      .totals-box{min-width:0;max-width:100%}
+      .download-section{align-self:stretch}
+      .qr-section{align-self:stretch;margin-top:12px}
+      .items-wrap{margin-top:8px}
+      /* make inline width styles behave responsively */
+      #sellerGSTIN, #invoiceNumber, #invoiceDate, #placeOfSupplyState, #placeOfSupplyCode { width: 100% !important; max-width:100% !important; }
+      /* table paddings and fonts tuned for mobile */
+      table.items thead th, table.items tbody td{padding:6px;font-size:12px}
+      /* allow table to scroll horizontally inside wrapper */
+      .table-scroll{overflow-x:auto}
+    }
+
+    /* Theme overrides: official (print) and premium (dark) */
+    body.theme-official{background:#ffffff;color:#000}
+    body.theme-official .container{background:#ffffff}
+    body.theme-official .open-tool-btn, body.theme-official .btn{background:#fff;color:#000;border:1px solid #000;box-shadow:none}
+    body.theme-official input, body.theme-official select, body.theme-official textarea{background:transparent;color:#000;border:1px solid #000;border-radius:0}
+    body.theme-official .card, body.theme-official .qr-box, body.theme-official .sig-pad{border-radius:0;box-shadow:none}
+    body.theme-official hr{border-top:1px solid #000}
+
+    /* Official theme spacing and structured flow */
+    body.theme-official .items-wrap{margin-bottom:30px}
+    body.theme-official .totals-block{display:flex;flex-direction:column;align-items:flex-end;gap:25px;margin-top:0}
+    body.theme-official .totals-block .totals-box .line{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+    body.theme-official .totals-block .totals-box .line + .line{margin-top:20px}
+    body.theme-official .totals-block .totals-box .grand{display:flex;justify-content:space-between;align-items:center;margin-top:15px;font-weight:700;font-size:1.15rem;border-top:1px solid #000;padding-top:8px}
+    body.theme-official .totals-block .qr-section{align-self:flex-start;margin-top:25px}
+    body.theme-official .qr-section .qr-box{border:1px solid #000;padding:10px;height:auto;width:auto}
+    body.theme-official .status-section{align-self:flex-start;margin-top:20px}
+    body.theme-official .status-section .muted{display:block}
+    body.theme-official .download-section{margin-top:25px;align-self:center}
+    body.theme-official .download-section .btn{padding:8px 16px}
+
+    body.theme-premium{--bg-color:#0a0f1a;--card-bg:#0f1724;--text-primary:#e6eef8;--text-secondary:#9fb4c9;--open-btn-gradient:linear-gradient(135deg,#10b981,#059669);--border-color:rgba(159,185,199,0.12);background:var(--bg-color);color:var(--text-primary)}
+    body.theme-premium .container{background:transparent}
+    body.theme-premium .card{background:var(--card-bg);border:1px solid var(--border-color);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    body.theme-premium .open-tool-btn, body.theme-premium .btn{background:var(--open-btn-gradient);color:#fff;border-radius:8px;border:0}
+    body.theme-premium input, body.theme-premium select, body.theme-premium textarea{background:transparent;color:var(--text-primary);border:1px solid var(--border-color);border-radius:8px}
+    body.theme-premium .qr-box, body.theme-premium .sig-pad{background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid var(--border-color)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <a class="open-tool-btn" href="../index.html">← Back to Dashboard</a>
+      <div class="muted">Ultra-Premium GST Invoice Generator — Adhurjya Store</div>
+      <div style="margin-left:12px">
+        <label style="font-size:13px">Theme
+          <select id="themeSelect" style="margin-left:6px;padding:4px;border:1px solid #000">
+            <option value="official">Official</option>
+            <option value="premium">Premium</option>
+          </select>
+        </label>
+        <div style="margin-top:8px">
+          <label style="font-size:13px">Business Profile
+            <select id="profileSelect" style="margin-left:6px;padding:4px;border:1px solid #000"></select>
+          </label>
+          <input type="file" id="sellerLogoUpload" accept="image/*" style="margin-left:8px" title="Upload logo for current profile" />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <main>
+        <div class="card">
+          <div class="inv-header">
+            <div>
+              <div class="seller">ADHURJYA STORE</div>
+              <div class="gst" style="margin-top:6px">GSTIN: <input id="sellerGSTIN" placeholder="22AAAAA0000A1Z5" style="width:220px;display:inline-block" /></div>
+              <div class="state-grid" style="margin-top:6px;">
+                <div>
+                  <label>State Name</label>
+                  <input id="sellerState" placeholder="State name" />
+                </div>
+                <div>
+                  <label>State Code</label>
+                  <input id="sellerStateCode" placeholder="State code" readonly />
+                </div>
+              </div>
+              <div style="margin-top:8px"><label style="font-weight:700">Seller Name</label><div><input id="sellerName" placeholder="Seller name" /></div></div>
+              <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+                <input id="sellerPhone" placeholder="Phone" />
+                <input id="sellerEmail" placeholder="Email" />
+                <input id="sellerPAN" placeholder="PAN" />
+              </div>
+            </div>
+            <div class="inv-meta">
+              <div><label style="font-size:12px">Invoice Type:</label><div><select id="invoiceType" style="width:160px"><option>Tax Invoice</option><option>Bill of Supply</option><option>Proforma Invoice</option><option>Credit Note</option><option>Debit Note</option></select></div></div>
+              <div><label style="font-size:12px">Invoice No:</label><div><input id="invoiceNumber" style="width:160px" /></div></div>
+              <div style="margin-top:8px"><label style="font-size:12px">Invoice Date:</label><div><input id="invoiceDate" type="date" style="width:160px" /></div></div>
+              <div style="margin-top:8px"><label style="font-size:12px">Payment Status:</label><div><select id="paymentStatus" style="width:160px"><option>Unpaid</option><option>Paid</option><option>Partially Paid</option></select></div></div>
+            </div>
+          </div>
+
+          <div class="bill-to">
+            <label style="font-weight:700">Bill To</label>
+            <div style="display:grid;grid-template-columns:1fr 220px;gap:8px">
+              <div>
+                <label>Buyer Name</label>
+                <input id="buyerName" list="buyersList" placeholder="Buyer / Customer name" />
+                <datalist id="buyersList"></datalist>
+                <label style="margin-top:6px">Buyer Address</label>
+                <textarea id="buyerAddress" placeholder="Buyer address (for print)"></textarea>
+              </div>
+              <div>
+                <label>Buyer GSTIN</label>
+                <input id="buyerGSTIN" placeholder="Buyer GSTIN (optional)" />
+                <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+                  <label style="font-size:13px">Place of Supply</label>
+                </div>
+                <div class="state-grid" style="margin-top:6px">
+                  <div>
+                    <label>State Name</label>
+                    <input id="placeOfSupplyState" placeholder="State" />
+                  </div>
+                  <div>
+                    <label>State Code</label>
+                    <input id="placeOfSupplyCode" placeholder="Code" readonly />
+                  </div>
+                </div>
+                <div style="margin-top:8px"><label><input type="checkbox" id="reverseCharge" style="margin-right:6px" />Reverse Charge</label></div>
+              </div>
+            </div>
+          </div>
+
+          <hr style="margin:12px 0;border:none;border-top:1px solid var(--border-color)" />
+
+          <div class="items-wrap">
+            <div class="table-scroll">
+              <table class="items">
+              <thead>
+                <tr>
+                  <th style="width:4%"></th>
+                  <th style="width:36%">Description / HSN</th>
+                  <th style="width:8%">Unit</th>
+                  <th style="width:8%">Qty</th>
+                  <th style="width:8%">Rate</th>
+                  <th style="width:8%">Discount</th>
+                  <th style="width:8%">GST %</th>
+                  <th style="width:10%">Total</th>
+                  <th style="width:6%"></th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Totals and related sections (structured vertical flow for Official theme) -->
+          <div class="totals-block">
+            <div class="totals-box" aria-hidden="false" style="min-width:280px;max-width:360px;text-align:right">
+              <div class="line"><div class="muted">Subtotal</div><div id="subtotal" class="summary">₹ 0.00</div></div>
+              <div class="line"><div class="muted">Total CGST</div><div id="totalCGST" class="summary">₹ 0.00</div></div>
+              <div class="line"><div class="muted">Total SGST</div><div id="totalSGST" class="summary">₹ 0.00</div></div>
+              <div class="line"><div class="muted">Total IGST</div><div id="totalIGST" class="summary">₹ 0.00</div></div>
+              <div class="line"><div class="muted">Round Off Adjustment</div><div id="roundOff" class="summary">₹ 0.00</div></div>
+              <div class="grand"><div class="muted">Grand Total</div><div id="grandTotal">₹ 0.00</div></div>
+              <div style="margin-top:8px;text-align:left;font-size:13px" id="amountInWords">Amount in words: Zero Rupees Only</div>
+            </div>
+
+            <!-- QR include toggle -->
+            <div style="align-self:flex-start">
+              <label style="font-size:13px"><input type="checkbox" id="includeQrCheckbox" checked style="margin-right:8px"/> Include UPI QR in Invoice</label>
+            </div>
+
+            <div style="align-self:flex-start;margin-left:12px">
+              <label style="font-size:13px">Payment Mode</label>
+              <div><select id="paymentMode" style="width:140px"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option></select></div>
+              <div style="margin-top:8px"><label>Due Date</label><div><input id="dueDate" type="date" style="width:140px" /></div></div>
+            </div>
+
+            <div class="qr-section">
+              <div class="qr-box" id="qrPreview" style="height:80px;width:80px"></div>
+            </div>
+
+            <div class="status-section">
+              <div style="text-align:left"><label class="muted">Last Status</label><div class="muted" id="statusLine">Ready</div></div>
+              <div style="margin-top:8px;text-align:left"><div class="muted">Bank Saved</div><div class="muted" id="bankSaved">No</div></div>
+            </div>
+
+            <div class="download-section">
+              <button class="btn download" id="downloadPdfBtn">Download PDF</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn add-item" id="addItemBtn">Add Item</button>
+            <button class="btn generate" id="generatePdfBtn">Generate & Download PDF</button>
+            <button class="btn" id="saveJsonBtn">Export JSON</button>
+            <button class="btn" id="saveHistoryBtn">Save to History</button>
+            <button class="btn" id="hardResetBtn">Hard Reset</button>
+          </div>
+          <div style="margin-top:20px">
+            <button class="btn" id="clearAllBtn">Clear All</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h2>Notes & Terms</h2>
+          <label>Terms & Conditions</label>
+          <textarea id="terms" placeholder="Enter terms and conditions here..."></textarea>
+          <h3 style="margin-top:12px">Bank Details</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <input id="bankName" placeholder="Bank name" />
+            <input id="accountNumber" placeholder="Account number" />
+            <input id="ifsc" placeholder="IFSC" />
+            <input id="branch" placeholder="Branch" />
+            <input id="upiId" placeholder="UPI ID (example@upi)" />
+            <input id="upiName" placeholder="UPI payee name" />
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h2>Signature</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label>Upload Signature (PNG/JPG)</label>
+              <input type="file" id="sigUpload" accept="image/*" />
+              <div id="sigPreview" style="margin-top:8px"></div>
+            </div>
+            <div>
+              <label>Draw Signature</label>
+              <div class="sig-pad" style="padding:8px">
+                <canvas id="sigCanvas" width="400" height="120" style="width:100%;height:80px;border:1px solid var(--border-color);background:#fff"></canvas>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="btn" id="clearSig">Clear</button>
+                  <button class="btn" id="saveSig">Save</button>
+                </div>
+                <div id="drawnSigPreview" style="margin-top:8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right sidebar removed — totals and controls moved under items for a single-column invoice layout -->
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    'use strict';
+
+    // Helpers
+    const $ = id => document.getElementById(id);
+    const currencyFmt = v => '₹ ' + Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    // PDF-safe currency formatting (avoid Unicode ₹ to prevent jsPDF font issues)
+    const pdfCurrencyFmt = v => 'Rs. ' + Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    const setStatus = (s) => { const el = $('statusLine'); if (el) el.textContent = s; };
+
+    // Theme handling (persisted)
+    const THEME_KEY = 'gst_theme';
+    function applyTheme(name){
+      document.body.classList.remove('theme-official','theme-premium');
+      if (name === 'premium') document.body.classList.add('theme-premium'); else document.body.classList.add('theme-official');
+      try{ localStorage.setItem(THEME_KEY, name); }catch(e){}
+      const sel = $('themeSelect'); if (sel) sel.value = (name === 'premium' ? 'premium' : 'official');
+    }
+    function loadTheme(){ const t = (localStorage.getItem(THEME_KEY) || 'official'); applyTheme(t); }
+    const themeSelElem = $('themeSelect'); if (themeSelElem) themeSelElem.addEventListener('change', (e)=> applyTheme(e.target.value));
+
+    // Storage keys
+    const storageKeys = {
+      sellerName: 'gst_seller_name', sellerGST: 'gst_seller_gstin', bankName: 'gst_bank_name', account: 'gst_account_number', ifsc: 'gst_ifsc', branch: 'gst_branch', upi: 'gst_upi', upiName: 'gst_upi_name', terms: 'gst_terms', lastInv: 'gst_last_invoice'
+    };
+    storageKeys.includeQR = 'gst_include_qr';
+
+    // Extended storage keys for profiles, buyers and history
+    storageKeys.profiles = 'gst_profiles_v1';
+    storageKeys.buyers = 'gst_buyers_v1';
+    storageKeys.history = 'gst_history_v1';
+
+    // Central state
+    const state = {
+      items: [],
+      totals: { subtotal: 0, totalCGST: 0, totalSGST: 0, grandTotal: 0 },
+      includeQR: true
+    };
+
+    // Unique id generator for rows
+    let uidCounter = Date.now();
+    function genUid(){ return 'i' + (++uidCounter); }
+
+    // Profiles and buyers memory
+    function loadProfiles(){ try{ return JSON.parse(localStorage.getItem(storageKeys.profiles) || '[]') }catch(e){return []} }
+    function saveProfiles(p){ try{ localStorage.setItem(storageKeys.profiles, JSON.stringify(p||[])); }catch(e){} }
+    function loadBuyers(){ try{ return JSON.parse(localStorage.getItem(storageKeys.buyers) || '[]') }catch(e){return []} }
+    function saveBuyers(b){ try{ localStorage.setItem(storageKeys.buyers, JSON.stringify(b||[])); }catch(e){} }
+    function loadHistory(){ try{ return JSON.parse(localStorage.getItem(storageKeys.history) || '[]') }catch(e){return []} }
+    function saveHistory(h){ try{ localStorage.setItem(storageKeys.history, JSON.stringify(h||[])); }catch(e){} }
+
+    // Profile helpers
+    function refreshProfileSelect(){ const sel = $('profileSelect'); if (!sel) return; const list = loadProfiles(); sel.innerHTML=''; list.forEach((p,i)=>{ const opt = document.createElement('option'); opt.value = i; opt.textContent = p.name || ('Profile ' + (i+1)); sel.appendChild(opt); }); const createOpt = document.createElement('option'); createOpt.value='__new'; createOpt.textContent='Create new...'; sel.appendChild(createOpt); }
+    function applyProfile(index){ const profiles = loadProfiles(); const p = profiles[index]; if (!p) return; $('sellerName').value = p.name || ''; $('sellerGSTIN').value = p.gstin || ''; $('sellerState').value = p.state || ''; $('sellerStateCode').value = p.stateCode || ''; $('bankName').value = p.bankName || ''; $('accountNumber').value = p.account || ''; $('ifsc').value = p.ifsc || ''; $('branch').value = p.branch || ''; $('upiId').value = p.upi || ''; $('upiName').value = p.upiName || ''; $('sellerPhone').value = p.phone || ''; $('sellerEmail').value = p.email || ''; $('sellerPAN').value = p.pan || ''; // logo
+      if (p.logoDataUrl){ const box = document.getElementById('sigPreview'); // reuse sigPreview for logo small preview
+        const img = new Image(); img.src = p.logoDataUrl; img.style.maxWidth='120px'; img.style.maxHeight='40px'; img.alt='Logo'; const container = document.getElementById('logoPreview'); if (!container){ const c = document.createElement('div'); c.id='logoPreview'; c.style.marginTop='8px'; c.appendChild(img); const header = document.querySelector('.inv-header'); if (header) header.insertBefore(c, header.firstChild); } else { container.innerHTML=''; container.appendChild(img); }
+      }
+    }
+    function createProfileFromForm(){ const profiles = loadProfiles(); const p = { name: $('sellerName').value||'Business', gstin: $('sellerGSTIN').value||'', state: $('sellerState').value||'', stateCode: $('sellerStateCode').value||'', bankName: $('bankName').value||'', account: $('accountNumber').value||'', ifsc: $('ifsc').value||'', branch: $('branch').value||'', upi: $('upiId').value||'', upiName: $('upiName').value||'', phone: $('sellerPhone').value||'', email: $('sellerEmail').value||'', pan: $('sellerPAN').value||'' };
+      // attach logo if uploaded and stored in temp
+      if (window._tempLogoDataUrl) p.logoDataUrl = window._tempLogoDataUrl;
+      profiles.push(p); saveProfiles(profiles); refreshProfileSelect(); return profiles.length-1;
+    }
+
+    // DOM refs
+    const itemsBody = $('itemsBody');
+    const addItemBtn = $('addItemBtn');
+    const generatePdfBtn = $('generatePdfBtn');
+    const downloadPdfBtn = $('downloadPdfBtn');
+
+    // Invoice numbering
+    function formatInv(n){ return 'INV-' + String(n).padStart(3,'0'); }
+    function getLastInvoice(){ return Number(localStorage.getItem(storageKeys.lastInv) || 0); }
+    function setLastInvoice(n){ localStorage.setItem(storageKeys.lastInv, String(n)); }
+    function initInvoiceNumber(){ const last = getLastInvoice(); $('invoiceNumber').value = formatInv(last + 1); }
+
+    // Smart invoice number: ensure no duplicates across history and lastInv
+    function getNextUniqueInvoice(proposed){
+      const hist = loadHistory();
+      const last = getLastInvoice();
+      // try parse proposed like INV-123
+      let parsed = null;
+      if (proposed){ const m = proposed.match(/^INV-(\d+)$/i); if (m) parsed = Number(m[1]); }
+      if (!parsed || !isFinite(parsed)) parsed = last + 1;
+      // ensure uniqueness against history and last
+      const used = new Set(hist.map(h=> (h.invoiceNumber||'').toString().trim()));
+      while (used.has(formatInv(parsed)) || parsed <= last) parsed++;
+      return formatInv(parsed);
+    }
+
+    // Seller persistence
+    function loadSeller(){
+      $('sellerName').value = localStorage.getItem(storageKeys.sellerName) || '';
+      $('sellerGSTIN').value = localStorage.getItem(storageKeys.sellerGST) || '';
+      $('bankName').value = localStorage.getItem(storageKeys.bankName) || '';
+      $('accountNumber').value = localStorage.getItem(storageKeys.account) || '';
+      $('ifsc').value = localStorage.getItem(storageKeys.ifsc) || '';
+      $('branch').value = localStorage.getItem(storageKeys.branch) || '';
+      $('upiId').value = localStorage.getItem(storageKeys.upi) || '';
+      $('upiName').value = localStorage.getItem(storageKeys.upiName) || '';
+      $('terms').value = localStorage.getItem(storageKeys.terms) || '';
+      $('bankSaved').textContent = (localStorage.getItem(storageKeys.account) ? 'Yes' : 'No');
+    }
+    function saveSeller(){
+      localStorage.setItem(storageKeys.sellerName, $('sellerName').value || '');
+      localStorage.setItem(storageKeys.sellerGST, $('sellerGSTIN').value || '');
+      localStorage.setItem(storageKeys.bankName, $('bankName').value || '');
+      localStorage.setItem(storageKeys.account, $('accountNumber').value || '');
+      localStorage.setItem(storageKeys.ifsc, $('ifsc').value || '');
+      localStorage.setItem(storageKeys.branch, $('branch').value || '');
+      localStorage.setItem(storageKeys.upi, $('upiId').value || '');
+      localStorage.setItem(storageKeys.upiName, $('upiName').value || '');
+      localStorage.setItem(storageKeys.terms, $('terms').value || '');
+      $('bankSaved').textContent = ($('accountNumber').value ? 'Yes' : 'No');
+    }
+
+    // GSTIN validation
+    function validateGSTIN(gstin){
+      if(!gstin) return false;
+      const v = gstin.toString().trim().toUpperCase();
+      const re = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
+      return re.test(v);
+    }
+    // Calculation engine: deterministic discount rules and totals
+    function computeLine(item){
+      // normalize numeric inputs and prevent negative values
+      const qty = Math.max(0, Number(item.qty) || 0);
+      const rate = Math.max(0, Number(item.rate) || 0);
+      const gst = Math.max(0, Number(item.gst) || 0);
+      const discountRaw = Math.max(0, Number(item.discount) || 0);
+      const base = qty * rate;
+
+      // discount type: 'percent' or 'fixed'
+      let discountValue = 0;
+      if (item.discountType === 'percent') {
+        discountValue = (discountRaw / 100) * base;
+      } else {
+        discountValue = discountRaw; // fixed amount
+      }
+      // Prevent discount exceeding base
+      discountValue = Math.min(discountValue, base);
+
+      const taxable = Math.max(0, base - discountValue);
+      // determine intra/inter state taxation later in computeTotals; here compute proportion values
+      const halfTax = taxable * (gst / 2) / 100;
+      const fullTax = taxable * (gst) / 100;
+      const lineTotal = taxable + fullTax;
+
+      return { base, discountValue, taxable, halfTax, fullTax, lineTotal };
+    }
+    function computeTotals(){
+      let subtotal = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0;
+      const sellerCode = ($('sellerStateCode') && $('sellerStateCode').value || '').toString().trim();
+      const placeCode = ($('placeOfSupplyCode') && $('placeOfSupplyCode').value || '').toString().trim();
+      const intraState = (sellerCode && placeCode && sellerCode === placeCode);
+      state.items.forEach(it => {
+        const res = computeLine(it);
+        subtotal += res.taxable;
+        if (intraState) {
+          totalCGST += res.halfTax;
+          totalSGST += res.halfTax;
+        } else {
+          totalIGST += res.fullTax;
+        }
+      });
+      const grand = subtotal + totalCGST + totalSGST + totalIGST;
+      // round off adjustment (round to nearest rupee)
+      const rounded = Math.round(grand);
+      const roundOff = Number((rounded - grand).toFixed(2));
+      const finalGrand = Number((grand + roundOff).toFixed(2));
+      state.totals = { subtotal, totalCGST, totalSGST, totalIGST, roundOff, grandTotal: finalGrand };
+
+      // update UI totals
+      $('subtotal').textContent = currencyFmt(subtotal);
+      $('totalCGST').textContent = currencyFmt(totalCGST);
+      $('totalSGST').textContent = currencyFmt(totalSGST);
+      $('totalIGST').textContent = currencyFmt(totalIGST);
+      $('roundOff').textContent = currencyFmt(roundOff);
+      $('grandTotal').textContent = currencyFmt(finalGrand);
+
+      // amount in words
+      $('amountInWords').textContent = 'Amount in words: ' + amountToWords(finalGrand) + ' Only';
+
+      // update QR using numeric state (no DOM parsing)
+      updateQRCodeFromState();
+    }
+
+    // Convert number to Indian currency words (supports paise)
+    function amountToWords(amount){
+      if (!isFinite(amount)) return 'Zero Rupees';
+      const n = Number(amount).toFixed(2);
+      const [intPart, decPart] = String(n).split('.');
+      const num = parseInt(intPart,10);
+      function inWords(num){
+        const a = ['', 'One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+        const b = ['', '', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+        if (num < 20) return a[num];
+        if (num < 100) return b[Math.floor(num/10)] + (num%10 ? ' ' + a[num%10] : '');
+        if (num < 1000) return a[Math.floor(num/100)] + ' Hundred' + (num%100 ? ' ' + inWords(num%100) : '');
+        if (num < 100000) return inWords(Math.floor(num/1000)) + ' Thousand' + (num%1000 ? ' ' + inWords(num%1000) : '');
+        if (num < 10000000) return inWords(Math.floor(num/100000)) + ' Lakh' + (num%100000 ? ' ' + inWords(num%100000) : '');
+        return inWords(Math.floor(num/10000000)) + ' Crore' + (num%10000000 ? ' ' + inWords(num%10000000) : '');
+      }
+      const words = inWords(num) || 'Zero';
+      const paise = parseInt(decPart,10);
+      const paiseWords = paise ? (' and ' + inWords(paise) + ' Paise') : '';
+      return words + ' Rupees' + paiseWords;
+    }
+
+    // Row rendering: create new TR for item without full re-rendering
+    function createRow(item){
+      const tr = document.createElement('tr');
+      tr.dataset.uid = item.uid;
+      tr.innerHTML = `
+        <td>
+          <input data-field="desc" value="${escapeHtml(item.desc)}" placeholder="Item description" />
+          <div style="margin-top:6px"><input data-field="hsn" placeholder="HSN" value="${escapeHtml(item.hsn||'')}" /></div>
+        </td>
+        <td>
+          <select data-field="unit">
+            <option>Pcs</option><option>Nos</option><option>Kg</option><option>Gram</option><option>Litre</option>
+            <option>Meter</option><option>Roll</option><option>Box</option><option>Set</option><option>Dozen</option>
+            <option>Bundle</option><option>Packet</option><option>Carton</option><option>Sqft</option><option>Sqm</option>
+          </select>
+        </td>
+        <td><input data-field="qty" type="number" min="0" step="any" value="${item.qty}" class="small" /></td>
+        <td><input data-field="rate" type="number" min="0" step="any" value="${item.rate}" class="small" /></td>
+        <td>
+          <div class="discount-wrap">
+            <select data-field="discountType"><option value="percent">%</option><option value="fixed">₹</option></select>
+            <input data-field="discount" type="number" min="0" step="any" value="${item.discount}" class="small" />
+          </div>
+        </td>
+        <td><input data-field="gst" type="number" min="0" step="any" value="${item.gst}" class="small" /></td>
+        <td data-cell="lineTotal">${currencyFmt(0)}</td>
+        <td><button data-action="remove" class="btn">Remove</button></td>
+      `;
+      // set selects
+      tr.querySelector('select[data-field="unit"]').value = item.unit || 'Pcs';
+      tr.querySelector('select[data-field="discountType"]').value = item.discountType || 'percent';
+      return tr;
+    }
+
+    function addItem(data){
+      const item = Object.assign({ uid: genUid(), desc:'', hsn:'', unit:'Pcs', qty:1, rate:0, discount:0, discountType:'percent', gst:18 }, data || {});
+      state.items.push(item);
+      const tr = createRow(item);
+      itemsBody.appendChild(tr);
+      // update this row visuals after appending
+      updateRowUI(item.uid);
+      computeTotals();
+      return item;
+    }
+
+    function removeItemByUid(uid){
+      const idx = state.items.findIndex(x => x.uid === uid);
+      if (idx === -1) return;
+      state.items.splice(idx,1);
+      const tr = itemsBody.querySelector('tr[data-uid="' + uid + '"]');
+      if (tr) tr.remove();
+      computeTotals();
+    }
+
+    function updateRowUI(uid){
+      const idx = state.items.findIndex(x => x.uid === uid);
+      if (idx === -1) return;
+      const it = state.items[idx];
+      const res = computeLine(it);
+      const tr = itemsBody.querySelector('tr[data-uid="' + uid + '"]');
+      if (!tr) return;
+      const cell = tr.querySelector('[data-cell="lineTotal"]');
+      if (cell) cell.textContent = currencyFmt(res.lineTotal);
+    }
+
+    function escapeHtml(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Event delegation for item edits and remove
+    itemsBody.addEventListener('input', function(e){
+      const target = e.target;
+      const tr = target && target.closest('tr');
+      if (!tr) return;
+      const uid = tr.dataset.uid;
+      const field = target.getAttribute('data-field');
+      if (!uid || !field) return;
+      // parse values safely
+      let val = target.value;
+      if (['qty','rate','discount','gst'].includes(field)){
+        val = Number(val);
+        if (!isFinite(val) || isNaN(val)) val = 0;
+        if (val < 0) val = 0;
+      }
+      // update state
+      const idx = state.items.findIndex(x => x.uid === uid);
+      if (idx === -1) return;
+      state.items[idx][field] = val;
+      // special: if discountType changed ensure proper type
+      if (field === 'discountType' && !['percent','fixed'].includes(val)) state.items[idx].discountType = 'percent';
+      // update only this row and totals
+      updateRowUI(uid);
+      computeTotals();
+    });
+
+    itemsBody.addEventListener('change', function(e){
+      // ensure select changes captured (for some browsers 'input' may not fire on selects)
+      const target = e.target;
+      const tr = target && target.closest('tr');
+      if (!tr) return;
+      const uid = tr.dataset.uid;
+      const field = target.getAttribute('data-field');
+      if (!uid || !field) return;
+      let val = target.value;
+      if (['qty','rate','discount','gst'].includes(field)){
+        val = Number(val);
+        if (!isFinite(val) || isNaN(val)) val = 0;
+        if (val < 0) val = 0;
+      }
+      const idx = state.items.findIndex(x => x.uid === uid);
+      if (idx === -1) return;
+      state.items[idx][field] = val;
+      updateRowUI(uid);
+      computeTotals();
+    });
+
+    itemsBody.addEventListener('click', function(e){
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const tr = btn.closest('tr');
+      if (!tr) return;
+      const uid = tr.dataset.uid;
+      if (action === 'remove') removeItemByUid(uid);
+    });
+
+    // QR: use numeric grand total from state
+    let qrObj = null;
+    function updateQRCodeFromState(){
+      const box = $('qrPreview');
+      if (!state.includeQR){ if (box) { box.innerHTML=''; box.style.display='none'; } return; }
+      if (box) box.style.display = '';
+      const upi = $('upiId').value.trim();
+      const upiName = $('upiName').value.trim() || $('sellerName').value.trim();
+      const amount = Number(state.totals.grandTotal || 0).toFixed(2);
+      const uri = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(upiName)}&am=${encodeURIComponent(amount)}&cu=INR`;
+      box.innerHTML = '';
+      if (!upi) { box.textContent = 'No UPI'; return; }
+      try{ qrObj = new QRCode(box, { text: uri, width: 120, height: 120 }); }catch(e){ box.textContent = 'QR err'; }
+    }
+
+    // Signature handling (keep existing behavior)
+    let uploadedSigData = null;
+    let drawnSigData = null;
+    const sigCanvas = $('sigCanvas');
+    const sigCtx = sigCanvas.getContext('2d');
+    let drawing=false, lastX=0, lastY=0;
+    function clearCanvas(){ sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); sigCtx.fillStyle='#fff'; sigCtx.fillRect(0,0,sigCanvas.width,sigCanvas.height); }
+    clearCanvas(); sigCtx.strokeStyle='#000'; sigCtx.lineWidth=2; sigCtx.lineJoin='round'; sigCtx.lineCap='round';
+    sigCanvas.addEventListener('pointerdown', (e)=>{ drawing=true; const r=sigCanvas.getBoundingClientRect(); lastX=(e.clientX-r.left)*(sigCanvas.width/r.width); lastY=(e.clientY-r.top)*(sigCanvas.height/r.height); });
+    sigCanvas.addEventListener('pointermove', (e)=>{ if(!drawing) return; const r=sigCanvas.getBoundingClientRect(); const x=(e.clientX-r.left)*(sigCanvas.width/r.width); const y=(e.clientY-r.top)*(sigCanvas.height/r.height); sigCtx.beginPath(); sigCtx.moveTo(lastX,lastY); sigCtx.lineTo(x,y); sigCtx.stroke(); lastX=x; lastY=y; });
+    sigCanvas.addEventListener('pointerup',()=>{ drawing=false; }); sigCanvas.addEventListener('pointerleave',()=>{ drawing=false; });
+    $('clearSig').addEventListener('click', ()=>{ clearCanvas(); drawnSigData = null; $('drawnSigPreview').innerHTML = ''; });
+    $('saveSig').addEventListener('click', ()=>{ drawnSigData = sigCanvas.toDataURL('image/png'); const img = new Image(); img.src = drawnSigData; img.style.maxWidth='100%'; $('drawnSigPreview').innerHTML=''; $('drawnSigPreview').appendChild(img); setStatus('Signature saved.'); });
+    $('sigUpload').addEventListener('change', (e)=>{ const f = e.target.files && e.target.files[0]; if (!f) return; const reader=new FileReader(); reader.onload=()=>{ uploadedSigData = reader.result; const img=new Image(); img.src=uploadedSigData; img.style.maxWidth='100%'; $('sigPreview').innerHTML=''; $('sigPreview').appendChild(img); setStatus('Signature uploaded.'); }; reader.readAsDataURL(f); });
+
+    // Build items for AutoTable using state and discount type
+    // Build items for AutoTable. If interState true, include IGST column instead of CGST+SGST
+    function buildItemsForAutoTable(interState){
+      const body = [];
+      state.items.forEach(it=>{
+        const qty = Math.max(0, Number(it.qty)||0), rate = Math.max(0, Number(it.rate)||0), gst = Math.max(0, Number(it.gst)||0);
+        const base = qty * rate;
+        const discountRaw = Math.max(0, Number(it.discount)||0);
+        const discountValue = (it.discountType === 'percent') ? Math.min(base, (discountRaw/100)*base) : Math.min(base, discountRaw);
+        const taxable = Math.max(0, base - discountValue);
+        const cgst = taxable * (gst/2)/100;
+        const sgst = taxable * (gst/2)/100;
+        const igst = taxable * gst/100;
+        const lineTotal = taxable + (interState ? igst : (cgst + sgst));
+        const descWithHsn = (it.desc || '-') + (it.hsn ? ('\nHSN: ' + it.hsn) : '');
+        if (interState){
+          body.push([descWithHsn, it.unit||'Pcs', qty, pdfCurrencyFmt(rate), pdfCurrencyFmt(discountValue), pdfCurrencyFmt(taxable), pdfCurrencyFmt(igst), pdfCurrencyFmt(lineTotal)]);
+        } else {
+          body.push([descWithHsn, it.unit||'Pcs', qty, pdfCurrencyFmt(rate), pdfCurrencyFmt(discountValue), pdfCurrencyFmt(taxable), pdfCurrencyFmt(cgst), pdfCurrencyFmt(sgst), pdfCurrencyFmt(lineTotal)]);
+        }
+      });
+      return body;
+    }
+
+    // Export current invoice data as JSON (GST e-invoice ready simplified format)
+    function exportInvoiceJSON(){
+      try{
+        const inv = collectInvoiceData();
+        // also produce a GST e-invoice simplified mapping
+        const einvoice = mapToEInvoice(inv);
+        const bundle = { invoice: inv, einvoice };
+        const blob = new Blob([JSON.stringify(bundle,null,2)], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (inv.invoiceNumber || 'invoice') + '.einvoice.json'; document.body.appendChild(a); a.click(); a.remove(); setStatus('JSON (einvoice) exported');
+      }catch(e){ setStatus('Export JSON failed'); }
+    }
+
+    // Map our invoice to a simplified GST e-invoice JSON structure
+    function mapToEInvoice(inv){
+      try{
+        const doc = {
+          version: '1.0',
+          irn: '',
+          supplier: { gstin: inv.seller.gstin || '', legalName: inv.seller.name || '', address: inv.seller.state || '', stateCode: inv.seller.stateCode || '' },
+          recipient: { gstin: inv.buyer.gstin || '', name: inv.buyer.name || '', address: inv.buyer.address || '' },
+          docDetails: { no: inv.invoiceNumber || '', date: inv.invoiceDate || '', type: inv.invoiceType || '' },
+          items: [],
+          totals: { taxableValue: inv.totals.subtotal || 0, totalTax: ((inv.totals.totalCGST||0)+(inv.totals.totalSGST||0)+(inv.totals.totalIGST||0)) || 0, grandTotal: inv.totals.grandTotal || 0 }
+        };
+        inv.items.forEach((it, idx)=>{
+          const base = (Number(it.qty)||0) * (Number(it.rate)||0);
+          const discount = (it.discountType === 'percent') ? Math.min(base, (Number(it.discount)||0)/100 * base) : Math.min(base, Number(it.discount)||0);
+          const taxable = Math.max(0, base - discount);
+          const gst = Number(it.gst)||0;
+          const cgst = inv.totals && inv.totals.totalIGST ? 0 : taxable * gst/2/100;
+          const sgst = inv.totals && inv.totals.totalIGST ? 0 : taxable * gst/2/100;
+          const igst = inv.totals && inv.totals.totalIGST ? taxable * gst/100 : 0;
+          doc.items.push({ serialNo: idx+1, productDesc: it.desc||'', hsn: it.hsn||'', qty: Number(it.qty)||0, unit: it.unit||'', rate: Number(it.rate)||0, taxableValue: taxable, cgst: Number(cgst.toFixed(2)), sgst: Number(sgst.toFixed(2)), igst: Number(igst.toFixed(2)), total: Number((taxable + cgst + sgst + igst).toFixed(2)) });
+        });
+        return doc;
+      }catch(e){ return { error: 'map failed' }; }
+    }
+
+    // collectInvoiceData for export and history
+    function collectInvoiceData(){
+      const inv = {};
+      inv.invoiceNumber = $('invoiceNumber').value || '';
+      inv.invoiceDate = $('invoiceDate').value || '';
+      inv.invoiceType = $('invoiceType') ? $('invoiceType').value : '';
+      inv.seller = { name: $('sellerName').value||'', gstin: $('sellerGSTIN').value||'', state: $('sellerState').value||'', stateCode: $('sellerStateCode').value||'', pan: $('sellerPAN').value||'' };
+      inv.buyer = { name: $('buyerName').value||'', gstin: $('buyerGSTIN').value||'', address: $('buyerAddress').value||'', placeOfSupply: { state: $('placeOfSupplyState').value||'', code: $('placeOfSupplyCode').value||'' } };
+      inv.items = state.items.map(it=>({ desc: it.desc, hsn: it.hsn, unit: it.unit, qty: Number(it.qty)||0, rate: Number(it.rate)||0, discountType: it.discountType, discount: Number(it.discount)||0, gst: Number(it.gst)||0 }));
+      inv.totals = state.totals;
+      inv.payment = { status: $('paymentStatus') ? $('paymentStatus').value : '', mode: $('paymentMode') ? $('paymentMode').value : '', dueDate: $('dueDate') ? $('dueDate').value : '' };
+      inv.meta = { createdAt: new Date().toISOString(), reverseCharge: !!( $('reverseCharge') && $('reverseCharge').checked ), profile: (document.getElementById('profileSelect') ? document.getElementById('profileSelect').value : '') };
+      // include logo if profile has one
+      const profiles = loadProfiles(); const idx = Number(inv.meta.profile);
+      if (!isNaN(idx) && profiles[idx] && profiles[idx].logoDataUrl) inv.seller.logoDataUrl = profiles[idx].logoDataUrl;
+      return inv;
+    }
+
+    function saveInvoiceToHistory(){ try{ const hist = loadHistory(); const inv = collectInvoiceData(); // ensure unique invoice number
+        if (!inv.invoiceNumber) inv.invoiceNumber = 'INV-' + Date.now();
+        const exists = hist.find(h=>h.invoiceNumber === inv.invoiceNumber);
+        if (exists) { setStatus('Invoice number exists in history — not saved.'); return; }
+        hist.unshift(inv); if (hist.length>200) hist.length=200; saveHistory(hist); setStatus('Saved to history.'); }catch(e){ setStatus('Save history failed'); } }
+
+    // Hard reset: clear invoice but preserve profiles & buyers
+    function hardResetInvoice(){
+      // keep profiles and buyers intact
+      state.items = []; itemsBody.innerHTML=''; addItem({desc:'',unit:'Pcs',qty:0,rate:0,discount:0,discountType:'percent',gst:0});
+      ['buyerName','buyerGSTIN','buyerAddress','invoiceDate','invoiceNumber','terms','dueDate'].forEach(id=>{ const el=$(id); if (el) el.value=''; });
+      // keep profiles and buyers in localStorage
+      window._tempLogoDataUrl = null; const lp = document.getElementById('logoPreview'); if (lp) lp.innerHTML='';
+      computeTotals(); setStatus('Hard reset complete. Business memory preserved.');
+    }
+
+    // PDF generation (preserve behavior; update invoice numbering and use state totals)
+    function generatePDF(){
+      try{
+        setStatus('Preparing PDF...');
+        saveSeller();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit:'pt', format:'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 40;
+        // embed profile logo if available
+        try{
+          const profiles = loadProfiles(); const pidx = Number((document.getElementById('profileSelect')||{value:''}).value);
+          if (!isNaN(pidx) && profiles[pidx] && profiles[pidx].logoDataUrl){ const logo = profiles[pidx].logoDataUrl; try{ doc.addImage(logo, 'PNG', margin, 28, 100, 36); }catch(e){ /* ignore image errors */ } }
+        }catch(e){}
+        doc.setFontSize(14); doc.setTextColor(40); doc.text($('sellerName').value || 'Seller Name', margin + 110, 60);
+        doc.setFontSize(10); doc.text('GSTIN: ' + ($('sellerGSTIN').value||'-'), margin + 110, 76);
+        doc.text('Invoice No: ' + $('invoiceNumber').value, pageWidth - margin - 200, 60);
+        doc.text('Date: ' + ($('invoiceDate').value || new Date().toISOString().slice(0,10)), pageWidth - margin - 200, 76);
+        doc.setFontSize(11); doc.text('Bill To:', margin, 110);
+        doc.setFontSize(10); doc.text(($('buyerName').value||'-') + '\n' + 'GSTIN: ' + ($('buyerGSTIN').value||'-'), margin, 126);
+
+        const sellerCode = ($('sellerStateCode') && $('sellerStateCode').value || '').toString().trim();
+        const placeCode = ($('placeOfSupplyCode') && $('placeOfSupplyCode').value || '').toString().trim();
+        const interState = !(sellerCode && placeCode && sellerCode === placeCode);
+        const head = interState ? [['Item','Unit','Qty','Rate','Discount','Taxable','IGST','Line Total']] : [['Item','Unit','Qty','Rate','Discount','Taxable','CGST','SGST','Line Total']];
+        const body = buildItemsForAutoTable(interState);
+        doc.autoTable({ head: head, body: body, startY: 170, theme: 'grid', styles:{fontSize:9,cellPadding:6}, headStyles:{fillColor:[240,240,240],textColor:[20,20,20]}, margin:{left:margin,right:margin} });
+        const finalY = doc.lastAutoTable.finalY || 170;
+
+        // totals from state (use PDF-safe currency format)
+        const subtotalText = pdfCurrencyFmt(state.totals.subtotal);
+        const cgstText = pdfCurrencyFmt(state.totals.totalCGST);
+        const sgstText = pdfCurrencyFmt(state.totals.totalSGST);
+        const grandText = pdfCurrencyFmt(state.totals.grandTotal);
+        doc.setFontSize(10);
+        doc.text('Subtotal: ' + subtotalText, pageWidth - margin - 180, finalY + 30);
+        if (interState){
+          const igstText = pdfCurrencyFmt(state.totals.totalIGST || 0);
+          doc.text('Total IGST: ' + igstText, pageWidth - margin - 180, finalY + 46);
+          doc.text('Round Off: ' + pdfCurrencyFmt(state.totals.roundOff || 0), pageWidth - margin - 180, finalY + 62);
+        } else {
+          doc.text('Total CGST: ' + cgstText, pageWidth - margin - 180, finalY + 46);
+          doc.text('Total SGST: ' + sgstText, pageWidth - margin - 180, finalY + 62);
+          doc.text('Round Off: ' + pdfCurrencyFmt(state.totals.roundOff || 0), pageWidth - margin - 180, finalY + 78);
+        }
+        doc.setDrawColor(0);
+        doc.setFontSize(12);
+        doc.text('Grand Total: ' + grandText, pageWidth - margin - 180, finalY + (interState ? 90 : 110));
+
+        // Amount in words
+        doc.setFontSize(10);
+        doc.text('Amount (in words): ' + (document.getElementById('amountInWords') ? document.getElementById('amountInWords').textContent.replace('Amount in words: ','') : ''), margin, finalY + (interState ? 120 : 140));
+
+        // Reverse charge note
+        if ($('reverseCharge') && $('reverseCharge').checked){ doc.setFontSize(10); doc.text('Reverse Charge Applicable: Recipient to pay tax as per GST rules.', margin, finalY + (interState ? 140 : 160)); }
+
+        // Seller extra details
+        doc.setFontSize(10);
+        const sellerContact = ($('sellerPhone').value || '') + ' ' + ($('sellerEmail').value || '');
+        const sellerPAN = $('sellerPAN').value || '';
+        doc.text('Seller Contact: ' + sellerContact, margin, finalY + (interState ? 160 : 180));
+        if (sellerPAN) doc.text('PAN: ' + sellerPAN, margin, finalY + (interState ? 176 : 196));
+
+        // UPI QR embed (include only if enabled)
+        if (state.includeQR){
+          const qrBox = $('qrPreview').querySelector('img') || $('qrPreview').querySelector('canvas');
+          if (qrBox) {
+            let dataUrl = null;
+            if (qrBox.tagName === 'IMG') dataUrl = qrBox.src; else dataUrl = qrBox.toDataURL('image/png');
+            if (dataUrl) doc.addImage(dataUrl, 'PNG', margin, finalY + 30, 80, 80);
+          }
+        }
+
+        // bank details & terms footer
+        const bankY = doc.internal.pageSize.getHeight() - 140;
+        doc.setFontSize(10);
+        doc.text('Bank: ' + ($('bankName').value||'-'), margin, bankY);
+        doc.text('A/C: ' + ($('accountNumber').value||'-') + ' IFSC: ' + ($('ifsc').value||'-'), margin, bankY + 14);
+        doc.text('Branch: ' + ($('branch').value||'-'), margin, bankY + 28);
+        doc.text('Terms: ' + ($('terms').value||'-'), margin, bankY + 44);
+
+        // signature
+        const sigX = pageWidth - margin - 200; const sigY = bankY - 40;
+        if (uploadedSigData) doc.addImage(uploadedSigData, 'PNG', sigX, sigY - 10, 160, 60);
+        else if (drawnSigData) doc.addImage(drawnSigData, 'PNG', sigX, sigY - 10, 160, 60);
+        doc.setFontSize(10); doc.text('Authorized Signatory', sigX + 30, sigY + 70);
+
+        // save and download
+        // determine a unique invoice number (respect manual input but avoid duplicates)
+        const curStr = ($('invoiceNumber').value || '').trim();
+        const uniqueInv = getNextUniqueInvoice(curStr);
+        // update UI to issued number
+        $('invoiceNumber').value = uniqueInv;
+        const pdfName = uniqueInv + '.pdf';
+        try{ doc.save(pdfName); setStatus('PDF downloaded: ' + pdfName); }catch(e){ setStatus('PDF save failed: ' + (e && e.message)); }
+        // persist issued number as numeric lastInv
+        const m2 = uniqueInv.match(/^INV-(\d+)$/i);
+        if (m2){ const num = Number(m2[1]); setLastInvoice(num); }
+        // set next available in UI
+        const nextAvailable = getLastInvoice() + 1; $('invoiceNumber').value = formatInv(nextAvailable);
+      }catch(err){ setStatus('PDF generation failed: ' + (err && err.message)); }
+    }
+
+    // Wire up controls
+    addItemBtn.addEventListener('click', ()=> addItem());
+    generatePdfBtn.addEventListener('click', ()=> generatePDF());
+    downloadPdfBtn.addEventListener('click', generatePDF);
+    // Save JSON export
+    const saveJsonBtn = $('saveJsonBtn'); if (saveJsonBtn) saveJsonBtn.addEventListener('click', ()=>{ exportInvoiceJSON(); });
+    const saveHistoryBtn = $('saveHistoryBtn'); if (saveHistoryBtn) saveHistoryBtn.addEventListener('click', ()=>{ saveInvoiceToHistory(); });
+    const hardResetBtn = $('hardResetBtn'); if (hardResetBtn) hardResetBtn.addEventListener('click', ()=>{ if (!confirm('Hard reset invoice (preserve business memory)?')) return; hardResetInvoice(); });
+
+    // Profile selector
+    const profileSelect = $('profileSelect'); if (profileSelect){ profileSelect.addEventListener('change', (e)=>{ if (e.target.value === '__new'){ const idx = createProfileFromForm(); applyProfile(idx); profileSelect.value = idx; } else { applyProfile(Number(e.target.value)); } }); }
+
+    // Logo upload: store temp data url against new/existing profile
+    const logoUpload = $('sellerLogoUpload'); if (logoUpload){ logoUpload.addEventListener('change', (e)=>{ const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ()=>{ window._tempLogoDataUrl = r.result; // preview
+      const img = new Image(); img.src = r.result; img.style.maxWidth='120px'; img.style.maxHeight='40px'; img.alt='Logo'; const container = document.getElementById('logoPreview') || (()=>{ const c=document.createElement('div'); c.id='logoPreview'; c.style.marginTop='8px'; const header = document.querySelector('.inv-header'); if (header) header.insertBefore(c, header.firstChild); return c; })(); container.innerHTML=''; container.appendChild(img); setStatus('Logo ready for profile. Save profile to attach permanently.'); }; r.readAsDataURL(f); }); }
+
+    // Include QR checkbox (persisted)
+    const includeQrCheckbox = $('includeQrCheckbox');
+    if (includeQrCheckbox){
+      try{ state.includeQR = JSON.parse(localStorage.getItem(storageKeys.includeQR) || 'true'); }catch(e){ state.includeQR = true; }
+      includeQrCheckbox.checked = !!state.includeQR;
+      includeQrCheckbox.addEventListener('change', (e)=>{ state.includeQR = !!e.target.checked; try{ localStorage.setItem(storageKeys.includeQR, JSON.stringify(state.includeQR)); }catch(err){} updateQRCodeFromState(); });
+    }
+
+    // Clear All button behavior
+    const clearAllBtn = $('clearAllBtn');
+    if (clearAllBtn){
+      clearAllBtn.addEventListener('click', ()=>{
+        if (!confirm('Are you sure you want to reset this invoice completely?')) return;
+        try{
+          // --- ITEMS: remove all rows and add a single empty row ---
+          state.items = [];
+          itemsBody.innerHTML = '';
+          addItem({desc:'',unit:'Pcs',qty:0,rate:0,discount:0,discountType:'percent',gst:0});
+
+          // --- INVOICE / BUYER FIELDS ---
+          ['buyerName','buyerGSTIN','buyerAddress','invoiceDate'].forEach(id=>{ const el=$(id); if (el) el.value=''; });
+
+          // --- TERMS ---
+          const t = $('terms'); if (t) { t.value=''; try{ localStorage.setItem(storageKeys.terms, ''); }catch(e){} }
+
+          // --- QR: remove preview and disable include flag ---
+          if (includeQrCheckbox) { includeQrCheckbox.checked = false; }
+          state.includeQR = false;
+          const qrBox = $('qrPreview'); if (qrBox) { qrBox.innerHTML=''; qrBox.style.display='none'; }
+
+          // --- SIGNATURES ---
+          uploadedSigData = null; drawnSigData = null;
+          const sp = $('sigPreview'); if (sp) sp.innerHTML = '';
+          const dsp = $('drawnSigPreview'); if (dsp) dsp.innerHTML = '';
+          try{ clearCanvas(); }catch(e){}
+
+          // --- STATUS ---
+          setStatus('Ready');
+
+          // --- INVOICE NUMBER UI: show next auto-generated number (do not change stored counter) ---
+          const next = getLastInvoice() + 1; $('invoiceNumber').value = formatInv(next);
+
+          // --- TOTALS ---
+          computeTotals();
+
+          // --- QR update (will hide because includeQR=false) ---
+          updateQRCodeFromState();
+
+        }catch(err){ console.error('Clear All failed', err); setStatus('Clear failed'); }
+      });
+    }
+
+    // autosave seller fields (single listener per input)
+    ['sellerName','sellerGSTIN','bankName','accountNumber','ifsc','branch','upiId','upiName','terms'].forEach(id=>{
+      const el = $(id); if (!el) return; el.addEventListener('input', ()=>{ saveSeller(); updateQRCodeFromState(); });
+    });
+
+    // GSTIN validation for seller and buyer
+    const sellerGSTEl = $('sellerGSTIN'); if (sellerGSTEl){ sellerGSTEl.addEventListener('input', (e)=>{ const ok = validateGSTIN(e.target.value); if (!ok) e.target.classList.add('invalid'); else e.target.classList.remove('invalid'); }); }
+    const buyerGSTEl = $('buyerGSTIN'); if (buyerGSTEl){ buyerGSTEl.addEventListener('input', (e)=>{ const ok = validateGSTIN(e.target.value); if (!ok && e.target.value.trim()) e.target.classList.add('invalid'); else e.target.classList.remove('invalid'); }); }
+
+    // Recompute totals when state codes or reverse charge change
+    const sellerStateCodeEl = $('sellerStateCode'); if (sellerStateCodeEl) sellerStateCodeEl.addEventListener('input', computeTotals);
+    const placeCodeEl = $('placeOfSupplyCode'); if (placeCodeEl) placeCodeEl.addEventListener('input', computeTotals);
+    // State code auto-fill map (common Indian state codes)
+    const stateCodeMap = {
+      'JAMMU & KASHMIR': '01','HIMACHAL PRADESH':'02','PUNJAB':'03','CHANDIGARH':'04','UTTARAKHAND':'05','HARYANA':'06','DELHI':'07','RAJASTHAN':'08','UTTAR PRADESH':'09','BIHAR':'10','SIKKIM':'11','ARUNACHAL PRADESH':'12','NAGALAND':'13','MANIPUR':'14','MIZORAM':'15','TRIPURA':'16','MEGHALAYA':'17','ASSAM':'18','WEST BENGAL':'19','JHARKHAND':'20','ODISHA':'21','CHHATTISGARH':'22','MADHYA PRADESH':'23','GUJARAT':'24','DADRA AND NAGAR HAVELI & DAMAN AND DIU':'26','MAHARASHTRA':'27','ANDHRA PRADESH':'37','KARNATAKA':'29','GOA':'30','LAKSHADWEEP':'31','KERALA':'32','TAMIL NADU':'33','PUDUCHERRY':'34','ANDAMAN AND NICOBAR':'35','TELANGANA':'36','LADAKH':'38'
+    };
+    function lookupStateCode(name){ if (!name) return ''; const key = name.toString().trim().toUpperCase(); return stateCodeMap[key] || ''; }
+    // auto-fill seller state code from name and trigger totals
+    const sellerStateEl = $('sellerState'); if (sellerStateEl){ sellerStateEl.addEventListener('input', (e)=>{ const code=lookupStateCode(e.target.value); const sc = $('sellerStateCode'); if (sc){ if (code){ sc.value = code; sc.readOnly = true; sc.classList.remove('invalid'); } else { sc.value = ''; sc.readOnly = false; } } computeTotals(); }); }
+    // auto-fill place of supply code
+    const placeStateEl = $('placeOfSupplyState'); if (placeStateEl){ placeStateEl.addEventListener('input', (e)=>{ const code=lookupStateCode(e.target.value); const pc = $('placeOfSupplyCode'); if (pc){ if (code){ pc.value = code; pc.readOnly = true; pc.classList.remove('invalid'); } else { pc.value = ''; pc.readOnly = false; } } computeTotals(); }); }
+    const reverseEl = $('reverseCharge'); if (reverseEl) reverseEl.addEventListener('change', ()=>{ state.reverseCharge = !!reverseEl.checked; computeTotals(); });
+
+    // QR update whenever totals or UPI fields change
+    $('upiId').addEventListener('input', updateQRCodeFromState);
+    $('upiName').addEventListener('input', updateQRCodeFromState);
+
+    // initial setup
+    initInvoiceNumber(); loadSeller(); loadTheme();
+    // add a sample item without triggering full re-render
+    addItem({desc:'Sample Item',unit:'Pcs',qty:1,rate:100,discount:0,discountType:'percent',gst:18});
+    computeTotals();
+
+    // load buyers into datalist
+    function refreshBuyersDatalist(){ const dl = document.getElementById('buyersList'); if (!dl) return; const buyers = loadBuyers(); dl.innerHTML=''; buyers.forEach(b=>{ const opt = document.createElement('option'); opt.value = b; dl.appendChild(opt); }); }
+    refreshBuyersDatalist();
+
+    // when buyer selected or changed, save to buyers memory
+    const buyerNameEl = $('buyerName'); if (buyerNameEl){ buyerNameEl.addEventListener('change', (e)=>{ const v = (e.target.value||'').trim(); if (!v) return; const buyers = loadBuyers(); if (!buyers.includes(v)){ buyers.unshift(v); if (buyers.length>50) buyers.length=50; saveBuyers(buyers); refreshBuyersDatalist(); } }); }
+
+    // load profiles into selector
+    refreshProfileSelect();
+
+    // load and apply first profile if exists
+    const profiles = loadProfiles(); if (profiles && profiles.length) applyProfile(0);
+
+    // expose minimal for debugging
+    window.__gstInvoice = { state, addItem, removeItemByUid, computeTotals };
+  })();
+  </script>
+</body>
+</html>

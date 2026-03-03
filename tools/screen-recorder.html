@@ -1,0 +1,699 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screen & Webcam Recorder - Adhurjya Store</title>
+  <meta name="description" content="Professional screen and webcam recorder with audio controls, countdown, REC timer, and instant preview. 100% browser-side privacy.">
+  <style>
+    :root {
+      --bg-color: #0a0f1a;
+      --card-bg: #111827;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-color: #10b981;
+      --border-color: rgba(148, 163, 184, 0.3);
+      --open-btn-gradient: linear-gradient(135deg, #10b981, #059669);
+      --soft-bg: rgba(15, 23, 42, 0.78);
+      --danger: #ef4444;
+    }
+
+    body.day-mode {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent-color: #059669;
+      --border-color: rgba(148, 163, 184, 0.42);
+      --open-btn-gradient: linear-gradient(135deg, #22c55e, #14b8a6);
+      --soft-bg: #f1f5f9;
+      --danger: #dc2626;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(940px 460px at 100% -20%, rgba(16, 185, 129, 0.16), transparent 44%),
+        var(--bg-color);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1120px, 94vw);
+      margin: 0 auto;
+      padding: 24px 0 44px;
+    }
+
+    .top-bar { margin-bottom: 14px; }
+
+    .open-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--open-btn-gradient) !important;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 0.2s ease;
+    }
+
+    .open-tool-btn:hover { transform: translateY(-1px); }
+
+    h1 {
+      margin: 8px 0 8px;
+      text-align: center;
+      font-size: clamp(1.45rem, 2.8vw, 2.1rem);
+    }
+
+    .subtitle {
+      margin: 0 auto 16px;
+      text-align: center;
+      color: var(--text-secondary);
+      max-width: 760px;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color) 60%);
+      transform: translateY(-1px);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="file"],
+    input[type="range"],
+    input[type="color"],
+    select,
+    button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="file"],
+    input[type="range"],
+    select {
+      padding: 10px 12px;
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input[type="range"] {
+      padding: 10px 0;
+      accent-color: var(--accent-color);
+      background: transparent;
+    }
+
+    input[type="file"]::file-selector-button {
+      border: 0;
+      margin-right: 10px;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: var(--open-btn-gradient) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+        linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 34px;
+    }
+
+    input[type="text"]:focus-visible,
+    input[type="password"]:focus-visible,
+    input[type="file"]:focus-visible,
+    input[type="range"]:focus-visible,
+    select:focus-visible {
+      border-color: color-mix(in srgb, var(--accent-color) 60%, var(--border-color) 40%);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 22%, transparent 78%);
+    }
+
+    select option {
+      background: var(--card-bg);
+      color: var(--text-primary);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .action-btn,
+    .annotation-btn,
+    .tool-chip {
+      border: 0;
+      padding: 11px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--open-btn-gradient) !important;
+      color: #ffffff !important;
+      transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+    }
+
+    .action-btn:hover:not(:disabled),
+    .annotation-btn:hover:not(:disabled),
+    .tool-chip:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: saturate(1.08);
+    }
+
+    .action-btn:disabled,
+    .annotation-btn:disabled,
+    .tool-chip:disabled {
+      opacity: 0.56;
+      cursor: not-allowed;
+      transform: none;
+      filter: grayscale(0.1);
+    }
+
+    .tool-chip {
+      padding: 8px 10px;
+      font-size: 0.79rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .tool-chip.active,
+    .annotation-btn.active {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.26) inset;
+    }
+
+    .status-row {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .rec-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--soft-bg);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+    }
+
+    .rec-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--danger);
+      opacity: 0.35;
+      transition: opacity 0.2s ease;
+    }
+
+    .recording .rec-dot {
+      animation: blink 1s step-end infinite;
+      opacity: 1;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      50.01%, 100% { opacity: 0.22; }
+    }
+
+    .status-text {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .preview-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .preview-shell {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 72vh;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: #000;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #preview-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    .preview-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      pointer-events: none;
+    }
+
+    #countdown {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: clamp(2.8rem, 9vw, 5.8rem);
+      font-weight: 800;
+      color: #ffffff;
+      background: rgba(2, 6, 23, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      text-shadow: 0 8px 34px rgba(0, 0, 0, 0.55);
+    }
+
+    #countdown.show { opacity: 1; }
+
+    .privacy-note {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .shortcuts-note {
+      margin-top: 10px;
+      font-size: 0.79rem;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    #annotation-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 4;
+      display: none;
+      touch-action: none;
+    }
+
+    #annotation-canvas.show { display: block; }
+
+    .annotation-toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 5;
+      display: none;
+      grid-template-columns: repeat(4, auto) 90px 86px;
+      gap: 6px;
+      align-items: center;
+      background: rgba(2, 6, 23, 0.56);
+      border: 1px solid rgba(148, 163, 184, 0.38);
+      border-radius: 10px;
+      padding: 8px;
+      backdrop-filter: blur(8px);
+    }
+
+    .annotation-toolbar.show { display: grid; }
+
+    .annotation-btn {
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      min-width: 78px;
+    }
+
+    #annotation-color {
+      height: 38px;
+      padding: 3px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+    }
+
+    #annotation-size {
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .post-tools.hidden { display: none; }
+
+    .post-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .trim-box,
+    .gif-box,
+    .telegram-box {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      background: color-mix(in srgb, var(--soft-bg) 72%, transparent);
+    }
+
+    .box-title {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .trim-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin: 6px 0;
+    }
+
+    .mini-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .mini-actions .action-btn,
+    .telegram-box .action-btn,
+    .gif-box .action-btn {
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+
+    .gif-row,
+    .telegram-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .telegram-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .muted-note {
+      margin: 8px 0 0;
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    @media (max-width: 760px) {
+      .container { width: min(1120px, 96vw); padding-top: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: 1fr; }
+      .status-row { flex-direction: column; align-items: flex-start; }
+      .status-text { min-width: 0; }
+      .preview-shell { aspect-ratio: 16 / 10; }
+      .shortcuts-note { text-align: left; }
+      .telegram-fields { grid-template-columns: 1fr; }
+      .gif-row, .telegram-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 940px) {
+      .post-grid { grid-template-columns: 1fr; }
+      .annotation-toolbar {
+        grid-template-columns: repeat(3, auto);
+        justify-content: start;
+      }
+      #annotation-color, #annotation-size { width: 100%; }
+      .wide { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <a class="open-tool-btn" href="../index.html">Back to Dashboard</a>
+    </div>
+
+    <h1>Screen & Webcam Recorder</h1>
+    <p class="subtitle">Record Screen + Audio, Screen Only, Webcam Only, or Screen + Webcam (PIP) with live annotation, watermarking, virtual background, trim, GIF export, and Telegram delivery.</p>
+
+    <section class="card" id="controls-card">
+      <div class="grid">
+        <div class="field">
+          <label for="capture-mode">Capture Type</label>
+          <select id="capture-mode">
+            <option value="screen_audio">Screen + Audio</option>
+            <option value="screen_only">Screen Only</option>
+            <option value="webcam_only">Webcam Only</option>
+            <option value="screen_webcam_pip">Screen + Webcam (PIP)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="quality">Recording Quality</label>
+          <select id="quality">
+            <option value="480">480p</option>
+            <option value="720">720p</option>
+            <option value="1080" selected>1080p</option>
+            <option value="2160">4K</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="audio-source">Audio Source</label>
+          <select id="audio-source">
+            <option value="both" selected>System + Microphone</option>
+            <option value="system">System Sound</option>
+            <option value="mic">Microphone</option>
+            <option value="none">No Audio</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="format">Download Format</label>
+          <select id="format">
+            <option value="auto" selected>Auto (Best Supported)</option>
+            <option value="webm">WebM</option>
+            <option value="mp4">MP4 (Browser Support Required)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="webcam-bg-mode">Virtual Webcam Background</label>
+          <select id="webcam-bg-mode">
+            <option value="none" selected>None</option>
+            <option value="blur">Blur Background</option>
+            <option value="image">Custom Background Image</option>
+          </select>
+        </div>
+
+        <div class="field" id="webcam-bg-file-wrap" style="display:none;">
+          <label for="webcam-bg-image">Background Image</label>
+          <input id="webcam-bg-image" type="file" accept="image/*">
+        </div>
+
+        <div class="field">
+          <label for="watermark-mode">Watermark Type</label>
+          <select id="watermark-mode">
+            <option value="text" selected>Text: Adhurjya Store</option>
+            <option value="logo">Custom Logo</option>
+            <option value="none">Off</option>
+          </select>
+        </div>
+
+        <div class="field" id="watermark-text-wrap">
+          <label for="watermark-text">Watermark Text</label>
+          <input id="watermark-text" type="text" value="Adhurjya Store" maxlength="40">
+        </div>
+
+        <div class="field" id="watermark-logo-wrap" style="display:none;">
+          <label for="watermark-logo">Watermark Logo</label>
+          <input id="watermark-logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="start-btn" class="action-btn" type="button">Start Recording</button>
+        <button id="stop-btn" class="action-btn" type="button" disabled>Stop Recording</button>
+        <button id="download-btn" class="action-btn" type="button" disabled>Download Recording</button>
+      </div>
+
+      <div class="status-row" id="status-row">
+        <span class="rec-pill" id="rec-pill"><span class="rec-dot"></span><span>REC</span></span>
+        <strong id="timer">00:00</strong>
+        <span class="status-text" id="status-text">Ready to record. Pick mode, quality, and audio source.</span>
+      </div>
+
+      <p class="shortcuts-note">Shortcuts: <strong>Alt + R</strong> Start/Stop, <strong>Alt + M</strong> Toggle Microphone</p>
+    </section>
+
+    <section class="card preview-card">
+      <div class="preview-head">
+        <span id="preview-label">Preview</span>
+        <span id="file-meta">No recording yet</span>
+      </div>
+      <div class="preview-shell" id="preview-shell">
+        <video id="preview-video" playsinline controls></video>
+        <canvas id="annotation-canvas"></canvas>
+        <div class="annotation-toolbar" id="annotation-toolbar">
+          <button type="button" class="annotation-btn active" data-tool="brush">Brush</button>
+          <button type="button" class="annotation-btn" data-tool="arrow">Arrow</button>
+          <button type="button" class="annotation-btn" data-tool="highlighter">Highlighter</button>
+          <button type="button" class="annotation-btn" id="annotation-clear">Clear</button>
+          <input id="annotation-color" type="color" value="#ff3b30" aria-label="Annotation color">
+          <select id="annotation-size" aria-label="Annotation size">
+            <option value="4">Thin</option>
+            <option value="7" selected>Medium</option>
+            <option value="11">Thick</option>
+          </select>
+        </div>
+        <div id="preview-empty" class="preview-empty">Your live feed and recorded output will appear here.</div>
+        <div id="countdown">3</div>
+      </div>
+      <p class="privacy-note">No uploads, no server processing, except optional Telegram sharing when you explicitly send.</p>
+    </section>
+
+    <section class="card post-tools hidden" id="post-tools">
+      <div class="preview-head">
+        <span>Post Processing</span>
+        <span id="trim-duration">Duration: --</span>
+      </div>
+
+      <div class="post-grid">
+        <div class="trim-box">
+          <p class="box-title">Video Trimmer</p>
+          <label for="trim-start">Trim Start</label>
+          <input id="trim-start" type="range" min="0" max="1" step="0.1" value="0">
+          <div class="trim-meta"><span id="trim-start-text">00:00</span><span>Start</span></div>
+
+          <label for="trim-end">Trim End</label>
+          <input id="trim-end" type="range" min="0" max="1" step="0.1" value="1">
+          <div class="trim-meta"><span id="trim-end-text">00:00</span><span>End</span></div>
+
+          <div class="mini-actions">
+            <button id="apply-trim" class="action-btn" type="button">Apply Trim</button>
+            <button id="reset-trim" class="action-btn" type="button">Reset to Original</button>
+          </div>
+        </div>
+
+        <div class="gif-box">
+          <p class="box-title">Instant GIF Converter</p>
+          <div class="gif-row">
+            <div>
+              <label for="gif-duration">GIF Tail Duration</label>
+              <select id="gif-duration">
+                <option value="5">Last 5 seconds</option>
+                <option value="8" selected>Last 8 seconds</option>
+                <option value="10">Last 10 seconds</option>
+              </select>
+            </div>
+            <button id="download-gif" class="action-btn" type="button">Download GIF</button>
+          </div>
+          <p class="muted-note">Creates optimized high-quality GIF from tail segment.</p>
+        </div>
+
+        <div class="telegram-box wide">
+          <p class="box-title">Telegram Integration (Adhurjya Tools Bot API)</p>
+          <div class="telegram-fields">
+            <div>
+              <label for="telegram-token">Bot Token</label>
+              <input id="telegram-token" type="password" placeholder="123456:ABC-YourBotToken">
+            </div>
+            <div>
+              <label for="telegram-chat-id">Chat ID</label>
+              <input id="telegram-chat-id" type="text" placeholder="e.g. 123456789">
+            </div>
+          </div>
+          <div class="telegram-row">
+            <p class="muted-note" style="margin:0;">Video is sent only when you click this button.</p>
+            <button id="send-telegram" class="action-btn" type="button">Send to Telegram</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+  <script src="./screen-recorder.features.js"></script>
+</body>
+</html>
+
+

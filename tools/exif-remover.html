@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXIF Metadata Remover - Adhurjya Store</title>
+  <meta name="description" content="Bulk EXIF metadata remover with deep audit, risk scoring, and ZIP download. Fully client-side.">
+  <style>
+    :root {
+      --bg-color: #0a0f1a;
+      --card-bg: #111827;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border-color: rgba(148, 163, 184, 0.28);
+      --open-btn-gradient: linear-gradient(135deg, #10b981, #059669);
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #f87171;
+      --input-bg: rgba(15, 23, 42, 0.86);
+    }
+    body.day-mode {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border-color: rgba(148, 163, 184, 0.42);
+      --open-btn-gradient: linear-gradient(135deg, #22c55e, #14b8a6);
+      --input-bg: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(900px 480px at 100% -15%, rgba(16,185,129,.18), transparent 45%), var(--bg-color);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    .container { width: min(1120px, 94vw); margin: 0 auto; padding: 24px 0 44px; }
+    .top-bar { margin-bottom: 12px; }
+    .open-tool-btn {
+      display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+      padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color);
+      background: var(--open-btn-gradient) !important; color: #ffffff !important; font-weight: 700;
+    }
+    h1 { margin: 8px 0 6px; text-align: center; font-size: clamp(1.45rem, 2.7vw, 2.1rem); }
+    .subtitle { margin: 0 auto 16px; text-align: center; color: var(--text-secondary); font-size: .95rem; max-width: 780px; }
+    .card {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px;
+      padding: 16px; margin-bottom: 12px; transition: transform .2s ease;
+    }
+    .card:hover { transform: translateY(-1px); }
+    .upload-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; }
+    .drop-zone {
+      border: 1.6px dashed rgba(16,185,129,.6); border-radius: 12px; min-height: 185px;
+      display: grid; place-items: center; text-align: center; padding: 14px; cursor: pointer;
+      background: linear-gradient(140deg, rgba(16,185,129,.12), transparent 45%);
+      transition: border-color .18s ease, transform .18s ease, background .18s ease;
+    }
+    .drop-zone.drag { border-color: #10b981; transform: translateY(-1px); background: linear-gradient(140deg, rgba(16,185,129,.2), transparent 50%); }
+    .drop-title { font-weight: 700; margin-bottom: 5px; }
+    .drop-hint { color: var(--text-secondary); font-size: .85rem; line-height: 1.45; }
+    label { display: block; color: var(--text-secondary); font-size: .84rem; margin-bottom: 6px; }
+    input[type="file"], select, input[type="range"] {
+      width: 100%; border-radius: 10px; border: 1.2px solid var(--border-color); background: var(--input-bg);
+      color: var(--text-primary); padding: 10px 11px; font: inherit;
+    }
+    input[type="file"]::file-selector-button {
+      border: 0; border-radius: 8px; margin-right: 10px; padding: 8px 10px; font-weight: 700;
+      background: var(--open-btn-gradient) !important; color: #ffffff !important;
+    }
+    select:focus-visible, input[type="file"]:focus-visible, input[type="range"]:focus-visible {
+      outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.24);
+    }
+    .stack { display: grid; gap: 10px; }
+    .note { margin: 0; color: var(--text-secondary); font-size: .79rem; line-height: 1.35; }
+    .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
+    .action-btn {
+      border: 0; border-radius: 10px; padding: 11px 12px; font: inherit; font-weight: 700; cursor: pointer;
+      background: var(--open-btn-gradient) !important; color: #ffffff !important;
+      transition: transform .16s ease, filter .16s ease, opacity .16s ease;
+    }
+    .action-btn:hover:not(:disabled) { transform: translateY(-1px); filter: saturate(1.06); }
+    .action-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .risk-wrap { margin-top: 12px; }
+    .risk-head { display: flex; justify-content: space-between; gap: 8px; color: var(--text-secondary); font-size: .85rem; }
+    .risk-meter, .progress-bar {
+      height: 11px; border-radius: 999px; border: 1px solid var(--border-color); overflow: hidden;
+      background: rgba(15,23,42,.45);
+    }
+    .risk-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+      transition: width .2s ease;
+    }
+    .risk-meta { margin-top: 6px; color: var(--text-secondary); font-size: .79rem; }
+    .progress-card { display: none; }
+    .progress-head { display: flex; justify-content: space-between; gap: 8px; color: var(--text-secondary); font-size: .84rem; margin-bottom: 7px; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #14b8a6); transition: width .17s ease; }
+    .results-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .count-pill { font-size: .8rem; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border-color); color: var(--text-secondary); }
+    .results-grid { display: grid; gap: 10px; }
+    .result-card { border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: grid; gap: 10px; background: rgba(15,23,42,.18); }
+    .result-card.just-cleaned { animation: pulse .35s ease; border-color: rgba(52,211,153,.7); }
+    @keyframes pulse { 0%{transform:scale(.99)} 60%{transform:scale(1.01)} 100%{transform:scale(1)} }
+    .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .file-name { font-size: .92rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 68vw; }
+    .badge { font-size: .74rem; font-weight: 700; border-radius: 999px; padding: 5px 10px; border: 1px solid transparent; }
+    .badge.high { color: #fecaca; background: rgba(239,68,68,.2); border-color: rgba(248,113,113,.38); }
+    .badge.medium { color: #fde68a; background: rgba(234,179,8,.2); border-color: rgba(250,204,21,.38); }
+    .badge.low { color: #bbf7d0; background: rgba(34,197,94,.18); border-color: rgba(74,222,128,.36); }
+    .preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .preview {
+      border: 1px solid var(--border-color); border-radius: 10px; padding: 9px;
+      background: rgba(15,23,42,.22); display: grid; gap: 7px;
+    }
+    .preview-head { display: flex; justify-content: space-between; gap: 8px; color: var(--text-secondary); font-size: .78rem; }
+    .img-wrap {
+      position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 16 / 11;
+      border: 1px solid var(--border-color); background: rgba(2,6,23,.58);
+      display: grid; place-items: center;
+    }
+    .img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .placeholder { color: var(--text-secondary); font-size: .79rem; text-align: center; padding: 0 10px; line-height: 1.4; }
+    .size-row { display: flex; flex-wrap: wrap; gap: 7px; font-size: .76rem; color: var(--text-secondary); }
+    .chip { border: 1px solid var(--border-color); border-radius: 999px; padding: 4px 8px; }
+    .audit {
+      border: 1px solid var(--border-color); border-radius: 10px; padding: 9px;
+      background: rgba(15,23,42,.22);
+    }
+    .audit-title { margin: 0 0 6px; color: var(--text-secondary); font-size: .8rem; }
+    .audit ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: .79rem; }
+    .audit li { line-height: 1.35; word-break: break-word; }
+    .status { color: var(--text-secondary); font-size: .79rem; }
+    .check {
+      position: absolute; left: 9px; bottom: 9px; width: 56px; height: 56px;
+      opacity: 0; transform: scale(.9); transition: opacity .2s ease, transform .2s ease;
+      pointer-events: none;
+    }
+    .result-card.cleaned .check, .result-card.just-cleaned .check { opacity: 1; transform: scale(1); }
+    .check circle { fill: rgba(16,185,129,.88); }
+    .check path {
+      fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 32; stroke-dashoffset: 32; animation: checkDraw .56s ease forwards .1s;
+    }
+    @keyframes checkDraw { to { stroke-dashoffset: 0; } }
+    .empty { text-align: center; color: var(--text-secondary); border: 1px dashed var(--border-color); border-radius: 10px; padding: 14px; font-size: .88rem; }
+    .trust { text-align: center; color: var(--text-secondary); font-size: .78rem; margin-top: 14px; }
+    .metadata-section { border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-top: 12px; }
+    .metadata-group {
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(15,23,42,.12);
+    }
+    .metadata-group:last-child { border-bottom: none; }
+    .metadata-group-header {
+      padding: 12px; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; background: rgba(15,23,42,.22); user-select: none;
+      transition: background .15s ease;
+    }
+    .metadata-group-header:hover { background: rgba(15,23,42,.32); }
+    .metadata-group-title { font-weight: 700; font-size: .9rem; display: flex; align-items: center; gap: 6px; }
+    .metadata-group-toggle { font-size: 1.1rem; transition: transform .2s ease; display: inline-block; width: 20px; text-align: center; }
+    .metadata-group.open .metadata-group-toggle { transform: rotate(180deg); }
+    .metadata-group-content { max-height: 1000px; overflow-y: auto; max-height: calc(100vh - 200px); }
+    .metadata-group-content { display: none; padding: 12px; background: rgba(15,23,42,.08); }
+    .metadata-group.open .metadata-group-content { display: block; }
+    .metadata-item { display: flex; gap: 12px; margin-bottom: 10px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(15,23,42,.12); }
+    .metadata-item:last-child { margin-bottom: 0; }
+    .metadata-label { flex-shrink: 0; font-weight: 600; color: var(--text-secondary); font-size: .85rem; min-width: 140px; }
+    .metadata-value { flex: 1; word-break: break-word; color: var(--text-primary); font-size: .85rem; }
+    .metadata-value a { color: #10b981; text-decoration: none; cursor: pointer; }
+    .metadata-value a:hover { text-decoration: underline; }
+    .metadata-sensitive { border-color: rgba(248,113,113,.4) !important; background: rgba(248,113,113,.08) !important; }
+    .metadata-sensitive .metadata-label { color: #f87171; }
+    .metadata-icon { font-size: 0.8rem; opacity: 0.6; }
+    .no-metadata { padding: 12px; text-align: center; color: var(--text-secondary); font-size: .85rem; background: rgba(15,23,42,.08); }
+    @media (max-width: 900px) { .upload-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 740px) {
+      .container { width: min(1120px, 96vw); padding-top: 16px; }
+      .actions { grid-template-columns: 1fr; }
+      .preview-grid { grid-template-columns: 1fr; }
+      .file-name { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <a class="open-tool-btn" href="../index.html">Back to Dashboard</a>
+    </div>
+
+    <h1>EXIF Metadata Remover</h1>
+    <p class="subtitle">Bulk process images, audit sensitive metadata, then strip EXIF, XMP, and IPTC traces entirely in-browser.</p>
+
+    <section class="card">
+      <div class="upload-grid">
+        <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="Drop images here">
+          <input id="drop-input" type="file" accept="image/*" multiple hidden>
+          <div>
+            <div class="drop-title">Drop images or tap to browse</div>
+            <div class="drop-hint">Professional drag-and-drop bulk input. Your files stay local.</div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div>
+            <label for="file-input">Choose Files</label>
+            <input id="file-input" type="file" accept="image/*" multiple>
+          </div>
+          <div>
+            <label for="format-select">Output Format</label>
+            <select id="format-select">
+              <option value="source">Keep Original Type</option>
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+            </select>
+          </div>
+          <div>
+            <label for="quality-range">Quality (<span id="quality-text">92</span>%)</label>
+            <input id="quality-range" type="range" min="55" max="100" value="92">
+          </div>
+          <p class="note" id="file-note">No images selected yet.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="remove-btn" class="action-btn" type="button" disabled>Remove Metadata</button>
+        <button id="download-btn" class="action-btn" type="button" disabled>Download All as ZIP</button>
+        <button id="clear-btn" class="action-btn" type="button" disabled>Clear Session</button>
+      </div>
+
+      <div class="risk-wrap">
+        <div class="risk-head"><span>Privacy Risk</span><strong id="risk-label">Low</strong></div>
+        <div class="risk-meter"><div id="risk-fill" class="risk-fill"></div></div>
+        <div id="risk-meta" class="risk-meta">Upload images to run metadata audit.</div>
+      </div>
+    </section>
+
+    <section id="progress-card" class="card progress-card" aria-live="polite">
+      <div class="progress-head"><span id="progress-text">Preparing...</span><strong id="progress-value">0%</strong></div>
+      <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+    </section>
+
+    <section class="card">
+      <div class="results-head">
+        <strong>Original vs Cleaned Analysis</strong>
+        <span id="count-pill" class="count-pill">0 files</span>
+      </div>
+      <div id="results" class="results-grid">
+        <div class="empty">No files loaded. Add images to start deep metadata audit and cleaning.</div>
+      </div>
+    </section>
+
+    <p class="trust">100% client-side privacy workflow. No server uploads.</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    if (localStorage.getItem("theme") === "day") document.body.classList.add("day-mode");
+
+    const state = { items: [], keys: new Set(), id: 0, busy: false };
+    const $ = (id) => document.getElementById(id);
+
+    const refs = {
+      dropZone: $("drop-zone"), dropInput: $("drop-input"), fileInput: $("file-input"),
+      format: $("format-select"), quality: $("quality-range"), qualityText: $("quality-text"), fileNote: $("file-note"),
+      remove: $("remove-btn"), download: $("download-btn"), clear: $("clear-btn"),
+      riskFill: $("risk-fill"), riskLabel: $("risk-label"), riskMeta: $("risk-meta"),
+      progressCard: $("progress-card"), progressText: $("progress-text"), progressValue: $("progress-value"), progressFill: $("progress-fill"),
+      count: $("count-pill"), results: $("results")
+    };
+
+    const tagConfig = [
+      ["Make", "Camera Make", 1], ["Model", "Camera Model", 2], ["Software", "Software", 2],
+      ["ProcessingSoftware", "Processing Software", 2], ["DateTimeOriginal", "Capture Time", 3],
+      ["DateTime", "Date Time", 2], ["ModifyDate", "Modified Time", 2], ["Artist", "Artist", 2],
+      ["OwnerName", "Owner Name", 3], ["BodySerialNumber", "Camera Serial", 3],
+      ["LensSerialNumber", "Lens Serial", 3], ["ImageUniqueID", "Image ID", 2], ["UserComment", "Comment", 1]
+    ];
+
+    function esc(v) {
+      return String(v).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+    }
+    function fileKey(file) { return `${file.name}::${file.size}::${file.lastModified}`; }
+    function bytes(n) {
+      if (!n || n < 1) return "0 B";
+      const u = ["B", "KB", "MB", "GB"]; const p = Math.min(Math.floor(Math.log(n) / Math.log(1024)), u.length - 1);
+      const v = n / Math.pow(1024, p); return `${p ? v.toFixed(2) : v.toFixed(0)} ${u[p]}`;
+    }
+    function ratioToNum(v) {
+      if (typeof v === "number") return v;
+      if (v && typeof v.numerator === "number" && typeof v.denominator === "number" && v.denominator) return v.numerator / v.denominator;
+      return NaN;
+    }
+    function exifVal(v) {
+      if (v === null || v === undefined || v === "") return "";
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") return String(v);
+      if (Array.isArray(v)) return v.map((x) => Number.isFinite(ratioToNum(x)) ? ratioToNum(x).toFixed(4).replace(/\.?0+$/, "") : String(x)).join(", ");
+      if (typeof v === "object") {
+        const n = ratioToNum(v); if (Number.isFinite(n)) return n.toFixed(4).replace(/\.?0+$/, "");
+        if ("description" in v) return String(v.description);
+        return JSON.stringify(v);
+      }
+      return String(v);
+    }
+    function gpsDec(raw, ref) {
+      if (!Array.isArray(raw) || raw.length < 3) return null;
+      const d = ratioToNum(raw[0]), m = ratioToNum(raw[1]), s = ratioToNum(raw[2]);
+      if (![d, m, s].every(Number.isFinite)) return null;
+      let out = d + (m / 60) + (s / 3600); if (ref === "S" || ref === "W") out *= -1;
+      return Number(out.toFixed(6));
+    }
+    function riskClass(score) {
+      if (score >= 9) return { level: "High", width: 92 };
+      if (score >= 4) return { level: "Medium", width: 62 };
+      return { level: "Low", width: score > 0 ? 34 : 18 };
+    }
+    function asciiSnippet(buf, start, len) {
+      let out = ""; const end = Math.min(buf.length, start + len);
+      for (let i = start; i < end; i++) out += (buf[i] >= 32 && buf[i] <= 126) ? String.fromCharCode(buf[i]) : "\0";
+      return out;
+    }
+    function detectContainers(arrBuf) {
+      const b = new Uint8Array(arrBuf);
+      const out = { exif: false, xmp: false, iptc: false };
+      if (b.length < 4 || b[0] !== 0xFF || b[1] !== 0xD8) return out;
+      let i = 2;
+      while (i + 4 <= b.length) {
+        if (b[i] !== 0xFF) { i++; continue; }
+        const mk = b[i + 1]; if (mk === 0xDA || mk === 0xD9) break;
+        const segLen = (b[i + 2] << 8) + b[i + 3];
+        if (!segLen || i + 2 + segLen > b.length) break;
+        const head = asciiSnippet(b, i + 4, Math.min(segLen - 2, 72));
+        const low = head.toLowerCase();
+        if (mk === 0xE1) {
+          if (head.startsWith("Exif")) out.exif = true;
+          if (low.includes("xmp") || head.includes("http://ns.adobe.com/xap/1.0/")) out.xmp = true;
+        }
+        if (mk === 0xED && (head.includes("Photoshop 3.0") || head.includes("8BIM"))) out.iptc = true;
+        i += 2 + segLen;
+      }
+      return out;
+    }
+
+    function parseExif(file) {
+      return new Promise((resolve) => {
+        if (!window.EXIF) return resolve({});
+        let done = false;
+        const finish = (tags) => { if (!done) { done = true; resolve(tags || {}); } };
+        try {
+          EXIF.getData(file, function () {
+            try { finish(EXIF.getAllTags(this) || {}); }
+            catch (e) { finish({}); }
+          });
+        } catch (e) { finish({}); }
+        setTimeout(() => finish({}), 2300);
+      });
+    }
+
+    function extractExpandedMetadata(tags, buf) {
+      const metadata = {
+        fileInfo: {},
+        cameraInfo: {},
+        dateTime: {},
+        softwareInfo: {},
+        gpsData: {},
+        iptcData: {},
+        xmpData: null,
+        rawExif: tags
+      };
+
+      const cameraFields = {
+        Make: "Camera Make",
+        Model: "Camera Model",
+        LensModel: "Lens Model",
+        FocalLength: "Focal Length",
+        FocalLengthIn35mmFilm: "Focal Length (35mm)",
+        ISO: "ISO",
+        ISOSpeedRatings: "ISO Speed",
+        ExposureTime: "Shutter Speed",
+        FNumber: "Aperture (f-stop)",
+        Flash: "Flash",
+        WhiteBalance: "White Balance",
+        ExposureMode: "Exposure Mode",
+        MeteringMode: "Metering Mode",
+        LensSerialNumber: "Lens Serial"
+      };
+
+      const softwareFields = {
+        Software: "Software",
+        ProcessingSoftware: "Processing Software",
+        OwnerName: "Owner Name",
+        Artist: "Artist",
+        ImageUniqueID: "Image Unique ID"
+      };
+
+      const dateTimeFields = {
+        DateTimeOriginal: "Date Taken",
+        DateTime: "Date Modified",
+        DateTimeDigitized: "Date Digitized",
+        SubsecTimeOriginal: "Subsec Time (Original)"
+      };
+
+      for (const [key, label] of Object.entries(cameraFields)) {
+        if (tags[key]) {
+          metadata.cameraInfo[label] = exifVal(tags[key]);
+        }
+      }
+
+      for (const [key, label] of Object.entries(softwareFields)) {
+        if (tags[key]) {
+          metadata.softwareInfo[label] = exifVal(tags[key]);
+        }
+      }
+
+      for (const [key, label] of Object.entries(dateTimeFields)) {
+        if (tags[key]) {
+          metadata.dateTime[label] = exifVal(tags[key]);
+        }
+      }
+
+      const lat = gpsDec(tags.GPSLatitude, tags.GPSLatitudeRef);
+      const lon = gpsDec(tags.GPSLongitude, tags.GPSLongitudeRef);
+      if (lat !== null && lon !== null) {
+        metadata.gpsData = {
+          latitude: lat,
+          longitude: lon,
+          latRef: tags.GPSLatitudeRef || "",
+          lonRef: tags.GPSLongitudeRef || ""
+        };
+      }
+
+      if (tags.GPSAltitude) {
+        if (!metadata.gpsData) metadata.gpsData = {};
+        try {
+          const alt = ratioToNum(tags.GPSAltitude);
+          if (Number.isFinite(alt)) metadata.gpsData.altitude = alt.toFixed(1) + " m";
+        } catch (e) {}
+      }
+
+      metadata.fileInfo = {
+        "File Name": "",
+        "File Size": "",
+        "MIME Type": "",
+        "Image Dimensions": ""
+      };
+
+      return metadata;
+    }
+
+    function extractIPTCData(buf) {
+      const iptc = {};
+      const b = new Uint8Array(buf);
+      const segments = findJPEGSegments(b);
+      
+      for (const seg of segments) {
+        if (seg.marker !== 0xED) continue;
+        const segData = b.subarray(seg.start + 4, seg.start + 4 + seg.length);
+        const iptcBlocks = findIPTCBlocks(segData);
+        
+        for (const block of iptcBlocks) {
+          if (block.record === 2) {
+            const dataset = block.dataset;
+            if (dataset === 80) iptc["Author"] = trimIptcValue(block.value);
+            if (dataset === 106) iptc["Caption"] = trimIptcValue(block.value);
+            if (dataset === 110) iptc["Credit"] = trimIptcValue(block.value);
+            if (dataset === 116) iptc["Copyright"] = trimIptcValue(block.value);
+            if (dataset === 25) iptc["Keywords"] = trimIptcValue(block.value);
+          }
+        }
+      }
+      
+      return Object.keys(iptc).length > 0 ? iptc : null;
+    }
+
+    function findJPEGSegments(b) {
+      const segments = [];
+      let i = 2;
+      while (i + 4 <= b.length) {
+        if (b[i] !== 0xFF) { i++; continue; }
+        const mk = b[i + 1];
+        if (mk === 0xDA || mk === 0xD9) break;
+        const len = (b[i + 2] << 8) + b[i + 3];
+        if (!len || i + 2 + len > b.length) break;
+        segments.push({ marker: mk, start: i, length: len });
+        i += 2 + len;
+      }
+      return segments;
+    }
+
+    function findIPTCBlocks(data) {
+      const blocks = [];
+      let i = 0;
+      while (i < data.length) {
+        if (data[i] === 0x1C && i + 4 <= data.length) {
+          const record = data[i + 1];
+          const dataset = data[i + 2];
+          let size = (data[i + 3] << 8) + data[i + 4];
+          if (size > 32767) size = ((data[i + 3] & 0x7F) << 8) + data[i + 4];
+          if (i + 5 + size <= data.length) {
+            const value = data.subarray(i + 5, i + 5 + size);
+            blocks.push({ record, dataset, value });
+            i += 5 + size;
+          } else { i++; }
+        } else { i++; }
+      }
+      return blocks;
+    }
+
+    function trimIptcValue(arr) {
+      try {
+        let str = '';
+        for (let i = 0; i < Math.min(arr.length, 200); i++) {
+          const c = arr[i];
+          if (c >= 32 && c <= 126) str += String.fromCharCode(c);
+          else if (c === 0x0A || c === 0x0D) str += ' ';
+        }
+        return str.trim();
+      } catch (e) { return ''; }
+    }
+
+    function extractXMPData(buf) {
+      const b = new Uint8Array(buf);
+      let xmpStart = -1, xmpEnd = -1;
+      
+      const headerStr = "http://ns.adobe.com/xap/1.0/";
+      for (let i = 0; i < b.length - headerStr.length; i++) {
+        let match = true;
+        for (let j = 0; j < headerStr.length; j++) {
+          if (b[i + j] !== headerStr.charCodeAt(j)) { match = false; break; }
+        }
+        if (match) {
+          xmpStart = i;
+          break;
+        }
+      }
+
+      if (xmpStart === -1) {
+        for (let i = 0; i < b.length - 5; i++) {
+          if (asciiSnippet(b, i, 5).includes("<?xml")) {
+            xmpStart = i;
+            break;
+          }
+        }
+      }
+
+      if (xmpStart >= 0) {
+        for (let i = xmpStart; i < Math.min(b.length, xmpStart + 50000); i++) {
+          if (b[i] === 0x00) {
+            xmpEnd = i;
+            break;
+          }
+        }
+        if (xmpEnd === -1) xmpEnd = Math.min(b.length, xmpStart + 50000);
+        
+        try {
+          const xmpBytes = b.subarray(xmpStart, xmpEnd);
+          const xmpStr = new TextDecoder().decode(xmpBytes).trim();
+          if (xmpStr.startsWith("<?xml") || xmpStr.includes('<rdf:RDF')) {
+            return xmpStr;
+          }
+        } catch (e) {}
+      }
+
+      return null;
+    }
+
+    async function auditFile(file) {
+      const [tags, buf] = await Promise.all([parseExif(file), file.arrayBuffer()]);
+      const cont = detectContainers(buf);
+      const fields = [];
+      let score = 0;
+
+      const lat = gpsDec(tags.GPSLatitude, tags.GPSLatitudeRef);
+      const lon = gpsDec(tags.GPSLongitude, tags.GPSLongitudeRef);
+      if (lat !== null && lon !== null) { fields.push(["GPS Coordinates", `${lat}, ${lon}`]); score += 6; }
+
+      for (const [k, label, w] of tagConfig) {
+        const v = exifVal(tags[k]);
+        if (!v) continue;
+        fields.push([label, v.slice(0, 130)]);
+        score += w;
+      }
+
+      if (cont.exif) { fields.push(["EXIF Container", "Embedded segment found"]); score += 1; }
+      if (cont.xmp) { fields.push(["XMP Container", "Extended metadata packet found"]); score += 2; }
+      if (cont.iptc) { fields.push(["IPTC Container", "Editorial metadata block found"]); score += 2; }
+
+      const uniq = []; const seen = new Set();
+      for (const [k, v] of fields) {
+        const key = `${k}::${v}`;
+        if (!seen.has(key)) { seen.add(key); uniq.push([k, v]); }
+      }
+
+      const rc = riskClass(score);
+      return { fields: uniq, score, level: rc.level, width: rc.width, fieldCount: fields.length };
+    }
+
+    function getImageDimensionsSync(file, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const view = new Uint8Array(e.target.result);
+          let w = 0, h = 0;
+          if (view[0] === 0xFF && view[1] === 0xD8) {
+            let pos = 2;
+            while (pos < view.length - 8) {
+              if (view[pos] !== 0xFF) { pos++; continue; }
+              const marker = view[pos + 1];
+              if ((marker >= 0xC0 && marker <= 0xC3) || (marker >= 0xC5 && marker <= 0xC7) || (marker >= 0xC9 && marker <= 0xCB)) {
+                h = (view[pos + 5] << 8) + view[pos + 6];
+                w = (view[pos + 7] << 8) + view[pos + 8];
+                callback(w, h);
+                return;
+              }
+              const len = (view[pos + 2] << 8) + view[pos + 3];
+              pos += 2 + len;
+            }
+          } else if (view[0] === 0x89 && view[1] === 0x50 && view[2] === 0x4E && view[3] === 0x47) {
+            w = (view[16] << 24) + (view[17] << 16) + (view[18] << 8) + view[19];
+            h = (view[20] << 24) + (view[21] << 16) + (view[22] << 8) + view[23];
+            callback(w, h);
+            return;
+          } else if (view[0] === 0x52 && view[1] === 0x49 && view[2] === 0x46) {
+            let idx = 12;
+            while (idx < Math.min(view.length - 10, 1000)) {
+              if (view[idx] === 0x56 && view[idx + 1] === 0x50 && view[idx + 2] === 0x38 && view[idx + 3] === 0x4C) {
+                w = ((view[idx + 10] << 8) | view[idx + 11]) & 0x3FFF + 1;
+                h = ((view[idx + 12] << 8) | view[idx + 13]) & 0x0FFF + 1;
+                callback(w, h);
+                return;
+              }
+              idx++;
+            }
+          }
+          callback(0, 0);
+        } catch (e) {
+          callback(0, 0);
+        }
+      };
+      reader.readAsArrayBuffer(file.slice(0, 32768));
+    }
+
+    function countMetadataInBlob(blob) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const buf = e.target.result;
+            const b = new Uint8Array(buf);
+            const cont = detectContainers(buf);
+            let count = 0;
+            if (cont.exif) count += 1;
+            if (cont.xmp) count += 1;
+            if (cont.iptc) count += 1;
+            resolve(count);
+          } catch (e) {
+            resolve(0);
+          }
+        };
+        reader.readAsArrayBuffer(blob);
+      });
+    }
+
+    function outputMime(srcType) {
+      const chosen = refs.format.value;
+      if (chosen !== "source") return chosen;
+      if (["image/jpeg", "image/png", "image/webp"].includes(srcType)) return srcType;
+      return "image/png";
+    }
+    function mimeExt(mime) {
+      if (mime === "image/jpeg") return "jpg";
+      if (mime === "image/webp") return "webp";
+      return "png";
+    }
+
+    async function createCleanBlob(file, mime, quality) {
+      let source;
+      if ("createImageBitmap" in window) {
+        try { source = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+        catch (e) { source = null; }
+      }
+      if (!source) {
+        source = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("decode failed"));
+          img.src = URL.createObjectURL(file);
+        });
+      }
+
+      const w = source.width || source.naturalWidth;
+      const h = source.height || source.naturalHeight;
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d", { alpha: true });
+      ctx.drawImage(source, 0, 0, w, h);
+
+      if (typeof source.close === "function") source.close();
+      else if (source.src && source.src.startsWith("blob:")) URL.revokeObjectURL(source.src);
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, quality));
+      if (!blob) throw new Error("canvas export failed");
+      return blob;
+    }
+
+    function setProgress(show, pct, text) {
+      refs.progressCard.style.display = show ? "block" : "none";
+      refs.progressFill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+      refs.progressValue.textContent = `${Math.round(Math.max(0, Math.min(100, pct)))}%`;
+      refs.progressText.textContent = text;
+    }
+
+    function updateControls() {
+      const has = state.items.length > 0;
+      const cleaned = state.items.some((x) => x.cleanBlob);
+      refs.remove.disabled = !has || state.busy;
+      refs.clear.disabled = !has || state.busy;
+      refs.download.disabled = !cleaned || state.busy;
+      refs.fileNote.textContent = has ? `${state.items.length} image(s) selected.` : "No images selected yet.";
+      refs.count.textContent = `${state.items.length} file${state.items.length === 1 ? "" : "s"}`;
+    }
+
+    function updateRisk() {
+      if (!state.items.length) {
+        refs.riskFill.style.width = "0%";
+        refs.riskLabel.textContent = "Low";
+        refs.riskMeta.textContent = "Upload images to run metadata audit.";
+        return;
+      }
+      const scores = state.items.map((i) => i.audit ? i.audit.score : 0);
+      const total = scores.reduce((a, b) => a + b, 0);
+      const avg = total / Math.max(1, scores.length);
+      const max = Math.max(...scores);
+      const fields = state.items.reduce((a, i) => a + (i.audit ? i.audit.fields.length : 0), 0);
+      let label = "Low", width = fields ? 34 : 18;
+      if (max >= 9 || avg >= 7) { label = "High"; width = 92; }
+      else if (max >= 4 || avg >= 3) { label = "Medium"; width = 62; }
+      refs.riskFill.style.width = `${width}%`;
+      refs.riskLabel.textContent = label;
+      refs.riskMeta.textContent = `Sensitive entries found: ${fields} across ${state.items.length} file(s).`;
+    }
+
+    function renderMetadataDisplay(item) {
+      if (!item.fullMetadata) return "";
+      
+      const metadata = item.fullMetadata;
+      const file = item.file;
+      
+      metadata.fileInfo["File Name"] = file.name;
+      metadata.fileInfo["File Size"] = bytes(file.size);
+      metadata.fileInfo["MIME Type"] = file.type || "Unknown";
+      
+      const sections = [];
+
+      if (Object.keys(metadata.fileInfo).length > 0 && Object.values(metadata.fileInfo).some(v => v)) {
+        sections.push({ title: "📄 File Information", id: "file-info", items: metadata.fileInfo, sensitive: false });
+      }
+
+      if (Object.keys(metadata.gpsData).length > 0) {
+        const gpsItems = {};
+        if (metadata.gpsData.latitude !== undefined) {
+          const lat = metadata.gpsData.latitude;
+          const lon = metadata.gpsData.longitude;
+          const mapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
+          gpsItems["Latitude"] = metadata.gpsData.latitude.toFixed(6);
+          gpsItems["Longitude"] = metadata.gpsData.longitude.toFixed(6);
+          gpsItems["📍 Google Maps"] = `<a href="${mapsLink}" target="_blank" rel="noopener">Open in Maps ↗</a>`;
+          if (metadata.gpsData.altitude) {
+            gpsItems["Altitude"] = metadata.gpsData.altitude;
+          }
+        }
+        if (Object.keys(gpsItems).length > 0) {
+          sections.push({ title: "🌍 GPS Data", id: "gps-data", items: gpsItems, sensitive: true });
+        }
+      }
+
+      if (Object.keys(metadata.cameraInfo).length > 0) {
+        const cameraItems = metadata.cameraInfo;
+        if (Object.values(cameraItems).some(v => v)) {
+          sections.push({ title: "📷 Camera Information", id: "camera-info", items: cameraItems, sensitive: false });
+        }
+      }
+
+      if (Object.keys(metadata.dateTime).length > 0) {
+        const dateItems = metadata.dateTime;
+        if (Object.values(dateItems).some(v => v)) {
+          sections.push({ title: "🕐 Date & Time", id: "date-time", items: dateItems, sensitive: false });
+        }
+      }
+
+      if (Object.keys(metadata.softwareInfo).length > 0) {
+        const softItems = metadata.softwareInfo;
+        if (Object.values(softItems).some(v => v)) {
+          const sensitiveFields = new Set(["Owner Name", "Artist"]);
+          sections.push({ title: "⚙️ Software & Author Info", id: "software-info", items: softItems, sensitive: true, sensitiveFields });
+        }
+      }
+
+      if (metadata.iptcData && Object.keys(metadata.iptcData).length > 0) {
+        const iptcItems = metadata.iptcData;
+        if (Object.values(iptcItems).some(v => v)) {
+          sections.push({ title: "📋 IPTC Data", id: "iptc-data", items: iptcItems, sensitive: true });
+        }
+      }
+
+      if (metadata.xmpString) {
+        sections.push({ title: "📦 XMP Block (Raw)", id: "xmp-data", xmpRaw: metadata.xmpString, sensitive: false });
+      }
+
+      if (sections.length === 0) {
+        return '<div class="metadata-section"><div class="no-metadata">ⓘ No metadata found in this image.</div></div>';
+      }
+
+      let html = '<div class="metadata-section">';
+      
+      for (const section of sections) {
+        const itemsList = section.xmpRaw ? {} : section.items || {};
+        const hasContent = section.xmpRaw || Object.values(itemsList).some(v => v);
+        
+        if (!hasContent) continue;
+
+        html += `<div class="metadata-group" data-section="${section.id}">
+          <div class="metadata-group-header">
+            <span class="metadata-group-title">${section.title}</span>
+            <span class="metadata-group-toggle">▼</span>
+          </div>
+          <div class="metadata-group-content">`;
+
+        if (section.xmpRaw) {
+          html += `<div style="background: rgba(15,23,42,.12); padding: 12px; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: .75rem; max-height: 300px; overflow-y: auto;">`;
+          html += esc(section.xmpRaw).substring(0, 1000);
+          if (section.xmpRaw.length > 1000) {
+            html += `<br><em style="color: var(--text-secondary);">... (${section.xmpRaw.length} chars total)</em>`;
+          }
+          html += `</div>`;
+        } else {
+          for (const [label, value] of Object.entries(itemsList)) {
+            if (!value) continue;
+            const isSensitive = section.sensitive || (section.sensitiveFields && section.sensitiveFields.has(label));
+            const sensitiveClass = isSensitive ? " metadata-sensitive" : "";
+            const linkContent = String(value).includes("<a href=") ? value : esc(value);
+            html += `<div class="metadata-item${sensitiveClass}">
+              <span class="metadata-label">${esc(label)}</span>
+              <span class="metadata-value">${linkContent}</span>
+            </div>`;
+          }
+        }
+
+        html += `</div></div>`;
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    function render() {
+      if (!state.items.length) {
+        refs.results.innerHTML = '<div class="empty">No files loaded. Add images to start deep metadata audit and cleaning.</div>';
+        return;
+      }
+
+      refs.results.innerHTML = state.items.map((item) => {
+        const fields = item.audit ? item.audit.fields : [];
+        const level = item.audit ? item.audit.level.toLowerCase() : "low";
+        const cls = `result-card ${item.cleanBlob ? "cleaned" : ""} ${item.justCleaned ? "just-cleaned" : ""}`;
+        const change = item.cleanBlob ? (((item.file.size - item.cleanBlob.size) / Math.max(1, item.file.size)) * 100).toFixed(1) + "%" : "--";
+        const metadataCount = item.beforeMetadataCount > 0 ? item.beforeMetadataCount : (item.audit && item.audit.fieldCount ? "Multiple" : "0");
+        const afterCount = item.afterMetadataCount !== undefined ? item.afterMetadataCount : "--";
+
+        return `
+          <article class="${cls}">
+            <div class="row">
+              <div class="file-name" title="${esc(item.file.name)}">${esc(item.file.name)}</div>
+              <span class="badge ${level}">${esc(item.audit ? item.audit.level : "Low")} Risk</span>
+            </div>
+
+            ${item.fullMetadata ? renderMetadataDisplay(item) : ""}
+
+            <div class="preview-grid">
+              <div class="preview">
+                <div class="preview-head"><span>Original</span><strong>${bytes(item.file.size)}</strong></div>
+                <div class="img-wrap"><img src="${item.originalUrl}" alt="Original preview"></div>
+              </div>
+
+              <div class="preview">
+                <div class="preview-head"><span>Cleaned</span><strong>${item.cleanBlob ? bytes(item.cleanBlob.size) : "Not ready"}</strong></div>
+                <div class="img-wrap">
+                  ${item.cleanUrl ? `<img src="${item.cleanUrl}" alt="Cleaned preview">` : '<div class="placeholder">Run removal to generate cleaned image.</div>'}
+                  <div class="check" aria-hidden="true">
+                    <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24"></circle><path d="M18 29l7 7 13-14"></path></svg>
+                  </div>
+                </div>
+                <div class="size-row">
+                  <span class="chip">Original: ${bytes(item.file.size)}</span>
+                  <span class="chip">Cleaned: ${item.cleanBlob ? bytes(item.cleanBlob.size) : "--"}</span>
+                  <span class="chip">Change: ${change}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="audit">
+              <p class="audit-title">Sensitive metadata audit (${fields.length} found)${item.cleanBlob ? ` | Metadata containers: ${metadataCount} → ${afterCount}` : ""}</p>
+              ${fields.length
+                ? `<ul>${fields.map(([k, v]) => `<li><strong>${esc(k)}:</strong> ${esc(v)}</li>`).join("")}</ul>`
+                : '<div class="status">No sensitive metadata found in audit.</div>'}
+            </div>
+
+            <div class="row">
+              <span class="status">${item.cleanBlob ? "Metadata stripped successfully." : "Waiting for clean pass."}</span>
+              <button class="action-btn item-download" data-id="${item.id}" ${item.cleanBlob ? "" : "disabled"}>Download Clean Image</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function clearAll() {
+      for (const item of state.items) {
+        if (item.originalUrl) URL.revokeObjectURL(item.originalUrl);
+        if (item.cleanUrl) URL.revokeObjectURL(item.cleanUrl);
+      }
+      state.items = []; state.keys.clear(); state.busy = false;
+      refs.fileInput.value = ""; refs.dropInput.value = "";
+      setProgress(false, 0, "");
+      updateControls(); updateRisk(); render();
+    }
+
+    async function addFiles(list) {
+      const files = Array.from(list || []).filter((f) => f.type.startsWith("image/"));
+      if (!files.length) return;
+
+      const added = [];
+      for (const file of files) {
+        const key = fileKey(file);
+        if (state.keys.has(key)) continue;
+        state.keys.add(key);
+        const item = { id: ++state.id, file, originalUrl: URL.createObjectURL(file), audit: null, cleanBlob: null, cleanUrl: "", cleanName: "", justCleaned: false, fullMetadata: null, imageDimensions: { w: 0, h: 0 }, beforeMetadataCount: 0, afterMetadataCount: 0 };
+        state.items.push(item);
+        added.push(item);
+      }
+      if (!added.length) { updateControls(); return; }
+
+      updateControls(); render();
+      setProgress(true, 4, "Auditing metadata...");
+
+      let done = 0;
+      const maxWorkers = Math.max(1, Math.min(4, Math.ceil((navigator.hardwareConcurrency || 4) / 2)));
+      let idx = 0;
+
+      async function worker() {
+        while (idx < added.length) {
+          const pos = idx++; const item = added[pos];
+          try {
+            const [tags, buf] = await Promise.all([parseExif(item.file), item.file.arrayBuffer()]);
+            item.audit = await auditFile(item.file);
+            item.fullMetadata = extractExpandedMetadata(tags, buf);
+            item.fullMetadata.iptcData = extractIPTCData(buf);
+            item.fullMetadata.xmpString = extractXMPData(buf);
+            const cont = detectContainers(buf);
+            let containerCount = 0;
+            if (cont.exif) containerCount++;
+            if (cont.xmp) containerCount++;
+            if (cont.iptc) containerCount++;
+            item.beforeMetadataCount = containerCount;
+            getImageDimensionsSync(item.file, (w, h) => {
+              item.imageDimensions = { w, h };
+              item.fullMetadata.fileInfo["Image Dimensions"] = w && h ? `${w} × ${h} px` : "Unknown";
+            });
+          }
+          catch (e) { item.audit = { fields: [], score: 0, level: "Low", width: 18 }; item.fullMetadata = { fileInfo: {}, cameraInfo: {}, dateTime: {}, softwareInfo: {}, gpsData: {}, iptcData: null, xmpData: null }; }
+          done++;
+          setProgress(true, 4 + (done / added.length) * 36, `Audited ${done} of ${added.length} image(s)...`);
+        }
+      }
+      await Promise.all(Array.from({ length: maxWorkers }, worker));
+
+      setProgress(false, 0, "");
+      updateControls(); updateRisk(); render();
+    }
+
+    async function processAll() {
+      if (!state.items.length || state.busy) return;
+      state.busy = true; updateControls();
+
+      for (const item of state.items) {
+        if (item.cleanUrl) URL.revokeObjectURL(item.cleanUrl);
+        item.cleanBlob = null; item.cleanUrl = ""; item.cleanName = ""; item.justCleaned = false; item.afterMetadataCount = 0;
+      }
+      render();
+
+      const q = Number(refs.quality.value) / 100;
+      const total = state.items.length;
+      let done = 0;
+      let idx = 0;
+      const workers = Math.max(1, Math.min(4, Math.ceil((navigator.hardwareConcurrency || 4) / 2)));
+
+      setProgress(true, 0, "Stripping metadata...");
+
+      async function worker() {
+        while (idx < state.items.length) {
+          const pos = idx++; const item = state.items[pos];
+          try {
+            const mime = outputMime(item.file.type);
+            const blob = await createCleanBlob(item.file, mime, q);
+            item.cleanBlob = blob;
+            item.cleanUrl = URL.createObjectURL(blob);
+            item.cleanName = item.file.name.replace(/\.[^.]+$/, "") + `_clean.${mimeExt(mime)}`;
+            item.afterMetadataCount = await countMetadataInBlob(blob);
+            item.justCleaned = true;
+            setTimeout(() => { item.justCleaned = false; render(); }, 780);
+          } catch (e) {
+            item.cleanBlob = null; item.cleanUrl = ""; item.cleanName = ""; item.afterMetadataCount = 0;
+          }
+          done++;
+          setProgress(true, (done / total) * 100, `Processed ${done} of ${total} image(s)...`);
+          render();
+        }
+      }
+
+      await Promise.all(Array.from({ length: workers }, worker));
+      setProgress(false, 100, "Done");
+      state.busy = false;
+      updateControls(); updateRisk(); render();
+    }
+
+    function downloadBlob(blob, name) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1200);
+    }
+
+    async function downloadAll() {
+      const cleaned = state.items.filter((x) => x.cleanBlob);
+      if (!cleaned.length || state.busy) return;
+      if (cleaned.length === 1) {
+        downloadBlob(cleaned[0].cleanBlob, cleaned[0].cleanName || "clean-image.png");
+        return;
+      }
+      refs.download.disabled = true; refs.download.textContent = "Building ZIP...";
+      try {
+        const zip = new JSZip();
+        for (const item of cleaned) {
+          const safe = (item.cleanName || "clean-image.png").replace(/[<>:"/\\|?*\x00-\x1f]/g, "_");
+          zip.file(safe, item.cleanBlob);
+        }
+        const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+        downloadBlob(blob, "adhurjya-clean-images.zip");
+      } finally {
+        refs.download.textContent = "Download All as ZIP";
+        updateControls();
+      }
+    }
+
+    refs.dropZone.addEventListener("click", () => refs.dropInput.click());
+    refs.dropZone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); refs.dropInput.click(); }
+    });
+    refs.dropZone.addEventListener("dragover", (e) => { e.preventDefault(); refs.dropZone.classList.add("drag"); });
+    refs.dropZone.addEventListener("dragleave", () => refs.dropZone.classList.remove("drag"));
+    refs.dropZone.addEventListener("drop", async (e) => {
+      e.preventDefault(); refs.dropZone.classList.remove("drag");
+      await addFiles(e.dataTransfer.files);
+    });
+
+    refs.dropInput.addEventListener("change", async (e) => addFiles(e.target.files));
+    refs.fileInput.addEventListener("change", async (e) => addFiles(e.target.files));
+    refs.quality.addEventListener("input", () => { refs.qualityText.textContent = refs.quality.value; });
+
+    refs.remove.addEventListener("click", processAll);
+    refs.clear.addEventListener("click", clearAll);
+    refs.download.addEventListener("click", downloadAll);
+
+    refs.results.addEventListener("click", (e) => {
+      const btn = e.target.closest(".item-download");
+      if (btn) {
+        const id = Number(btn.dataset.id);
+        const item = state.items.find((x) => x.id === id);
+        if (!item || !item.cleanBlob) return;
+        downloadBlob(item.cleanBlob, item.cleanName || "clean-image.png");
+      }
+      
+      const headerBtn = e.target.closest(".metadata-group-header");
+      if (headerBtn) {
+        const group = headerBtn.closest(".metadata-group");
+        if (group) {
+          group.classList.toggle("open");
+        }
+      }
+    });
+
+    updateControls(); updateRisk(); render();
+  </script>
+</body>
+</html>

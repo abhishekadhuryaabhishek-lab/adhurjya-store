@@ -1,0 +1,2243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Passport &amp; ID Photo Maker Pro - Free Online</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Create passport size photos online instantly. Crop, resize, change background, and download JPG/PNG/WebP. 100% free professional ID photo maker.">
+    <meta name="keywords" content="passport photo maker, ID photo online, photo editor, passport size photo, free photo tool">
+    <meta name="author" content="Adhurjya Store">
+    <meta name="robots" content="index, follow">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Ultra Passport &amp; ID Photo Maker Pro - Free Online">
+    <meta property="og:description" content="Create passport size photos online instantly. Crop, resize, change background, and download JPG/PNG/WebP. 100% free professional ID photo maker.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://adhurjya-store-main.vercel.app/tools/ultra-passport-id-photo-maker.html">
+    <meta property="og:image" content="https://adhurjya-store-main.vercel.app/og-banner.jpg">
+    <meta property="og:site_name" content="Adhurjya Store">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ultra Passport &amp; ID Photo Maker Pro - Free Online">
+    <meta name="twitter:description" content="Create passport size photos online instantly. Crop, resize, change background, and download JPG/PNG/WebP. 100% free professional ID photo maker.">
+    <meta name="twitter:image" content="https://adhurjya-store-main.vercel.app/og-banner.jpg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://adhurjya-store-main.vercel.app/tools/ultra-passport-id-photo-maker.html">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Ultra Passport & ID Photo Maker Pro",
+        "description": "Create passport size photos online instantly. Crop, resize, change background, and download JPG/PNG/WebP. 100% free professional ID photo maker.",
+        "applicationCategory": "PhotoEditingApplication",
+        "operatingSystem": "Web",
+        "url": "https://adhurjya-store-main.vercel.app/tools/ultra-passport-id-photo-maker.html",
+        "price": "0",
+        "priceCurrency": "INR",
+        "author": {
+            "@type": "Organization",
+            "name": "Adhurjya Store"
+        },
+        "datePublished": "2026-03-02",
+        "inLanguage": "en"
+    }
+    </script>
+
+    <!-- Link to main stylesheet -->
+    <link rel="stylesheet" href="../style.css">
+
+    <style>
+        /* ============================================================
+           TOOL-SPECIFIC STYLES
+           ============================================================ */
+
+        .passport-tool-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .passport-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .passport-header h1 {
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .passport-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* ============================================================
+           MODE TOGGLE
+           ============================================================ */
+
+        .mode-toggle-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Pro-mode-only elements are hidden by default */
+        .pro-mode-only {
+            display: none;
+        }
+
+        /* Show pro-mode-only elements when professional mode is active */
+        .passport-tool-container.professional-mode-active .pro-mode-only {
+            display: block;
+        }
+
+        /* ============================================================
+           MODE BUTTON ACTIVE STATE
+           ============================================================ */
+
+        .mode-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: var(--muted);
+        }
+
+        .mode-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .mode-btn.active-mode {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+        }
+
+        /* ============================================================
+           SECTIONS
+           ============================================================ */
+
+        .passport-section {
+            margin-bottom: 2rem;
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .passport-section h2 {
+            color: var(--text);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .passport-grid h3 {
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .passport-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .passport-tool-container {
+                padding: 1rem;
+            }
+            .passport-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .passport-header h1 {
+                font-size: 1.8rem;
+            }
+            .passport-section {
+                padding: 1rem;
+            }
+            .cropper-wrapper,
+            #sheetPreviewContainer {
+                min-height: 320px;
+                height: 350px;
+            }
+        }
+
+        /* ============================================================
+           UPLOAD AREA
+           ============================================================ */
+
+        .upload-area {
+            border: 3px dashed var(--border);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--card);
+            cursor: pointer;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: var(--bg-soft);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            color: var(--accent);
+        }
+
+        .upload-text h3 {
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text p {
+            color: var(--text);
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* ============================================================
+           CONTROLS
+           ============================================================ */
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-soft);
+            color: var(--text);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        select {
+            background-color: var(--bg-soft);
+            color: var(--text);
+            border: 1px solid var(--border);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-height: 44px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px var(--accent-soft) !important;
+        }
+
+        select option {
+            background-color: var(--bg-soft);
+            color: var(--text);
+            border: none;
+            padding: 0.5rem 1rem;
+        }
+
+        select::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        select::-webkit-scrollbar-track {
+            background: var(--card);
+        }
+
+        select::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 6px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        /* ============================================================
+           BUTTONS
+           ============================================================ */
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn.tertiary {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Premium Button */
+        .btn.premium {
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.premium:hover {
+            opacity: 0.9;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn.premium:disabled {
+            background: var(--border);
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ============================================================
+           CONTROL BUTTON GROUP (crop mode, bg mode)
+           ============================================================ */
+
+        .control-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: transparent;
+            color: var(--muted);
+            transition: all 0.25s ease;
+        }
+
+        .control-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .control-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ============================================================
+           PRESET SIZE SELECTOR
+           ============================================================ */
+
+        .preset-size-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .preset-size-btn {
+            padding: 0.6rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--bg-soft);
+            color: var(--text);
+            text-align: center;
+            transition: all 0.25s ease;
+            min-width: 110px;
+        }
+
+        .preset-size-btn .name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .preset-size-btn .dims {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .preset-size-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Active preset: green highlight with animation */
+        .preset-size-btn.active {
+            border-color: #16a34a;
+            background: rgba(22, 163, 74, 0.12);
+            color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+            animation: presetPulse 0.4s ease;
+        }
+
+        @keyframes presetPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        /* ============================================================
+           BACKGROUND COLOR BUTTONS
+           ============================================================ */
+
+        /* Active background color button: visible selected look */
+        #backgroundModeToggle .control-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 99, 102, 241), 0.3);
+            outline: 2px solid #fff;
+            outline-offset: -4px;
+        }
+
+        /* ============================================================
+           CROPPER WRAPPER
+           ============================================================ */
+
+        .cropper-wrapper {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .cropper-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* ============================================================
+           PREVIEW PANEL
+           ============================================================ */
+
+        .preview-panel {
+            background: var(--bg-soft);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-light);
+        }
+
+        #sheetPreviewContainer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--card);
+            border-radius: 8px;
+            width: 100%;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        /* ============================================================
+           LOADING SPINNER
+           ============================================================ */
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-content {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 300px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ============================================================
+           PREMIUM OVERLAY (30-second BG removal countdown)
+           ============================================================ */
+
+        #premium-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .premium-box {
+            background: var(--card, #1e1e2e);
+            border: 1px solid var(--border, #333);
+            border-radius: 16px;
+            padding: 2.5rem 3rem;
+            text-align: center;
+            min-width: 320px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .premium-box-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .premium-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text, #fff);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .premium-subtitle {
+            font-size: 0.9rem;
+            color: var(--muted, #aaa);
+            margin: 0 0 1.5rem 0;
+        }
+
+        .premium-progress-bar-track {
+            width: 100%;
+            height: 10px;
+            background: var(--border, #333);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .premium-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #8B5CF6, #EC4899);
+            border-radius: 999px;
+            transition: width 0.5s linear;
+        }
+
+        .premium-countdown {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text, #fff);
+            margin: 0;
+        }
+
+        /* ============================================================
+           FAQ SECTION
+           ============================================================ */
+
+        .faq-section {
+            margin-top: 3rem;
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .faq-item {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .faq-answer {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ============================================================
+           MISC
+           ============================================================ */
+
+        .hidden-input {
+            display: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            margin-right: 0.5rem;
+        }
+
+        .status-active {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        details {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        summary {
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ============================================================
+           PRINT SYSTEM
+           ============================================================ */
+
+        #print-container {
+            display: none;
+        }
+
+        .print-sheet {
+            width: 210mm;
+            height: 297mm;
+            page-break-after: always;
+            background: white;
+            padding: 10mm;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(var(--print-cols, 4), var(--photo-width, 35mm));
+            grid-auto-rows: var(--photo-height, 49mm);
+            gap: var(--vertical-gap, 5mm) var(--horizontal-gap, 5mm);
+            justify-content: var(--justify-content, flex-start);
+            align-content: var(--align-content, flex-start);
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        .print-photo-item {
+            width: var(--photo-width, 35mm);
+            height: var(--photo-height, 49mm);
+            object-fit: cover;
+            display: block;
+        }
+
+        .print-sheet.with-lines .print-photo-item {
+            outline: 1px solid #ddd;
+        }
+
+        @media print {
+            body > *:not(#print-container) {
+                display: none !important;
+            }
+            #print-container {
+                display: block !important;
+                margin: 0;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         PREMIUM OVERLAY (30-second countdown for BG removal)
+         ============================================================ -->
+    <div id="premium-overlay">
+        <div class="premium-box">
+            <div class="premium-box-icon">✨</div>
+            <h3 class="premium-title">Unlocking Premium Background Engine</h3>
+            <p class="premium-subtitle">Please wait while we process your image...</p>
+            <div class="premium-progress-bar-track">
+                <div class="premium-progress-fill" id="premiumProgressFill"></div>
+            </div>
+            <p class="premium-countdown" id="premiumCountdown">Please wait 30 seconds...</p>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         LOADING INDICATOR
+         ============================================================ -->
+    <div class="loading" id="loadingIndicator">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="margin-top: 1rem; color: var(--text);">Processing image...</p>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         TOAST CONTAINER
+         ============================================================ -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ============================================================
+         PRINT CONTAINER (hidden, used for PDF/print)
+         ============================================================ -->
+    <div id="print-container"></div>
+
+    <!-- ============================================================
+         MAIN TOOL CONTAINER
+         ============================================================ -->
+    <div class="passport-tool-container" id="mainContainer">
+
+        <!-- Navigation Button -->
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <a href="../index.html" class="btn active-mode">Back to Dashboard</a>
+        </div>
+
+        <header class="passport-header">
+            <h1>Ultra Passport &amp; ID Photo Maker Pro</h1>
+            <p>Create passport size photos online instantly. Crop, resize, change background, and download JPG/PNG/WebP. 100% free professional ID photo maker.</p>
+        </header>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle-container">
+            <button id="basicModeBtn" class="mode-btn active-mode">Basic Mode</button>
+            <button id="proModeBtn" class="mode-btn">Professional Mode</button>
+        </div>
+
+        <!-- Upload Section -->
+        <section class="passport-section">
+            <h2>Upload Your Photo</h2>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">
+                    <h3>Drag &amp; Drop Your Photo Here</h3>
+                    <p>or click to browse files</p>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" class="hidden-input">
+            </div>
+        </section>
+
+        <!-- Crop Controls Section -->
+        <section class="passport-section" id="cropControls" style="display: none;">
+            <h2>Crop &amp; Edit Controls</h2>
+
+            <div class="control-group">
+                <label>Crop Mode</label>
+                <div class="control-btn-group" id="cropModeToggle">
+                    <button class="control-btn active" data-mode="fixed">Fixed Ratio</button>
+                    <button class="control-btn" data-mode="freehand">Freehand</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Shape</label>
+                <div class="btn-group">
+                    <button class="btn" id="shapeRect">Rectangle</button>
+                    <button class="btn secondary" id="shapeCircle">Circle</button>
+                </div>
+            </div>
+
+            <!-- Professional Mode Controls -->
+            <div class="pro-mode-only">
+                <div class="control-group">
+                    <label>Dimension Control Mode</label>
+                    <select id="dimensionMode">
+                        <option value="pixels">By Width/Height (px)</option>
+                        <option value="ratio">By Aspect Ratio</option>
+                        <option value="free">Freehand</option>
+                    </select>
+                </div>
+
+                <div class="control-row" id="pixelControls">
+                    <div class="control-group">
+                        <label>Width (px)</label>
+                        <input type="number" id="widthInput" placeholder="Width" min="1" value="500">
+                    </div>
+                    <div class="control-group">
+                        <label>Height (px)</label>
+                        <input type="number" id="heightInput" placeholder="Height" min="1" value="600">
+                    </div>
+                </div>
+
+                <div class="control-group" id="ratioControls" style="display: none;">
+                    <label>Aspect Ratio</label>
+                    <select id="aspectRatio">
+                        <option value="1">1:1</option>
+                        <option value="4/3">4:3</option>
+                        <option value="3/4">3:4</option>
+                        <option value="16/9">16:9</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div id="customRatioInputs" style="display: none; margin-top: 1rem;">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label>Ratio Width</label>
+                                <input type="number" id="ratioWidth" placeholder="Width" min="1" value="1">
+                            </div>
+                            <div class="control-group">
+                                <label>Ratio Height</label>
+                                <input type="number" id="ratioHeight" placeholder="Height" min="1" value="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Size Presets</label>
+                    <div class="preset-size-selector" id="presetSizeSelector">
+                        <button class="preset-size-btn" data-preset="indian-passport" data-width="413" data-height="531">
+                            <div class="name">Passport</div>
+                            <div class="dims">35x45mm (413x531px)</div>
+                        </button>
+                        <button class="preset-size-btn" data-preset="us-passport" data-width="600" data-height="600">
+                            <div class="name">2x2 inch</div>
+                            <div class="dims">51x51mm (600x600px)</div>
+                        </button>
+                        <button class="preset-size-btn" data-preset="visa" data-width="413" data-height="531">
+                            <div class="name">Visa</div>
+                            <div class="dims">35x45mm (413x531px)</div>
+                        </button>
+                        <button class="preset-size-btn active" data-preset="custom">
+                            <div class="name">Custom Size</div>
+                            <div class="dims">Use manual inputs</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Interactive Controls</label>
+                    <div class="btn-group">
+                        <button class="btn tertiary" id="zoomInBtn">Zoom In (+)</button>
+                        <button class="btn tertiary" id="zoomOutBtn">Zoom Out (-)</button>
+                        <button class="btn tertiary" id="rotateLeftBtn">Rotate Left</button>
+                        <button class="btn tertiary" id="rotateRightBtn">Rotate Right</button>
+                        <button class="btn tertiary" id="flipHBtn">Flip H</button>
+                        <button class="btn tertiary" id="flipVBtn">Flip V</button>
+                        <button class="btn tertiary" id="resetCropBtn">Reset Crop</button>
+                        <button class="btn tertiary" id="resetZoomBtn">Reset Zoom</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copies Layout (Both Modes) -->
+            <div class="control-group">
+                <label>Copies Layout</label>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>Columns</label>
+                        <input type="number" id="layoutCols" value="4" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Rows</label>
+                        <input type="number" id="layoutRows" value="5" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Print Layout Engine (Pro Mode Only) -->
+            <details class="pro-mode-only">
+                <summary>Professional Print Layout Engine</summary>
+                <div style="margin-top: 1rem;">
+                    <div class="control-group">
+                        <label>Page Size</label>
+                        <select id="pageSize">
+                            <option value="A4">A4 (210mm x 297mm)</option>
+                            <option value="A5">A5 (148mm x 210mm)</option>
+                            <option value="Letter">Letter (216mm x 279mm)</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Print DPI</label>
+                        <select id="printDPI">
+                            <option value="150">150 DPI</option>
+                            <option value="300" selected>300 DPI</option>
+                            <option value="600">600 DPI</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label>Top Margin (mm)</label>
+                            <input type="number" id="topMargin" value="10" min="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Bottom Margin (mm)</label>
+                            <input type="number" id="bottomMargin" value="10" min="0">
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label>Left Margin (mm)</label>
+                            <input type="number" id="leftMargin" value="10" min="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Right Margin (mm)</label>
+                            <input type="number" id="rightMargin" value="10" min="0">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="checkbox-group pro-mode-only">
+                            <input type="checkbox" id="autoFit" onchange="toggleAutoFit()">
+                            <label for="autoFit" style="font-weight: normal;">Auto Fit Maximum Copies</label>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label>Horizontal Gap (mm)</label>
+                            <input type="number" id="horizontalGap" value="5" min="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Vertical Gap (mm)</label>
+                            <input type="number" id="verticalGap" value="5" min="0">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="centerGrid">
+                            <label for="centerGrid" style="font-weight: normal;">Center Grid</label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Safe Border (mm)</label>
+                        <input type="number" id="safeBorder" value="2" min="0">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showCuttingLines">
+                            <label for="showCuttingLines" style="font-weight: normal;">Show Cutting Lines</label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Export Type</label>
+                        <select id="exportType">
+                            <option value="image">Image (JPG/PNG/WebP)</option>
+                            <option value="pdf">High Quality PDF</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <!-- Preview Section -->
+        <section class="passport-section">
+            <h2>Preview &amp; Output</h2>
+            <div class="passport-grid">
+                <div>
+                    <h3>Crop Preview</h3>
+                    <div class="cropper-wrapper">
+                        <div class="cropper-container">
+                            <img id="imagePreview" style="max-width: 100%; display: none;">
+                        </div>
+                    </div>
+                    <div class="preview-info" id="imageInfo">
+                        No image loaded. Please upload a photo to begin.
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <h3>Sheet Preview</h3>
+                    <div id="sheetPreviewContainer" style="overflow: auto; width: 100%; height: 400px; background: var(--bg-soft); border-radius: 8px; border: 1px solid var(--border-light);">
+                        <div id="sheetPreview" style="display: none;"></div>
+                        <div id="sheetPreviewPlaceholder" style="padding: 2rem; text-align: center; color: var(--muted);">Generate a preview to see the final sheet.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group" style="margin-top: 1.5rem;">
+                <div class="control-group">
+                    <label>Output Format</label>
+                    <div class="btn-group">
+                        <button class="btn" id="formatJpg" onclick="setFormat('jpg')">JPG</button>
+                        <button class="btn secondary" id="formatPng" onclick="setFormat('png')">PNG</button>
+                        <button class="btn secondary" id="formatWebp" onclick="setFormat('webp')">WebP</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Quality: <span id="qualityValue">80%</span></label>
+                    <input type="range" id="qualitySlider" min="1" max="100" value="80">
+                </div>
+
+                <div class="control-group" id="background-color-section">
+                    <label>Background Color</label>
+                    <div class="control-btn-group" id="backgroundModeToggle">
+                        <button class="control-btn active" data-bg="original">Keep Original</button>
+                        <button class="control-btn" data-bg="white" data-color="#FFFFFF">White</button>
+                        <button class="control-btn" data-bg="blue" data-color="#87CEFA">Blue</button>
+                        <button class="control-btn" data-bg="red" data-color="#C62828">Red</button>
+                        <button class="control-btn" data-bg="grey" data-color="#E5E7EB">Light Grey</button>
+                        <button class="control-btn" data-bg="custom">Custom</button>
+                    </div>
+                    <div id="customBgColor" style="display: none; margin-top: 1rem;">
+                        <label>Custom Background Color</label>
+                        <input type="color" id="bgColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="control-group pro-mode-only">
+                    <label>Advanced Settings</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="exactResize">
+                        <label for="exactResize" style="font-weight: normal;">Resize to exact dimensions</label>
+                    </div>
+                    <div class="checkbox-group" style="margin-top: 0.5rem;">
+                        <input type="checkbox" id="allowOutside">
+                        <label for="allowOutside" style="font-weight: normal;">Allow crop outside image boundary</label>
+                    </div>
+                    <div id="outsideColorControl" style="display: none; margin-top: 1rem;">
+                        <label>Fill Color for Outside Area</label>
+                        <input type="color" id="outsideColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn premium" id="removeBgBtn" aria-label="Remove background from photo">Remove Background [Ad Required]</button>
+                    <button class="btn" id="generatePreviewBtn">Generate Preview</button>
+                    <button class="btn" id="downloadBtn" disabled>Download</button>
+                    <button class="btn secondary" id="clearAllBtn">Clear All</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">Is this tool completely free to use?</div>
+                <div class="faq-answer">Yes, our passport photo maker is 100% free with no hidden charges, watermarks, or registration required. All processing happens in your browser.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What image formats are supported?</div>
+                <div class="faq-answer">We support JPG, PNG, and WebP formats. You can upload photos from your camera, phone, or any digital source.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Can I use this tool on mobile devices?</div>
+                <div class="faq-answer">Absolutely! Our tool is fully responsive and optimized for mobile browsers. You can upload photos directly from your phone's gallery.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What are the passport photo requirements?</div>
+                <div class="faq-answer">For Indian passports: 35x45mm with white background. For US passports: 2x2 inches (51x51mm) with white or off-white background. Our presets automatically apply these dimensions.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Is my photo data secure?</div>
+                <div class="faq-answer">Yes, all image processing happens locally in your browser. We never upload or store your photos on any server. Your privacy is completely protected.</div>
+            </div>
+        </section>
+
+    </div><!-- /.passport-tool-container -->
+
+    <!-- ============================================================
+         THEME SYNC SCRIPT
+         ============================================================ -->
+    <script>
+        (function syncTheme() {
+            var savedTheme = localStorage.getItem('color-theme');
+            var savedMode = localStorage.getItem('day-mode');
+            if (savedTheme) {
+                document.body.dataset.colorTheme = savedTheme;
+            }
+            if (savedMode === 'true') {
+                document.body.classList.add('day-mode');
+            } else {
+                document.body.classList.remove('day-mode');
+            }
+        })();
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'color-theme') {
+                document.body.dataset.colorTheme = e.newValue || '';
+            }
+            if (e.key === 'day-mode') {
+                if (e.newValue === 'true') {
+                    document.body.classList.add('day-mode');
+                } else {
+                    document.body.classList.remove('day-mode');
+                }
+            }
+        });
+    </script>
+
+    <!-- ============================================================
+         CROPPER.JS LOADER
+         ============================================================ -->
+    <script>
+        function loadCropperJS() {
+            return new Promise(function(resolve, reject) {
+                var script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        function loadCropperCSS() {
+            return new Promise(function(resolve, reject) {
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css';
+                link.onload = resolve;
+                link.onerror = reject;
+                document.head.appendChild(link);
+            });
+        }
+    </script>
+
+    <!-- ============================================================
+         MAIN APPLICATION SCRIPT
+         (Fully re-typed to eliminate hidden Unicode / NBSP characters)
+         ============================================================ -->
+    <script>
+        // ---- State Variables ----
+        var cropper = null;
+        var currentFormat = 'jpg';
+        var currentShape = 'rect';
+        var currentMode = 'basic';
+        var currentImageURL = null;
+        var bgRemovalTimerInterval = null;
+        var bgRemovalApiPromise = null;
+
+        // ---- Config ----
+        window.CONFIG = window.CONFIG || {};
+        window.CONFIG.A_SMARTLINK = 'https://glamourpicklessteward.com/hmk4s9uin?key=2c8912fb68365fd89541e405f08c8993';
+        window.CONFIG.REMOVE_BG_API_PRIMARY = 'pk_725aae37fe3d09f70e349ddb9175715c';
+        window.CONFIG.REMOVE_BG_API_SECONDARY = 'pk_7088de0171327b459fc074ad241a7d34';
+
+        // ---- Toast Notification ----
+        function showToast(message, type) {
+            type = type || 'success';
+            var container = document.getElementById('toastContainer');
+            if (!container) return;
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(function() {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 3500);
+        }
+
+        // ---- DOM Ready ----
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('mainContainer').classList.add('basic-mode-active');
+
+            Promise.all([loadCropperCSS(), loadCropperJS()]).then(function() {
+                setupEventListeners();
+                console.log('Passport Photo Maker initialized successfully.');
+            }).catch(function(err) {
+                console.error('Failed to load Cropper.js:', err);
+                showToast('Failed to load image editor. Please refresh the page.', 'error');
+            });
+        });
+
+        // ---- Event Listeners Setup ----
+        function setupEventListeners() {
+            var uploadArea = document.getElementById('uploadArea');
+            var fileInput = document.getElementById('fileInput');
+            var basicModeBtn = document.getElementById('basicModeBtn');
+            var proModeBtn = document.getElementById('proModeBtn');
+            var generatePreviewBtn = document.getElementById('generatePreviewBtn');
+            var downloadBtn = document.getElementById('downloadBtn');
+            var removeBgBtn = document.getElementById('removeBgBtn');
+            var clearAllBtn = document.getElementById('clearAllBtn');
+
+            // Upload area
+            uploadArea.addEventListener('click', function() { fileInput.click(); });
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+
+            // File input
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Mode toggle
+            basicModeBtn.addEventListener('click', function() { setUIMode('basic'); });
+            proModeBtn.addEventListener('click', function() { setUIMode('professional'); });
+
+            // Clear all
+            clearAllBtn.addEventListener('click', clearAll);
+
+            // Quality slider
+            document.getElementById('qualitySlider').addEventListener('input', function() {
+                document.getElementById('qualityValue').textContent = this.value + '%';
+            });
+
+            // Allow outside checkbox
+            document.getElementById('allowOutside').addEventListener('change', function() {
+                document.getElementById('outsideColorControl').style.display = this.checked ? 'block' : 'none';
+            });
+
+            // Pro controls
+            document.getElementById('dimensionMode').addEventListener('change', toggleDimensionMode);
+            document.getElementById('aspectRatio').addEventListener('change', function() {
+                if (cropper) cropper.setAspectRatio(getCurrentAspectRatio());
+            });
+            document.getElementById('presetSizeSelector').addEventListener('click', handlePresetSelect);
+            document.getElementById('cropModeToggle').addEventListener('click', handleCropModeToggle);
+            document.getElementById('backgroundModeToggle').addEventListener('click', handleBackgroundToggle);
+            document.getElementById('bgColor').addEventListener('input', handleCustomColorChange);
+
+            // Shape buttons
+            document.getElementById('shapeRect').addEventListener('click', function() { setShape('rect'); });
+            document.getElementById('shapeCircle').addEventListener('click', function() { setShape('circle'); });
+
+            // Interactive controls
+            document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
+            document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
+            document.getElementById('rotateLeftBtn').addEventListener('click', rotateLeft);
+            document.getElementById('rotateRightBtn').addEventListener('click', rotateRight);
+            document.getElementById('flipHBtn').addEventListener('click', flipHorizontal);
+            document.getElementById('flipVBtn').addEventListener('click', flipVertical);
+            document.getElementById('resetCropBtn').addEventListener('click', resetCrop);
+            document.getElementById('resetZoomBtn').addEventListener('click', resetZoom);
+
+            // Remove BG
+            removeBgBtn.addEventListener('click', handleRemoveBgClick);
+
+            // Generate & Download
+            generatePreviewBtn.addEventListener('click', generateSheetPreview);
+            downloadBtn.addEventListener('click', downloadResult);
+        }
+
+        // ---- Mode Toggle ----
+        function setUIMode(mode) {
+            currentMode = mode;
+            var container = document.getElementById('mainContainer');
+            var basicBtn = document.getElementById('basicModeBtn');
+            var proBtn = document.getElementById('proModeBtn');
+
+            // Toggle container class for pro-mode-only visibility
+            if (mode === 'professional') {
+                container.classList.add('professional-mode-active');
+                container.classList.remove('basic-mode-active');
+            } else {
+                container.classList.remove('professional-mode-active');
+                container.classList.add('basic-mode-active');
+            }
+
+            // Toggle active-mode class on buttons (green highlight)
+            if (mode === 'professional') {
+                proBtn.classList.add('active-mode');
+                basicBtn.classList.remove('active-mode');
+            } else {
+                basicBtn.classList.add('active-mode');
+                proBtn.classList.remove('active-mode');
+            }
+        }
+
+        // ---- Crop Mode Toggle ----
+        function handleCropModeToggle(e) {
+            var btn = e.target.closest('.control-btn');
+            if (!btn) return;
+
+            document.querySelectorAll('#cropModeToggle .control-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            if (cropper) {
+                var mode = btn.dataset.mode;
+                if (mode === 'freehand') {
+                    // FIX: Use NaN to allow freehand crop from all sides
+                    cropper.setAspectRatio(NaN);
+                } else {
+                    cropper.setAspectRatio(getCurrentAspectRatio());
+                }
+            }
+        }
+
+        // ---- Preset Select ----
+        function handlePresetSelect(e) {
+            var btn = e.target.closest('.preset-size-btn');
+            if (!btn) return;
+
+            // Remove active from all presets
+            document.querySelectorAll('#presetSizeSelector .preset-size-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+
+            // Add active (green highlight + pulse animation) to selected preset
+            btn.classList.add('active');
+
+            var preset = btn.dataset.preset;
+            if (preset !== 'custom') {
+                var width = parseInt(btn.dataset.width, 10);
+                var height = parseInt(btn.dataset.height, 10);
+                document.getElementById('widthInput').value = width;
+                document.getElementById('heightInput').value = height;
+                if (cropper) {
+                    cropper.setAspectRatio(width / height);
+                }
+            }
+        }
+
+        // ---- Background Toggle ----
+        function handleBackgroundToggle(e) {
+            var btn = e.target.closest('.control-btn');
+            if (!btn) return;
+
+            document.querySelectorAll('#backgroundModeToggle .control-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            // Add active class - CSS gives it a visible selected look (border/glow)
+            btn.classList.add('active');
+
+            var bgMode = btn.dataset.bg;
+            var customColorDiv = document.getElementById('customBgColor');
+
+            if (bgMode === 'custom') {
+                customColorDiv.style.display = 'block';
+            } else {
+                customColorDiv.style.display = 'none';
+                if (btn.dataset.color) {
+                    document.getElementById('bgColor').value = btn.dataset.color;
+                }
+            }
+
+            // Refresh preview if already generated
+            if (document.getElementById('sheetPreview').style.display === 'block') {
+                generateSheetPreview();
+            }
+        }
+
+        function handleCustomColorChange() {
+            if (document.getElementById('sheetPreview').style.display === 'block') {
+                generateSheetPreview();
+            }
+        }
+
+        // ---- Drag & Drop ----
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('uploadArea').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('uploadArea').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('uploadArea').classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleFiles(e.dataTransfer.files);
+            }
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files && e.target.files[0]) {
+                handleFiles(e.target.files);
+            }
+        }
+
+        function handleFiles(files) {
+            var file = files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                return;
+            }
+            if (currentImageURL) {
+                URL.revokeObjectURL(currentImageURL);
+            }
+            currentImageURL = URL.createObjectURL(file);
+            loadImage(currentImageURL);
+        }
+
+        // ---- Load Image into Cropper ----
+        function loadImage(src) {
+            var img = document.getElementById('imagePreview');
+            img.src = src;
+            img.style.display = 'block';
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('cropControls').style.display = 'block';
+
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            cropper = new Cropper(img, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 0.8,
+                restore: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: true,
+                movable: true,
+                zoomable: true,
+                rotatable: true,
+                scalable: true,
+                responsive: true,
+                ready: function() {
+                    updateImageInfo();
+                },
+                crop: function() {
+                    updateImageInfo();
+                }
+            });
+        }
+
+        // ---- Shape ----
+        function setShape(shape) {
+            currentShape = shape;
+
+            // Update button styles
+            document.getElementById('shapeRect').className = (shape === 'rect') ? 'btn' : 'btn secondary';
+            document.getElementById('shapeCircle').className = (shape === 'circle') ? 'btn' : 'btn secondary';
+
+            if (cropper) {
+                if (shape === 'circle') {
+                    // FIX: Apply circular styling to cropper view box for visual feedback
+                    var viewBox = document.querySelector('.cropper-view-box');
+                    var face = document.querySelector('.cropper-face');
+                    if (viewBox) viewBox.style.borderRadius = '50%';
+                    if (face) face.style.borderRadius = '50%';
+                    // Force 1:1 aspect ratio for circle
+                    cropper.setAspectRatio(1);
+                } else {
+                    var viewBox2 = document.querySelector('.cropper-view-box');
+                    var face2 = document.querySelector('.cropper-face');
+                    if (viewBox2) viewBox2.style.borderRadius = '0';
+                    if (face2) face2.style.borderRadius = '0';
+                    cropper.setAspectRatio(getCurrentAspectRatio());
+                }
+            }
+        }
+
+        // ---- Dimension Mode ----
+        function toggleDimensionMode() {
+            var mode = document.getElementById('dimensionMode').value;
+            var pixelControls = document.getElementById('pixelControls');
+            var ratioControls = document.getElementById('ratioControls');
+
+            pixelControls.style.display = (mode === 'pixels') ? 'block' : 'none';
+            ratioControls.style.display = (mode === 'ratio') ? 'block' : 'none';
+
+            if (cropper) {
+                if (mode === 'pixels') {
+                    var w = parseInt(document.getElementById('widthInput').value, 10) || 1;
+                    var h = parseInt(document.getElementById('heightInput').value, 10) || 1;
+                    cropper.setAspectRatio(w / h);
+                } else if (mode === 'ratio') {
+                    applyAspectRatio();
+                } else if (mode === 'free') {
+                    // FIX: Freehand mode uses NaN so all sides are resizable
+                    cropper.setAspectRatio(NaN);
+                }
+            }
+        }
+
+        function applyAspectRatio() {
+            var ratioSelect = document.getElementById('aspectRatio');
+            var customInputs = document.getElementById('customRatioInputs');
+            var ratio = ratioSelect.value;
+
+            if (ratio === 'custom') {
+                customInputs.style.display = 'block';
+            } else {
+                customInputs.style.display = 'none';
+                if (cropper) {
+                    var aspectRatio = parseFloat(ratio);
+                    if (isNaN(aspectRatio)) {
+                        var parts = ratio.split('/');
+                        if (parts.length === 2) {
+                            var num = parseFloat(parts[0]);
+                            var den = parseFloat(parts[1]);
+                            if (den !== 0 && !isNaN(num) && !isNaN(den)) {
+                                aspectRatio = num / den;
+                            }
+                        }
+                    }
+                    if (!isNaN(aspectRatio)) {
+                        cropper.setAspectRatio(aspectRatio);
+                    }
+                }
+            }
+        }
+
+        function getCurrentAspectRatio() {
+            var mode = document.getElementById('dimensionMode').value;
+            if (mode === 'pixels') {
+                var w = parseInt(document.getElementById('widthInput').value, 10) || 1;
+                var h = parseInt(document.getElementById('heightInput').value, 10) || 1;
+                return w / h;
+            } else if (mode === 'ratio') {
+                var ratio = document.getElementById('aspectRatio').value;
+                if (ratio === 'custom') {
+                    var rw = parseInt(document.getElementById('ratioWidth').value, 10) || 1;
+                    var rh = parseInt(document.getElementById('ratioHeight').value, 10) || 1;
+                    return rw / rh;
+                } else {
+                    var parts = ratio.split('/');
+                    if (parts.length === 2) {
+                        var num = parseFloat(parts[0]);
+                        var den = parseFloat(parts[1]);
+                        if (den !== 0 && !isNaN(num) && !isNaN(den)) {
+                            return num / den;
+                        }
+                    }
+                    return parseFloat(ratio) || NaN;
+                }
+            }
+            // FIX: Return NaN for freehand mode so crop box is fully resizable
+            return NaN;
+        }
+
+        // ---- Format ----
+        function setFormat(format) {
+            currentFormat = format;
+            document.getElementById('formatJpg').className = (format === 'jpg') ? 'btn' : 'btn secondary';
+            document.getElementById('formatPng').className = (format === 'png') ? 'btn' : 'btn secondary';
+            document.getElementById('formatWebp').className = (format === 'webp') ? 'btn' : 'btn secondary';
+            updateImageInfo();
+        }
+
+        // ---- Image Info ----
+        function updateImageInfo() {
+            if (!cropper) return;
+            var data = cropper.getData();
+            var canvas = cropper.getCroppedCanvas();
+            if (canvas) {
+                document.getElementById('imageInfo').innerHTML =
+                    '<strong>Current Crop:</strong><br>' +
+                    'Position: X ' + Math.round(data.x) + ', Y ' + Math.round(data.y) + '<br>' +
+                    'Size: ' + Math.round(data.width) + ' x ' + Math.round(data.height) + 'px<br>' +
+                    'Rotation: ' + Math.round(data.rotate) + 'deg<br>' +
+                    '<strong>Output:</strong><br>' +
+                    'Canvas: ' + canvas.width + ' x ' + canvas.height + 'px<br>' +
+                    'Format: ' + currentFormat.toUpperCase() + ' | Quality: ' + document.getElementById('qualitySlider').value + '%';
+            }
+        }
+
+        // ---- Interactive Controls ----
+        function zoomIn() { if (cropper) cropper.zoom(0.1); }
+        function zoomOut() { if (cropper) cropper.zoom(-0.1); }
+        function rotateLeft() { if (cropper) cropper.rotate(-90); }
+        function rotateRight() { if (cropper) cropper.rotate(90); }
+
+        function flipHorizontal() {
+            if (cropper) {
+                var d = cropper.getData();
+                cropper.scaleX((d.scaleX || 1) * -1);
+            }
+        }
+
+        function flipVertical() {
+            if (cropper) {
+                var d = cropper.getData();
+                cropper.scaleY((d.scaleY || 1) * -1);
+            }
+        }
+
+        function resetCrop() { if (cropper) cropper.reset(); }
+        function resetZoom() { if (cropper) cropper.zoomTo(1); }
+
+        // ---- Remove Background (30-second experience) ----
+        function handleRemoveBgClick() {
+            var btn = document.getElementById('removeBgBtn');
+            var overlay = document.getElementById('premium-overlay');
+            var progressFill = document.getElementById('premiumProgressFill');
+            var countdownText = document.getElementById('premiumCountdown');
+
+            // Validate file before starting
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            if (!file) {
+                showToast('Please upload an image before removing the background.', 'error');
+                return;
+            }
+            if (!file.type.startsWith('image/')) {
+                showToast('Invalid file type. Please select a valid image.', 'error');
+                return;
+            }
+            if (file.size >= 10 * 1024 * 1024) {
+                showToast('Image file is too large (max 10MB).', 'error');
+                return;
+            }
+
+            // Open ad link
+            window.open(window.CONFIG.A_SMARTLINK, '_blank');
+
+            // Disable button and show overlay immediately
+            btn.disabled = true;
+            overlay.style.display = 'flex';
+
+            var TOTAL_MS = 30000;
+            var startTime = Date.now();
+
+            // Reset progress bar
+            progressFill.style.width = '0%';
+            countdownText.textContent = 'Please wait 30 seconds...';
+
+            // Start API call in background (parallel with timer)
+            bgRemovalApiPromise = callRemoveBgAPI(file);
+
+            // Clear any existing timer
+            if (bgRemovalTimerInterval) clearInterval(bgRemovalTimerInterval);
+
+            bgRemovalTimerInterval = setInterval(function() {
+                var elapsed = Date.now() - startTime;
+                var progress = Math.min(100, (elapsed / TOTAL_MS) * 100);
+                var timeLeft = Math.max(0, Math.ceil((TOTAL_MS - elapsed) / 1000));
+
+                progressFill.style.width = progress + '%';
+
+                if (timeLeft > 0) {
+                    countdownText.textContent = 'Please wait ' + timeLeft + ' second' + (timeLeft !== 1 ? 's' : '') + '...';
+                } else {
+                    countdownText.textContent = 'Finalizing...';
+                }
+            }, 250);
+
+            // FIX: Wait for BOTH the 30-second timer AND the API call to complete
+            // before showing the result. The timer is the minimum wait time.
+            var timerPromise = new Promise(function(resolve) {
+                setTimeout(resolve, TOTAL_MS);
+            });
+
+            Promise.all([timerPromise, bgRemovalApiPromise]).then(function(results) {
+                clearInterval(bgRemovalTimerInterval);
+                overlay.style.display = 'none';
+                progressFill.style.width = '0%';
+
+                var resultBlob = results[1]; // API result
+                if (resultBlob) {
+                    if (currentImageURL) URL.revokeObjectURL(currentImageURL);
+                    currentImageURL = URL.createObjectURL(resultBlob);
+                    loadImage(currentImageURL);
+                    showToast('Background removed successfully!', 'success');
+                }
+                btn.disabled = false;
+            }).catch(function(error) {
+                clearInterval(bgRemovalTimerInterval);
+                overlay.style.display = 'none';
+                progressFill.style.width = '0%';
+                console.error('Background removal failed:', error);
+                showToast('Error: ' + (error.message || 'Background removal failed.'), 'error');
+                btn.disabled = false;
+            });
+        }
+
+        function callRemoveBgAPI(file) {
+            function tryAPI(apiKey) {
+                var formData = new FormData();
+                formData.append('image_file', file);
+                formData.append('size', 'medium');
+                return fetch('https://api.poof.bg/v1/remove', {
+                    method: 'POST',
+                    headers: { 'X-Api-Key': apiKey },
+                    body: formData
+                }).then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('API request failed with status ' + response.status);
+                    }
+                    var contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.startsWith('image/')) {
+                        throw new Error('API response was not a valid image.');
+                    }
+                    return response.blob();
+                });
+            }
+
+            return tryAPI(window.CONFIG.REMOVE_BG_API_PRIMARY).catch(function(primaryError) {
+                console.warn('Primary BG removal API failed:', primaryError.message);
+                console.log('Trying secondary API key...');
+                return tryAPI(window.CONFIG.REMOVE_BG_API_SECONDARY);
+            });
+        }
+
+        // ---- Generate Sheet Preview ----
+        function generateSheetPreview() {
+            if (!cropper) {
+                showToast('Please upload an image first.', 'error');
+                return;
+            }
+
+            var isPro = (currentMode === 'professional');
+
+            // FIX A4 Print Engine: Always use 300 DPI for high-quality output
+            var printDPI = isPro ? (parseInt(document.getElementById('printDPI').value, 10) || 300) : 300;
+            var pxToMm = function(px) { return (px / printDPI) * 25.4; };
+
+            var photoWidthPx = isPro ? (parseInt(document.getElementById('widthInput').value, 10) || 413) : 413;
+            var photoHeightPx = isPro ? (parseInt(document.getElementById('heightInput').value, 10) || 531) : 531;
+            var photoWidthMM = pxToMm(photoWidthPx);
+            var photoHeightMM = pxToMm(photoHeightPx);
+
+            var topMarginMM = isPro ? (parseFloat(document.getElementById('topMargin').value) || 10) : 10;
+            var leftMarginMM = isPro ? (parseFloat(document.getElementById('leftMargin').value) || 10) : 10;
+            var bottomMarginMM = isPro ? (parseFloat(document.getElementById('bottomMargin').value) || 10) : 10;
+            var rightMarginMM = isPro ? (parseFloat(document.getElementById('rightMargin').value) || 10) : 10;
+            var horizontalGapMM = isPro ? (parseFloat(document.getElementById('horizontalGap').value) || 5) : 5;
+            var verticalGapMM = isPro ? (parseFloat(document.getElementById('verticalGap').value) || 5) : 5;
+            var showCuttingLines = isPro && document.getElementById('showCuttingLines').checked;
+            var centerGrid = isPro && document.getElementById('centerGrid').checked;
+
+            var cols = parseInt(document.getElementById('layoutCols').value, 10) || 1;
+            var rows = parseInt(document.getElementById('layoutRows').value, 10) || 1;
+
+            // Get cropped canvas at target dimensions
+            var imageCanvas = cropper.getCroppedCanvas({
+                width: photoWidthPx,
+                height: photoHeightPx,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            if (!imageCanvas) {
+                showToast('Could not generate cropped image.', 'error');
+                return;
+            }
+
+            // Apply background color
+            var activeBgBtn = document.querySelector('#backgroundModeToggle .control-btn.active');
+            var bgMode = activeBgBtn ? activeBgBtn.dataset.bg : 'original';
+
+            if (bgMode !== 'original') {
+                var tempCanvas = document.createElement('canvas');
+                tempCanvas.width = imageCanvas.width;
+                tempCanvas.height = imageCanvas.height;
+                var tempCtx = tempCanvas.getContext('2d');
+                var color = '#ffffff';
+                if (bgMode === 'custom') {
+                    color = document.getElementById('bgColor').value;
+                } else if (activeBgBtn && activeBgBtn.dataset.color) {
+                    color = activeBgBtn.dataset.color;
+                }
+                tempCtx.fillStyle = color;
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(imageCanvas, 0, 0);
+                imageCanvas = tempCanvas;
+            }
+
+            // FIX Circle Shape: Clip final exported image to a perfect circle
+            if (currentShape === 'circle') {
+                var circleCanvas = document.createElement('canvas');
+                var size = Math.min(imageCanvas.width, imageCanvas.height);
+                circleCanvas.width = size;
+                circleCanvas.height = size;
+                var circleCtx = circleCanvas.getContext('2d');
+                circleCtx.beginPath();
+                circleCtx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
+                circleCtx.closePath();
+                circleCtx.clip();
+                // Center the source image in the circle canvas
+                var offsetX = (size - imageCanvas.width) / 2;
+                var offsetY = (size - imageCanvas.height) / 2;
+                circleCtx.drawImage(imageCanvas, offsetX, offsetY);
+                imageCanvas = circleCanvas;
+            }
+
+            var photoDataUrl = imageCanvas.toDataURL('image/png');
+
+            // Build print sheet HTML
+            var printContainer = document.getElementById('print-container');
+            printContainer.innerHTML = '';
+
+            var sheet = document.createElement('div');
+            sheet.className = 'print-sheet';
+            if (showCuttingLines) sheet.classList.add('with-lines');
+
+            sheet.style.setProperty('--print-cols', cols);
+            sheet.style.setProperty('--photo-width', photoWidthMM + 'mm');
+            sheet.style.setProperty('--photo-height', photoHeightMM + 'mm');
+            sheet.style.setProperty('--horizontal-gap', horizontalGapMM + 'mm');
+            sheet.style.setProperty('--vertical-gap', verticalGapMM + 'mm');
+            sheet.style.padding = topMarginMM + 'mm ' + rightMarginMM + 'mm ' + bottomMarginMM + 'mm ' + leftMarginMM + 'mm';
+            sheet.style.setProperty('--justify-content', centerGrid ? 'center' : 'flex-start');
+            sheet.style.setProperty('--align-content', centerGrid ? 'center' : 'flex-start');
+
+            for (var i = 0; i < rows * cols; i++) {
+                var photoImg = document.createElement('img');
+                photoImg.src = photoDataUrl;
+                photoImg.className = 'print-photo-item';
+                if (currentShape === 'circle') {
+                    photoImg.style.borderRadius = '50%';
+                } else {
+                    photoImg.style.borderRadius = '0';
+                }
+                sheet.appendChild(photoImg);
+            }
+
+            printContainer.appendChild(sheet);
+
+            // Build scaled-down preview for UI
+            var previewContainer = document.getElementById('sheetPreview');
+            previewContainer.innerHTML = '';
+            var previewSheet = sheet.cloneNode(true);
+
+            var previewBox = document.getElementById('sheetPreviewContainer');
+            var scale = previewBox.clientWidth / 210; // 210mm = A4 width
+            previewSheet.style.transform = 'scale(' + scale + ')';
+            previewSheet.style.transformOrigin = 'top left';
+
+            previewContainer.appendChild(previewSheet);
+            previewContainer.style.display = 'block';
+            document.getElementById('sheetPreviewPlaceholder').style.display = 'none';
+
+            // Enable download
+            document.getElementById('downloadBtn').disabled = false;
+        }
+
+        // ---- Download Result ----
+        function downloadResult() {
+            var printContainer = document.getElementById('print-container');
+            if (!printContainer.hasChildNodes()) {
+                showToast('Please generate a preview first.', 'error');
+                return;
+            }
+
+            var exportType = (currentMode === 'professional') ? document.getElementById('exportType').value : 'image';
+
+            if (exportType === 'pdf') {
+                window.print();
+                return;
+            }
+
+            // FIX A4 Print Engine: Always use 300 DPI for high-quality canvas math
+            var PRINT_DPI = 300;
+            var mmToPx = function(mm) { return Math.round((mm / 25.4) * PRINT_DPI); };
+
+            var A4_WIDTH_PX = mmToPx(210);
+            var A4_HEIGHT_PX = mmToPx(297);
+
+            var isPro = (currentMode === 'professional');
+            var photoWidthPx = isPro ? (parseInt(document.getElementById('widthInput').value, 10) || 413) : 413;
+            var photoHeightPx = isPro ? (parseInt(document.getElementById('heightInput').value, 10) || 531) : 531;
+
+            var croppedPhotoCanvas = cropper.getCroppedCanvas({
+                width: photoWidthPx,
+                height: photoHeightPx,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            if (!croppedPhotoCanvas) {
+                showToast('Could not generate cropped image for download.', 'error');
+                return;
+            }
+
+            // FIX Circle Shape: Clip to circle for download
+            if (currentShape === 'circle') {
+                var circleCanvas = document.createElement('canvas');
+                var size = Math.min(croppedPhotoCanvas.width, croppedPhotoCanvas.height);
+                circleCanvas.width = size;
+                circleCanvas.height = size;
+                var circleCtx = circleCanvas.getContext('2d');
+                circleCtx.beginPath();
+                circleCtx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
+                circleCtx.closePath();
+                circleCtx.clip();
+                var offsetX = (size - croppedPhotoCanvas.width) / 2;
+                var offsetY = (size - croppedPhotoCanvas.height) / 2;
+                circleCtx.drawImage(croppedPhotoCanvas, offsetX, offsetY);
+                croppedPhotoCanvas = circleCanvas;
+                // Update dimensions for circle
+                photoWidthPx = size;
+                photoHeightPx = size;
+            }
+
+            // Apply background color
+            var activeBgBtn = document.querySelector('#backgroundModeToggle .control-btn.active');
+            var bgMode = activeBgBtn ? activeBgBtn.dataset.bg : 'original';
+
+            if (bgMode !== 'original') {
+                var tempCanvas = document.createElement('canvas');
+                tempCanvas.width = croppedPhotoCanvas.width;
+                tempCanvas.height = croppedPhotoCanvas.height;
+                var tempCtx = tempCanvas.getContext('2d');
+                tempCtx.imageSmoothingEnabled = true;
+                tempCtx.imageSmoothingQuality = 'high';
+                var color = '#ffffff';
+                if (bgMode === 'custom') {
+                    color = document.getElementById('bgColor').value;
+                } else if (activeBgBtn && activeBgBtn.dataset.color) {
+                    color = activeBgBtn.dataset.color;
+                }
+                tempCtx.fillStyle = color;
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(croppedPhotoCanvas, 0, 0);
+                croppedPhotoCanvas = tempCanvas;
+            }
+
+            // Create A4 canvas at 300 DPI
+            var downloadCanvas = document.createElement('canvas');
+            downloadCanvas.width = A4_WIDTH_PX;
+            downloadCanvas.height = A4_HEIGHT_PX;
+            var downloadCtx = downloadCanvas.getContext('2d');
+            downloadCtx.imageSmoothingEnabled = true;
+            downloadCtx.imageSmoothingQuality = 'high';
+            downloadCtx.fillStyle = '#ffffff';
+            downloadCtx.fillRect(0, 0, A4_WIDTH_PX, A4_HEIGHT_PX);
+
+            // Read layout from print sheet
+            var sheetElement = printContainer.querySelector('.print-sheet');
+            var cols = parseInt(sheetElement.style.getPropertyValue('--print-cols'), 10) || 1;
+            var totalPhotos = sheetElement.childElementCount;
+            var rows = Math.ceil(totalPhotos / cols);
+
+            var hGapStr = sheetElement.style.getPropertyValue('--horizontal-gap').replace('mm', '');
+            var vGapStr = sheetElement.style.getPropertyValue('--vertical-gap').replace('mm', '');
+            var horizontalGapPx = mmToPx(parseFloat(hGapStr) || 0);
+            var verticalGapPx = mmToPx(parseFloat(vGapStr) || 0);
+
+            // Parse padding (top left)
+            var paddingStr = sheetElement.style.padding || '10mm 10mm 10mm 10mm';
+            var paddingParts = paddingStr.split(' ');
+            var startY = mmToPx(parseFloat(paddingParts[0]) || 10);
+            var startX = mmToPx(parseFloat(paddingParts[3] || paddingParts[1] || '10') || 10);
+
+            for (var r = 0; r < rows; r++) {
+                for (var c = 0; c < cols; c++) {
+                    var x = startX + c * (photoWidthPx + horizontalGapPx);
+                    var y = startY + r * (photoHeightPx + verticalGapPx);
+                    downloadCtx.drawImage(croppedPhotoCanvas, Math.round(x), Math.round(y), photoWidthPx, photoHeightPx);
+                }
+            }
+
+            var quality = (currentFormat === 'jpg') ? 1.0 : (parseInt(document.getElementById('qualitySlider').value, 10) / 100);
+            var filename = 'passport-sheet-A4-300dpi-' + new Date().toISOString().slice(0, 10) + '.' + currentFormat;
+
+            downloadCanvas.toBlob(function(blob) {
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() {
+                    if (a.parentNode) a.parentNode.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 150);
+            }, 'image/' + currentFormat, quality);
+        }
+
+        // ---- Auto Fit ----
+        function toggleAutoFit() {
+            if (currentMode !== 'professional') return;
+
+            var photoWidthPx = parseInt(document.getElementById('widthInput').value, 10) || 1;
+            var photoHeightPx = parseInt(document.getElementById('heightInput').value, 10) || 1;
+            var printDPI = parseInt(document.getElementById('printDPI').value, 10) || 300;
+
+            var A4_WIDTH_MM = 210;
+            var A4_HEIGHT_MM = 297;
+            var topMarginMM = parseFloat(document.getElementById('topMargin').value) || 0;
+            var leftMarginMM = parseFloat(document.getElementById('leftMargin').value) || 0;
+            var bottomMarginMM = parseFloat(document.getElementById('bottomMargin').value) || 0;
+            var rightMarginMM = parseFloat(document.getElementById('rightMargin').value) || 0;
+            var horizontalGapMM = parseFloat(document.getElementById('horizontalGap').value) || 0;
+            var verticalGapMM = parseFloat(document.getElementById('verticalGap').value) || 0;
+
+            var usableWidthMM = A4_WIDTH_MM - leftMarginMM - rightMarginMM;
+            var usableHeightMM = A4_HEIGHT_MM - topMarginMM - bottomMarginMM;
+
+            var photoWidthMM = (photoWidthPx / printDPI) * 25.4;
+            var photoHeightMM = (photoHeightPx / printDPI) * 25.4;
+
+            var maxCols = Math.floor((usableWidthMM + horizontalGapMM) / (photoWidthMM + horizontalGapMM));
+            var maxRows = Math.floor((usableHeightMM + verticalGapMM) / (photoHeightMM + verticalGapMM));
+
+            document.getElementById('layoutCols').value = Math.max(1, maxCols);
+            document.getElementById('layoutRows').value = Math.max(1, maxRows);
+        }
+
+        // ---- Clear All ----
+        function clearAll() {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            var img = document.getElementById('imagePreview');
+            img.src = '';
+            img.style.display = 'none';
+
+            if (currentImageURL) {
+                URL.revokeObjectURL(currentImageURL);
+                currentImageURL = null;
+            }
+
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('cropControls').style.display = 'none';
+            document.getElementById('imageInfo').textContent = 'No image loaded. Please upload a photo to begin.';
+
+            document.getElementById('sheetPreview').innerHTML = '';
+            document.getElementById('sheetPreview').style.display = 'none';
+            document.getElementById('sheetPreviewPlaceholder').style.display = 'block';
+            document.getElementById('downloadBtn').disabled = true;
+
+            // Reset controls
+            document.getElementById('dimensionMode').value = 'pixels';
+            document.getElementById('aspectRatio').value = '1';
+            setFormat('jpg');
+            document.getElementById('qualitySlider').value = 80;
+            document.getElementById('qualityValue').textContent = '80%';
+            document.getElementById('exactResize').checked = false;
+            document.getElementById('allowOutside').checked = false;
+            document.getElementById('outsideColorControl').style.display = 'none';
+
+            setShape('rect');
+
+            document.querySelectorAll('#cropModeToggle .control-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelector('#cropModeToggle .control-btn[data-mode="fixed"]').classList.add('active');
+
+            document.querySelectorAll('#presetSizeSelector .preset-size-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelector('#presetSizeSelector .preset-size-btn[data-preset="custom"]').classList.add('active');
+
+            document.querySelectorAll('#backgroundModeToggle .control-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelector('#backgroundModeToggle .control-btn[data-bg="original"]').classList.add('active');
+            document.getElementById('customBgColor').style.display = 'none';
+
+            document.getElementById('widthInput').value = '500';
+            document.getElementById('heightInput').value = '600';
+            document.getElementById('ratioWidth').value = '1';
+            document.getElementById('ratioHeight').value = '1';
+            document.getElementById('customRatioInputs').style.display = 'none';
+            document.getElementById('ratioControls').style.display = 'none';
+            document.getElementById('pixelControls').style.display = 'block';
+
+            showToast('Session cleared.', 'success');
+        }
+
+        // ---- Loading Indicator ----
+        function showLoading(show) {
+            var loading = document.getElementById('loadingIndicator');
+            var controls = document.getElementById('cropControls');
+            if (show) {
+                loading.style.display = 'block';
+                if (controls) {
+                    controls.style.opacity = '0.5';
+                    controls.style.pointerEvents = 'none';
+                }
+            } else {
+                loading.style.display = 'none';
+                if (controls) {
+                    controls.style.opacity = '1';
+                    controls.style.pointerEvents = 'auto';
+                }
+            }
+        }
+    </script>
+
+    <!-- Admin Mode Protection Layer -->
+    <script>
+        (function() {
+            'use strict';
+            var adminMode = false;
+            var secretKey = 'adhurjya_admin_2026';
+
+            function preventDefault(e) {
+                if (!adminMode) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+            function handleKeydown(e) {
+                if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                    var key = prompt('Enter Admin Key:');
+                    if (key === secretKey) {
+                        adminMode = true;
+                        alert('Admin Mode Activated');
+                    } else {
+                        alert('Wrong Key!');
+                    }
+                }
+            }
+
+            document.addEventListener('contextmenu', preventDefault);
+            document.addEventListener('keydown', function(e) {
+                if (!adminMode && (
+                    e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'U'))
+                )) {
+                    preventDefault(e);
+                }
+            });
+            document.addEventListener('keydown', handleKeydown);
+        })();
+    </script>
+
+</body>
+</html>

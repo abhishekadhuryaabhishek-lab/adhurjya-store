@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="../coi-serviceworker.js"></script>
+<title>Indian Hashtag Generator — Adhurjya Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Generate trending Indian hashtags for Instagram, YouTube & Facebook. 100% client-side tool by Adhurjya Store.">
+
+<style>
+:root{
+  --accent:#22c55e;
+  --bg:#020617;
+  --card:#0f172a;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:linear-gradient(160deg,#020617,#020b25,#041b2d);
+  color:var(--text);
+}
+header{
+  position:sticky;top:0;z-index:50;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+}
+.header-inner{
+  max-width:1300px;margin:auto;
+  padding:14px 24px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.brand{font-weight:700}
+.brand-sub{font-size:12px;color:var(--muted)}
+.back{color:var(--accent);text-decoration:none;font-size:14px}
+.container{max-width:1300px;margin:auto;padding:24px}
+h1{text-align:center;margin-bottom:24px}
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:24px;
+  margin-bottom:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+}
+label{font-weight:600;display:block;margin-top:14px}
+input,select{
+  width:100%;padding:12px;border-radius:10px;
+  border:none;margin-top:6px;font-size:15px;
+  background:#020617;color:var(--text);
+}
+button{
+  width:100%;margin-top:18px;padding:14px;
+  font-size:16px;border:none;border-radius:12px;
+  background:var(--accent);cursor:pointer;
+}
+textarea{
+  width:100%;height:140px;padding:12px;
+  border-radius:10px;border:none;resize:none;margin-top:8px;
+  background:#020617;color:var(--text);
+}
+.copy{margin-top:8px;background:#3b82f6}
+.badge{margin-top:8px;font-size:13px;color:var(--muted)}
+.trust{text-align:center;font-size:13px;color:var(--muted);margin-top:20px}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="brand">Adhurjya Store</div>
+      <div class="brand-sub">All-in-one browser tools</div>
+    </div>
+    <a href="../index.html" class="back">← Back to tools</a>
+  </div>
+</header>
+
+<div class="container">
+<h1>Indian Trending Hashtag Generator</h1>
+
+<div class="card">
+  <label>Topic / Keyword (Anything Indian)</label>
+  <input id="topic" placeholder="maa kali, biryani, kolkata, village life, government job">
+
+  <label>Platform</label>
+  <select id="platform">
+    <option value="instagram">Instagram</option>
+    <option value="youtube">YouTube</option>
+    <option value="facebook">Facebook</option>
+  </select>
+
+  <label>Content Type</label>
+  <select id="type">
+    <option value="reel">Reel / Short</option>
+    <option value="video">Video</option>
+    <option value="photo">Photo</option>
+  </select>
+
+  <button onclick="generate()">Generate Hashtags</button>
+</div>
+
+<div id="output"></div>
+
+<div class="trust">
+  Part of <strong>Adhurjya Store</strong> • Runs fully in your browser
+</div>
+</div>
+
+<script>
+/* ================= LIMITS ================= */
+const limits={
+ instagram:{reel:15,video:20,photo:25},
+ youtube:{reel:10,video:15,photo:8},
+ facebook:{reel:5,video:5,photo:3}
+};
+
+/* ================= BANNED ================= */
+const banned=["follow4follow","like4like","instagood","fyp","explorepage"];
+const extraBanned=["freefollowers","likesforlikes","boostpost","buyfollowers"];
+const allBanned=[...new Set([...banned,...extraBanned])];
+
+/* ================= GODS & GODDESSES ================= */
+const gods={
+ kali:[
+  "kalimaa","jaikalimaa","maakali","shaktibhakti","kalipuja","hindudevi","tantrabhakti",
+  "kamakhyamaa","chhinnamasta","bagalamukhi","dhumavati","kalibhakti",
+  "kalighatmandir","tantrikpuja","shaktisadhana","mahavidya",
+  "shmashankali","dakshineswarkali"
+ ],
+ tarama:[
+  "tarama","maatarama","tarapith","bengalibhakti","shakti",
+  "tantra","matangimaa","tripurasundari","tarapithbhakti"
+ ],
+ durga:[
+  "durgamaa","jaimatadi","navratri","durgapuja","shaktibhakti",
+  "katyayanimaa","mahagauri","kalratri","durgabhakti","navdurgapuja"
+ ],
+ lakshmi:[
+  "lakshmimaa","diwali","wealthblessings","prosperity",
+  "lakshminarayan","narayanbhakt"
+ ],
+ saraswati:[
+  "saraswatimaa","basantpanchami","vidyadevi","education","saraswatipuja"
+ ],
+ mahadev:[
+  "mahadev","harharmahadev","bholenath","shivshakti","mahakal",
+  "omnamahshivaya","shivbhakti","shaivismindia","kashiwanath",
+  "kedarnathdham","somnathmandir","jyotirlinga","lingapuja",
+  "rudrabhishek","shivratriindia"
+ ],
+ krishna:[
+  "krishna","radhekrishna","harekrishna","iskcon","bhaktiyoga",
+  "bankebihari","govardhan","krishnabhakti","radheradhe",
+  "vrajbhumi","gokulvrindavan","govindbhajan","iskcontemple"
+ ],
+ ram:[
+  "shriram","jaishreeram","rammandir","ramayan","ramabhakti",
+  "ramnavami","ayodhyaram","sitaram","ramayanpath"
+ ],
+ hanuman:[
+  "hanuman","bajrangbali","jaibajrangbali","hanumanbhakt",
+  "sankatmochan","bajrangdalbhakti"
+ ],
+ ganesh:[
+  "ganpati","ganpatibappa","morya","ganeshchaturthi"
+ ],
+ jagannath:[
+  "jagannath","mahaprabhu","puri","rathyatra",
+  "jagannathculture","purijagannath","rathyatraindia"
+ ],
+ folk:[
+  "tribaldevta","gramdevta","kuldevta","banbhibi","manasapuja",
+  "shitalapuja","folkbhakti","adivasidevta","localmandir",
+  "templedarshan","mandirparikrama","pujavidhis","aartitime",
+  "bhajanmandali","satsangindia"
+ ]
+};
+
+/* ================= FOODS ================= */
+const indianFoods=[
+"aloo paratha","gobi paratha","paneer paratha","dal tadka","dal fry","rajma chawal","kadhi chawal",
+"butter naan","tandoori roti","malai kofta","shahi paneer","palak paneer","matar paneer",
+"chole kulche","bedmi puri","kachori sabzi","poori bhaji","veg pulao","jeera rice","lemon rice",
+"curd rice","bisibele bath","pongal","appam stew","puttu kadala curry","idiyappam",
+"kerala sadya","avial","olan","thoran","meen curry","fish fry bengali","shorshe ilish",
+"macher jhol","chingri malai curry","aloo posto","luchi mangsho","kosha mangsho",
+"mutton curry","chicken curry desi","butter chicken masala","chicken tikka","tandoori chicken",
+"seekh kebab","shammi kebab","galouti kebab","nihari india","paya soup","haleem india",
+"biryani kolkata","hyderabadi biryani","lucknowi biryani","ambur biryani","dum biryani",
+"veg momos","chicken momos","thukpa","chowmein street","egg roll kolkata","kati roll",
+"frankie roll","pav bhaji masala","vada pav","misal pav","dabeli","poha jalebi",
+"sabudana khichdi","upma rava","sheera halwa","sooji halwa","atta halwa",
+"gajar halwa","moong dal halwa","peda mithai","laddu prasad","boondi laddu",
+"motichoor laddu","ras malai","cham cham","pantua","kheer payasam",
+"phirni dessert","kulfi falooda","malpua","imarti","balushahi",
+"streetchaatindia"
+];
+
+/* ================= PLACES ================= */
+const indianPlaces=[
+"mumbaiindia","delhidiaries","kolkatagram","chennaicity","bengalurudiaries","hyderabadcity",
+"punevibes","ahmedabadcity","jaipurpinkcity","jodhpurdiaries","udaipurcity","jaisalmerfort",
+"bikanerdiaries","amritsarcity","chandigarhlife","shimladiaries","manalitrip",
+"dharamshalavibes","dalhousietrip","mussoorietrip","nanitaltour","rishikeshyoga",
+"haridwardiaries","varanasighats","prayagrajtriveni","ayodhyadham","mathuravrindavan",
+"gwaliorfort","orchhaheritage","bhopallakecity","indorefood","ujjainmahakal",
+"omkareshwarjyotirlinga","nashikdiaries","shirdisai","aurangabadajanta","elloracaves",
+"hampiheritage","badamicaves","belurhalebidu","maduraimeenakshi","rameswaramdham",
+"kanyakumaritrip","ootyhillstation","kodaikanaltrip","yercaudhills","coorgdiaries",
+"chikmagalurtrip","gokarnabeach","murudeshwar","udupidiaries","goabeachlife",
+"arambolbeach","vagatorbeach","alappuzhabackwaters","munnardiaries","vagamonhills",
+"ponmuditrip","andamannislands","havelockisland","darjeelingdiaries","kalimpongtrip",
+"gangtokdiaries","pellingview","kaziranganationalpark","majuliisland","shillongdiaries",
+"cherrapunjeetrip","tawangmonastery","itanagartrip","bastartribal","konarktemple",
+"puribeach","chandipurbeach","sundarbansdelta","ruralindiajourney"
+];
+
+/* ================= PRODUCTS ================= */
+const indianProducts=[
+"banarasisaree","kanjeepuramsaree","balucharisaree","tantcottonsaree","sambalpurihandloom",
+"ikatweaves","pochampallyikat","chanderifabric","maheshwarisaree","kota doria",
+"jamdanisaree","phulkariwork","bandhanitextile","leheriyacloth","ajrakhprint",
+"kalamkarifabric","bagruprint","sanganerprint","dokracraft","bellmetalart",
+"bidricraft","bluepotteryjaipur","terracottacraft","kondapallitoy","etawatoystore",
+"lacquerbangles","meenakarijewellery","kundanjewellery","templejewellery",
+"silveranklet","oxidisedjewellery","ayurvedicherbs","herbalhairoil",
+"neemproducts","halditraditional","chandanpaste","agarbattiindia","dhoopsticks",
+"brassutensils","copperbottleindia","steelthali","claykulhad","earthenpottery",
+"bamboohandicraft","caneandjute","jutehandbag","sabaihandicraft","handmadediya",
+"pujasamagri","weddinglehenga","bridaldupatta","groompagdi","handmadejuttis",
+"kolhapurichappal","mojrishoes","swadeshiproducts","localindianbrand","artisanalindia"
+];
+
+/* ================= LIFE ================= */
+const indianLife=[
+"middleclassdreams","middleclassfamily","gharwalipyari","maaapkepyaar","pitakaguidance",
+"bhaibehenbond","jointfamilylife","indianweddingemotions","shaadilifeindia",
+"rishtedaarvibes","pyaarkikahani","pehlaishq","adhurikahani","heartbreakindia",
+"onesidedloveindia","longdistanceloveindia","arrangedmarriagevibes","lovemarriageindia",
+"jobsearchstruggle","monthlysalarystress","rentlifeindia","kiranalifemoments",
+"morningchai","eveningwalks","localtrainlife","busstandstories","trafficlifeindia",
+"officecommutelife","bosslifeindia","workpressureindia","examstress","resultdayfear",
+"failurestoriesindia","restartlifeindia","selfmadejourney","smalltownboy",
+"smalltowngirl","villagelifeindia","gaonkipol","khetonkizindagi","citylifestruggles",
+"metrocityrush","dreamsandhopes","dailyindianlife"
+];
+
+/* ================= FESTIVALS ================= */
+const indianFestivals=[
+"republicdayindia","independencecelebration","gandhijayanti","diwalicelebration",
+"holihai","navratrispecial","durgapujo","kalipuja","lakshmipuja","jagaddhatripuja",
+"saraswatipuja","ganeshotsav","janmashtamicelebration","ramnavami","mahashivratri",
+"rakshabandhanlove","bhaidoojvibes","karwachauthfast","teejfestival","gangasnan",
+"chhathpuja","maghsnan","pongalfestival","onamcelebration","vishuceremony",
+"ugadifestival","gudipadwa","baisakhicelebration","lohrivibes","makarsankranti",
+"rathyatra","ambubachimela","hornbillfestival","pushkarfair","surajkundmela",
+"kumbhmela","tribalfestival","lokotsav","grampuja","kuldevipuja",
+"sanskarrituals","vivahsamskar","namkaranceremony","annaprashan","indianheritage"
+];
+
+/* ================= CAREER ================= */
+const indianCareer=[
+"sarkarijobdream","governmentjobindia","privatejoblife","fresherstruggle",
+"campusplacement","placementseason","interviewpreparation","resumetipsindia",
+"skilldevelopmentindia","upscaspirant","pcsaspirant","sscpreparation",
+"bankingexams","ibpspo","sbipo","railwayexam","rrbntpc","groupdexam",
+"statepsc","teachingjobindia","ctetexam","tetpreparation","netexam",
+"jeeadvanced","neetaspirant","medicalentrance","engineeringlifeindia",
+"btechlife","mbbslife","lawentranceindia","clatpreparation","caaspirant",
+"csstudent","cmaindia","distancelearningindia","onlinecoursesindia",
+"nightstudyindia","exammotivation","failuretofighter","careerrestartindia",
+"unemploymentindia","youthofindia"
+];
+
+/* ================= TECH / PLATFORMS ================= */
+const indianTech=[
+"mobileinternetindia","smartphoneindia","cheapdataplans","jioindia","airtelindia",
+"onlineearningindia","freelancingindia","contentcreatorlife","youtuberindia",
+"vloglifeindia","dailyvlogger","instagramcreator","reelcreatorindia",
+"shortsvideoindia","viralreelsindia","videomakingindia","photoeditingindia",
+"capcutindia","canvaindia","aicontentindia","digitalmarketingindia","seoindia",
+"bloggingindia","affiliateindia","onlinebusinessindia","ecommerceindia",
+"dropshippingindia","printondemandindia","workfromhomeindia","remoteworkindia",
+"sideincomeindia","passiveincomeindia","studentfreelancer","homemakeronline",
+"digitalpaymentsindia","upiindia","netbankingindia","cyberawareness",
+"techlearningindia","codingindia","webdeveloperindia","appdeveloperindia",
+"instagramindia","instagramreelsindia","instadailyindia","instaindia",
+"youtubelifeindia","youtubecreatorsindia","youtubeshortsindia","youtubersofindia",
+"facebookindia","facebookreelsindia","fbcontentindia","indiancontentcreator",
+"indiansocialmedia","desicreators","photopostindia","photographyindia",
+"mobilephotographyindia","videographyindia","cinematicindia","dailyreelsindia",
+"trendingreelsindia","shortvideoindia","longvideoindia","indianvlogs",
+"infotainmentindia","educationalcontentindia","entertainmentindia",
+"lifestylecontentindia"
+];
+
+/* ================= HELPERS ================= */
+function normalize(t){return t.toLowerCase().replace(/[^a-z0-9\s]/g," ");}
+function wordMatch(text,arr){
+ const words=normalize(text).split(/\s+/);
+ return arr.some(tag=>{
+  const clean=normalize(tag);
+  return words.some(w=>clean.includes(w) && w.length>2);
+ });
+}
+function shuffleCopy(arr){return [...arr].sort(()=>Math.random()-0.5);}
+function detectGod(text){
+ for(const g in gods){if(text.includes(g)) return g;}
+ return null;
+}
+function rotate(arr,count){
+ if(arr.length<=count) return arr;
+ const start=Math.floor(Math.random()*(arr.length-count+1));
+ return arr.slice(start,start+count);
+}
+function format(tags){
+ return tags.filter(t=>!allBanned.includes(t))
+ .map(t=>"#"+t.replace(/\s+/g,"")).join(" ");
+}
+
+/* ================= MAIN ================= */
+function generate(){
+ const topic=normalize(document.getElementById("topic").value.trim());
+ const platform=document.getElementById("platform").value;
+ const type=document.getElementById("type").value;
+ const out=document.getElementById("output");
+ if(!topic){out.innerHTML="<div class='card'>Enter any Indian topic.</div>";return;}
+
+ let tags=[];
+ const god=detectGod(topic);
+ if(god){tags=[...gods[god],"hindubhakti","indiadevotion","bhaktiindia"];}
+ else if(wordMatch(topic,indianFoods)){tags=[...indianFoods];}
+ else if(wordMatch(topic,indianPlaces)){tags=[...indianPlaces];}
+ else if(wordMatch(topic,indianProducts)){tags=[...indianProducts];}
+ else if(wordMatch(topic,indianFestivals)){tags=[...indianFestivals];}
+ else if(wordMatch(topic,indianCareer)){tags=[...indianCareer];}
+ else if(wordMatch(topic,indianTech)){tags=[...indianTech];}
+ else if(wordMatch(topic,indianLife)){tags=[...indianLife];}
+ else{
+  const w=topic.split(/\s+/);
+  tags=[w.join(""),...w,"trendingindia","viralindia","desicontent"];
+ }
+ const final=rotate(shuffleCopy(tags),limits[platform][type]);
+ out.innerHTML=`
+ <div class="card">
+  <strong>🔥 Generated Hashtags</strong>
+  <textarea readonly>${format(final)}</textarea>
+  <button class="copy" onclick="copy(this)">Copy</button>
+  <div class="badge">Platform: ${platform.toUpperCase()} | Type: ${type.toUpperCase()}</div>
+ </div>`;
+}
+function copy(btn){
+ const ta=btn.previousElementSibling;
+ ta.select();document.execCommand("copy");
+ btn.innerText="Copied";setTimeout(()=>btn.innerText="Copy",1200);
+}
+</script>
+
+<script src="../site-protection.js"></script>
+</body>
+</html>

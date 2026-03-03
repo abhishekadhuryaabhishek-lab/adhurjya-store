@@ -1,0 +1,6 @@
+{
+  "name": "mespeak-local-config",
+  "sampling_rate": 22050,
+  "bits_per_sample": 16,
+  "channels": 1
+}
