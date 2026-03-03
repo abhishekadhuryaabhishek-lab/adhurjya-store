@@ -769,11 +769,11 @@
             padding: 0;
             box-sizing: border-box;
             
-            /* Professional CSS grid layout */
+            /* Professional CSS grid layout - dynamic values */
             display: grid;
-            grid-template-columns: repeat(auto-fill, 35mm);
-            grid-auto-rows: 45mm;
-            gap: 3mm;
+            grid-template-columns: repeat(var(--columns, 1), var(--photo-width));
+            grid-auto-rows: var(--photo-height);
+            gap: var(--vertical-gap) var(--horizontal-gap);
             justify-content: center;
             align-content: start;
             
@@ -1971,23 +1971,21 @@
             sheet.style.setProperty('--justify-content', centerGrid ? 'center' : 'flex-start');
             sheet.style.setProperty('--align-content', 'start');
 
-            // Calculate maximum number of photos that can fit on A4 sheet
-            var A4_WIDTH_MM = 210;
-            var A4_HEIGHT_MM = 297;
+            // Read user input values for Columns and Rows dynamically
+            const columns = parseInt(document.getElementById("layoutCols").value) || 1;
+            const rows = parseInt(document.getElementById("layoutRows").value) || 1;
             
-            // Calculate usable area
-            var usableWidthMM = A4_WIDTH_MM - leftMarginMM - rightMarginMM;
-            var usableHeightMM = A4_HEIGHT_MM - topMarginMM - bottomMarginMM;
+            // Set grid template to use dynamic values
+            sheet.style.display = "grid";
+            sheet.style.gridTemplateColumns = `repeat(${columns}, var(--photo-width))`;
+            sheet.style.gridAutoRows = `var(--photo-height)`;
 
-            // Calculate how many photos fit per row and column
-            var photosPerRow = Math.floor((usableWidthMM + horizontalGapMM) / (photoWidthMM + horizontalGapMM));
-            var photosPerCol = Math.floor((usableHeightMM + verticalGapMM) / (photoHeightMM + verticalGapMM));
-            
-            var totalPhotos = photosPerRow * photosPerCol;
+            // Clear previous images before adding new ones
+            sheet.innerHTML = "";
 
-            // Create photos using auto-fill grid - let CSS handle the layout
-            for (var i = 0; i < totalPhotos; i++) {
-                var photoImg = document.createElement('img');
+            // Generate exact number of copies based on user input
+            for (let i = 0; i < columns * rows; i++) {
+                const photoImg = document.createElement("img");
                 photoImg.src = photoDataUrl;
                 photoImg.className = 'print-photo-item';
                 if (currentShape === 'circle') {
@@ -2035,12 +2033,13 @@
 
             var isPro = (currentMode === 'professional');
 
-            // FIX A4 Print Engine: Always use 300 DPI for high-quality canvas math
+            // Professional A4 Print Engine: Always use 300 DPI for high-quality output
             var PRINT_DPI = 300;
             var mmToPx = function(mm) { return Math.round((mm / 25.4) * PRINT_DPI); };
 
-            var A4_WIDTH_PX = mmToPx(210);
-            var A4_HEIGHT_PX = mmToPx(297);
+            // Read dynamic Columns and Rows values from user input
+            const columns = parseInt(document.getElementById("layoutCols").value) || 1;
+            const rows = parseInt(document.getElementById("layoutRows").value) || 1;
 
             var photoWidthPx = isPro ? (parseInt(document.getElementById('widthInput').value, 10) || 413) : 413;
             var photoHeightPx = isPro ? (parseInt(document.getElementById('heightInput').value, 10) || 531) : 531;
@@ -2100,81 +2099,66 @@
                 croppedPhotoCanvas = tempCanvas;
             }
 
-            // Create A4 canvas at 300 DPI
+            // Convert mm to px using 300 DPI
+            const photoWidthMM = (photoWidthPx / PRINT_DPI) * 25.4;
+            const photoHeightMM = (photoHeightPx / PRINT_DPI) * 25.4;
+            const gapMM = isPro ? (parseFloat(document.getElementById('horizontalGap').value) || 2) : 2;
+            
+            const photoWidthPxFinal = mmToPx(photoWidthMM);
+            const photoHeightPxFinal = mmToPx(photoHeightMM);
+            const gapPx = mmToPx(gapMM);
+
+            // Calculate total content dimensions
+            const contentWidth = columns * photoWidthPxFinal + (columns - 1) * gapPx;
+            const contentHeight = rows * photoHeightPxFinal + (rows - 1) * gapPx;
+
+            // Calculate centering offsets for full A4 canvas
+            const A4_WIDTH_PX = 2480; // Full A4 width at 300 DPI
+            const A4_HEIGHT_PX = 3508; // Full A4 height at 300 DPI
+            
+            const remainingWidth = A4_WIDTH_PX - contentWidth;
+            const remainingHeight = A4_HEIGHT_PX - contentHeight;
+            
+            const leftOffset = remainingWidth / 2;
+            const topOffset = remainingHeight / 2;
+
+            // Create full A4 canvas at 300 DPI
             var downloadCanvas = document.createElement('canvas');
             downloadCanvas.width = A4_WIDTH_PX;
             downloadCanvas.height = A4_HEIGHT_PX;
             var downloadCtx = downloadCanvas.getContext('2d');
+            
+            // Fill canvas background white before drawing
+            downloadCtx.fillStyle = "#ffffff";
+            downloadCtx.fillRect(0, 0, A4_WIDTH_PX, A4_HEIGHT_PX);
+            
             downloadCtx.imageSmoothingEnabled = true;
             downloadCtx.imageSmoothingQuality = 'high';
-            downloadCtx.fillStyle = '#ffffff';
-            downloadCtx.fillRect(0, 0, A4_WIDTH_PX, A4_HEIGHT_PX);
 
-            // Read layout from print sheet - use the same calculation as preview
-            var sheetElement = printContainer.querySelector('.print-sheet');
-            
-            // Get CSS custom properties for dimensions
-            var photoWidthMM = parseFloat(sheetElement.style.getPropertyValue('--photo-width').replace('mm', '')) || 35;
-            var photoHeightMM = parseFloat(sheetElement.style.getPropertyValue('--photo-height').replace('mm', '')) || 45;
-            var horizontalGapMM = parseFloat(sheetElement.style.getPropertyValue('--horizontal-gap').replace('mm', '')) || 2;
-            var verticalGapMM = parseFloat(sheetElement.style.getPropertyValue('--vertical-gap').replace('mm', '')) || 2;
-            
-            // Convert to pixels
-            var photoWidthPx = mmToPx(photoWidthMM);
-            var photoHeightPx = mmToPx(photoHeightMM);
-            var horizontalGapPx = mmToPx(horizontalGapMM);
-            var verticalGapPx = mmToPx(verticalGapMM);
+            // Draw images using professional layout
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < columns; col++) {
+                    const x = leftOffset + col * (photoWidthPxFinal + gapPx);
+                    const y = topOffset + row * (photoHeightPxFinal + gapPx);
 
-            // Parse padding (top left)
-            var paddingStr = sheetElement.style.padding || '10mm 10mm 10mm 10mm';
-            var paddingParts = paddingStr.split(' ');
-            var startY = mmToPx(parseFloat(paddingParts[0]) || 10);
-            var startX = mmToPx(parseFloat(paddingParts[3] || paddingParts[1] || '10') || 10);
-
-            // Calculate how many photos fit per row and column (same as preview)
-            var A4_WIDTH_MM = 210;
-            var A4_HEIGHT_MM = 297;
-            
-            var topMarginMM = parseFloat(paddingParts[0]) || 10;
-            var leftMarginMM = parseFloat(paddingParts[3] || paddingParts[1] || '10') || 10;
-            var bottomMarginMM = parseFloat(paddingParts[2]) || 10;
-            var rightMarginMM = parseFloat(paddingParts[1]) || 10;
-            
-            var usableWidthMM = A4_WIDTH_MM - leftMarginMM - rightMarginMM;
-            var usableHeightMM = A4_HEIGHT_MM - topMarginMM - bottomMarginMM;
-
-            var photosPerRow = Math.floor((usableWidthMM + horizontalGapMM) / (photoWidthMM + horizontalGapMM));
-            var photosPerCol = Math.floor((usableHeightMM + verticalGapMM) / (photoHeightMM + verticalGapMM));
-            
-            var totalPhotos = photosPerRow * photosPerCol;
-
-            // Draw photos using the same layout as preview
-            for (var r = 0; r < photosPerCol; r++) {
-                for (var c = 0; c < photosPerRow; c++) {
-                    var x = startX + c * (photoWidthPx + horizontalGapPx);
-                    var y = startY + r * (photoHeightPx + verticalGapPx);
-                    
-                    // FIX: Preserve aspect ratio to prevent image distortion
-                    downloadCtx.imageSmoothingEnabled = true;
-                    downloadCtx.imageSmoothingQuality = 'high';
-
+                    // Preserve aspect ratio to prevent image distortion
                     const srcWidth = croppedPhotoCanvas.width;
                     const srcHeight = croppedPhotoCanvas.height;
 
                     const srcRatio = srcWidth / srcHeight;
-                    const targetRatio = photoWidthPx / photoHeightPx;
+                    const targetRatio = photoWidthPxFinal / photoHeightPxFinal;
 
-                    let drawWidth = photoWidthPx;
-                    let drawHeight = photoHeightPx;
+                    let drawWidth = photoWidthPxFinal;
+                    let drawHeight = photoHeightPxFinal;
 
                     if (srcRatio > targetRatio) {
-                        drawHeight = photoWidthPx / srcRatio;
+                        drawHeight = photoWidthPxFinal / srcRatio;
                     } else {
-                        drawWidth = photoHeightPx * srcRatio;
+                        drawWidth = photoHeightPxFinal * srcRatio;
                     }
 
-                    const offsetX = (photoWidthPx - drawWidth) / 2;
-                    const offsetY = (photoHeightPx - drawHeight) / 2;
+                    const offsetX = (photoWidthPxFinal - drawWidth) / 2;
+                    const offsetY = (photoHeightPxFinal - drawHeight) / 2;
 
                     downloadCtx.drawImage(
                         croppedPhotoCanvas,
