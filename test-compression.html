@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Photo Compression</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { border: 1px solid #ccc; padding: 15px; border-radius: 8px; }
+        .controls { margin-bottom: 20px; }
+        input[type="file"] { margin-bottom: 10px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .preview { display: flex; gap: 10px; }
+        img { max-width: 100%; border: 1px solid #ddd; }
+        .status { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Photo Size Compressor Test</h1>
+    
+    <div class="controls">
+        <input type="file" id="test-input" accept="image/*">
+        <button onclick="testCompression()">Test Compression</button>
+        <button onclick="clearTest()">Clear</button>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <h3>Original Image</h3>
+            <div id="original-container">
+                <p>No image selected</p>
+            </div>
+            <div class="status" id="original-status">Size: --</div>
+        </div>
+        
+        <div class="panel">
+            <h3>Compressed Image</h3>
+            <div id="compressed-container">
+                <p>Compression result will appear here</p>
+            </div>
+            <div class="status" id="compressed-status">Size: --</div>
+        </div>
+    </div>
+
+    <div class="status" id="test-status">Ready to test</div>
+
+    <script>
+        // Copy the helper functions from the main script
+        function bytesToKB(bytes){
+            return (bytes/1024).toFixed(1);
+        }
+        
+        function dataURLToUint8Array(dataURL){
+            const base64 = dataURL.split(',')[1];
+            const raw = atob(base64);
+            const arr = new Uint8Array(raw.length);
+            for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);
+            return arr;
+        }
+        
+        function blobFromDataURL(dataURL){
+            const arr = dataURLToUint8Array(dataURL);
+            const mime = dataURL.substring(dataURL.indexOf(':')+1,dataURL.indexOf(';'));
+            return new Blob([arr],{type:mime});
+        }
+        
+        function readFileAsDataURL(file){
+            return new Promise((resolve,reject)=>{
+                const fr=new FileReader();
+                fr.onload=()=>resolve(fr.result);
+                fr.onerror=reject;
+                fr.readAsDataURL(file);
+            });
+        }
+        
+        function loadImageFromDataURL(dataURL){
+            return new Promise((resolve,reject)=>{
+                const img=new Image();
+                img.onload=()=>resolve(img);
+                img.onerror=reject;
+                img.src=dataURL;
+            });
+        }
+        
+        async function loadImageFromFile(file){
+            const url = await readFileAsDataURL(file);
+            return loadImageFromDataURL(url);
+        }
+
+        async function testCompression() {
+            const input = document.getElementById('test-input');
+            const file = input.files[0];
+            const statusEl = document.getElementById('test-status');
+            const originalContainer = document.getElementById('original-container');
+            const compressedContainer = document.getElementById('compressed-container');
+            const originalStatus = document.getElementById('original-status');
+            const compressedStatus = document.getElementById('compressed-status');
+
+            if (!file) {
+                statusEl.textContent = 'Please select an image first.';
+                statusEl.className = 'status error';
+                return;
+            }
+
+            try {
+                statusEl.textContent = 'Processing...';
+                statusEl.className = 'status';
+
+                // Show original
+                const originalDataURL = await readFileAsDataURL(file);
+                originalContainer.innerHTML = `<img src="${originalDataURL}" alt="Original">`;
+                originalStatus.textContent = `Size: ${bytesToKB(file.size)} KB`;
+
+                // Apply compression logic (same as fixed compressPhoto function)
+                const quality = 0.7; // Default quality
+                const maxW = null; // No max width for this test
+                const maxH = null; // No max height for this test
+                
+                const img = await loadImageFromFile(file);
+                let w = img.width, h = img.height;
+                
+                // Apply resizing if max dimensions are specified
+                if (maxW || maxH) {
+                    const ratio = Math.min(
+                        maxW ? maxW/w : 1,
+                        maxH ? maxH/h : 1
+                    );
+                    if (ratio < 1) {
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                const dataURL = canvas.toDataURL('image/jpeg', quality);
+                const blob = blobFromDataURL(dataURL);
+                
+                // Show compressed
+                compressedContainer.innerHTML = `<img src="${dataURL}" alt="Compressed">`;
+                compressedStatus.textContent = `Size: ${bytesToKB(blob.size)} KB`;
+                
+                // Create download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = 'test-compressed.jpg';
+                downloadLink.textContent = 'Download Compressed Image';
+                downloadLink.style.display = 'block';
+                downloadLink.style.marginTop = '10px';
+                downloadLink.style.color = '#007bff';
+                compressedContainer.appendChild(downloadLink);
+
+                statusEl.textContent = `Compression successful! Original: ${bytesToKB(file.size)} KB → Compressed: ${bytesToKB(blob.size)} KB`;
+                statusEl.className = 'status success';
+
+            } catch (err) {
+                console.error(err);
+                statusEl.textContent = 'Compression failed. Check console for details.';
+                statusEl.className = 'status error';
+            }
+        }
+
+        function clearTest() {
+            document.getElementById('test-input').value = '';
+            document.getElementById('original-container').innerHTML = '<p>No image selected</p>';
+            document.getElementById('compressed-container').innerHTML = '<p>Compression result will appear here</p>';
+            document.getElementById('original-status').textContent = 'Size: --';
+            document.getElementById('compressed-status').textContent = 'Size: --';
+            document.getElementById('test-status').textContent = 'Ready to test';
+            document.getElementById('test-status').className = 'status';
+        }
+    </script>
+</body>
+</html>

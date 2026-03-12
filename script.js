@@ -191,10 +191,14 @@ async function compressPhoto(){
   }
   try{
     const quality = parseFloat(document.getElementById('compress-quality').value)||0.7;
-    const maxW = parseInt(document.getElementById('compress-maxW').value)||null;
-    const maxH = parseInt(document.getElementById('compress-maxH').value)||null;
+    const maxWInput = document.getElementById('compress-maxW').value;
+    const maxHInput = document.getElementById('compress-maxH').value;
+    const maxW = maxWInput ? parseInt(maxWInput) : null;
+    const maxH = maxHInput ? parseInt(maxHInput) : null;
     const img = await loadImageFromFile(file);
     let w=img.width,h=img.height;
+    
+    // Apply resizing if max dimensions are specified
     if(maxW || maxH){
       const ratio = Math.min(
         maxW ? maxW/w : 1,
@@ -202,6 +206,7 @@ async function compressPhoto(){
       );
       if(ratio<1){w=Math.round(w*ratio);h=Math.round(h*ratio);}
     }
+    
     const canvas=document.createElement('canvas');
     canvas.width=w;canvas.height=h;
     const ctx=canvas.getContext('2d');
@@ -215,11 +220,22 @@ async function compressPhoto(){
     link.href=url;
     link.download='compressed.jpg';
     link.style.display='inline-flex';
-    const status = document.getElementById('compress-original-size').parentElement.parentElement.parentElement;
-    if(status) status.textContent=`Compressed: ${bytesToKB(blob.size)} KB`;
+    
+    // Add click handler to properly clean up the URL
+    link.onclick = (e) => {
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 2000);
+    };
+    
+    // Update status message
+    const statusContainer = document.querySelector('#panel-photo-compress .status');
+    if(statusContainer) {
+      statusContainer.textContent = `Compressed: ${bytesToKB(blob.size)} KB`;
+    }
   }catch(err){
     console.error(err);
-    alert('Compression failed.');
+    alert('Compression failed. Please try a different image or check the console for details.');
   }
 }
 
